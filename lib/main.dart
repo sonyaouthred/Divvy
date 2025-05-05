@@ -68,6 +68,7 @@ class _BottomNavigationBarExampleState
     return Scaffold(
       appBar: AppBar(
         title: _titles[_selectedIndex],
+        centerTitle: true,
         actions: [
           Container(
             height: 50,
