@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:divvy/models/divvy_theme.dart';
-
+// import 'package:divvy/models/divvy_theme.dart';
+// Commented out for testing
 class Settings extends StatefulWidget {
   const Settings({super.key});
 
