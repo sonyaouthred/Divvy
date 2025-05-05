@@ -43,7 +43,7 @@ class DivvyTheme {
   );
   static TextStyle bodyBoldBlack = GoogleFonts.inter(
     textStyle: const TextStyle(
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       fontSize: 15,
       color: black,
     ),
@@ -120,6 +120,14 @@ class DivvyTheme {
     borderRadius: BorderRadius.circular(10),
     boxShadow: [
       BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 10, spreadRadius: 0),
+    ],
+  );
+
+  static BoxDecoration circleWhite = BoxDecoration(
+    color: DivvyTheme.white,
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 3, spreadRadius: 0),
     ],
   );
 

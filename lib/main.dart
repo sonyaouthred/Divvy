@@ -69,6 +69,9 @@ class _BottomNavigationBarExampleState
     return Scaffold(
       appBar: AppBar(
         title: _titles[_selectedIndex],
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        backgroundColor: DivvyTheme.background,
         actions: [
           Container(
             height: 50,
@@ -80,6 +83,7 @@ class _BottomNavigationBarExampleState
       ),
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: DivvyTheme.background,
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
