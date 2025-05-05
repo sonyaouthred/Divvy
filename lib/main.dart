@@ -50,13 +50,21 @@ class _BottomNavigationBarExampleState
     House(),
     Settings(),
   ];
-  final List<Widget> _titles = <Widget>[
-    Text('Calendar', style: DivvyTheme.screenTitle),
-    Text('Chores', style: DivvyTheme.screenTitle),
-    Text('Divvy', style: DivvyTheme.screenTitle),
-    Text('House', style: DivvyTheme.screenTitle),
-    Text('Settings', style: DivvyTheme.screenTitle),
-  ];
+  late final List<Widget> _titles;
+  late final String _houseName;
+
+  @override
+  void initState() {
+    super.initState();
+    _houseName = 'Super cool house';
+    _titles = <Widget>[
+      Text('Calendar', style: DivvyTheme.screenTitle),
+      Text('Chores', style: DivvyTheme.screenTitle),
+      Text('Divvy', style: DivvyTheme.screenTitle),
+      Text(_houseName, style: DivvyTheme.screenTitle),
+      Text('Settings', style: DivvyTheme.screenTitle),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -81,7 +89,10 @@ class _BottomNavigationBarExampleState
           ),
         ],
       ),
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: Container(
+        color: DivvyTheme.background,
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: DivvyTheme.background,
         type: BottomNavigationBarType.fixed,
