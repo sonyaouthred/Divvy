@@ -17,6 +17,7 @@ class DivvyTheme {
   static const Color darkBeige = Color(0xFFC1BDB4);
   static const Color brightRed = Color(0xFFFF0000);
   static const Color darkRed = Color(0xFFA70000);
+  static const Color shadow = Color(0xFFEAEBED);
 
   // Text Themes
 
@@ -119,7 +120,7 @@ class DivvyTheme {
     color: DivvyTheme.white,
     borderRadius: BorderRadius.circular(10),
     boxShadow: [
-      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 10, spreadRadius: 0),
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 3, spreadRadius: 0),
     ],
   );
 
@@ -127,21 +128,24 @@ class DivvyTheme {
     color: DivvyTheme.white,
     shape: BoxShape.circle,
     boxShadow: [
-      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 3, spreadRadius: 0),
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 10, spreadRadius: 0),
     ],
   );
+
+  static BoxDecoration profileCircle(Color color) =>
+      BoxDecoration(color: color, shape: BoxShape.circle);
 
   static BoxDecoration circleBeige = BoxDecoration(
     color: DivvyTheme.white,
     shape: BoxShape.circle,
-    border: BoxBorder.all(color: DivvyTheme.darkBeige, width: 2),
+    border: BoxBorder.all(color: DivvyTheme.shadow, width: 2),
   );
 
   static BoxDecoration textInput = BoxDecoration(
     color: DivvyTheme.white,
     borderRadius: BorderRadius.circular(15),
     boxShadow: [
-      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 5, spreadRadius: 2),
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
     ],
   );
 }

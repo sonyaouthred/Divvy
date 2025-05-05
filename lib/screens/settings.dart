@@ -33,56 +33,57 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
-    return Container(
-      padding: EdgeInsets.all(spacing),
-      color: DivvyTheme.background,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Display user's profile image
-            _imageSelectionButton(width),
-            SizedBox(height: spacing),
-            // Greet user
-            _introPhrase(name: name),
-            // Display various settings
-            // Account settings
-            _infoSections(
-              icon: Icon(CupertinoIcons.person_crop_circle),
-              text: 'Account Info',
-              buttons: [
-                ['Change Name', _openChoresScreen],
-                ['Reset Password', _openChoresScreen],
-                ['Delete Account', _openChoresScreen],
-              ],
-              flex: 2,
-              spacing: spacing,
-            ),
-            // Social/house settings
-            _infoSections(
-              icon: Icon(Icons.house_outlined),
-              text: 'House Info',
-              buttons: [
-                ['Leave House', _openChoresScreen],
-                ['Leave Subgroup', _openChoresScreen],
-              ],
-              flex: 2,
-              spacing: spacing,
-            ),
-            // App settings
-            _infoSections(
-              icon: Icon(Icons.settings_outlined),
-              text: 'Settings',
-              buttons: [
-                ['Appearance', null],
-              ],
-              flex: 1,
-              spacing: spacing,
-            ),
-            // Logout button
-            _logoutButton(),
-            SizedBox(height: spacing),
-          ],
+    return SizedBox.expand(
+      child: Container(
+        padding: EdgeInsets.all(spacing),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Display user's profile image
+              _imageSelectionButton(width),
+              SizedBox(height: spacing),
+              // Greet user
+              _introPhrase(name: name),
+              // Display various settings
+              // Account settings
+              _infoSections(
+                icon: Icon(CupertinoIcons.person_crop_circle),
+                text: 'Account Info',
+                buttons: [
+                  ['Change Name', _openChoresScreen],
+                  ['Reset Password', _openChoresScreen],
+                  ['Delete Account', _openChoresScreen],
+                ],
+                flex: 2,
+                spacing: spacing,
+              ),
+              // Social/house settings
+              _infoSections(
+                icon: Icon(Icons.house_outlined),
+                text: 'House Info',
+                buttons: [
+                  ['Leave House', _openChoresScreen],
+                  ['Leave Subgroup', _openChoresScreen],
+                ],
+                flex: 2,
+                spacing: spacing,
+              ),
+              // App settings
+              _infoSections(
+                icon: Icon(Icons.settings_outlined),
+                text: 'Settings',
+                buttons: [
+                  ['Appearance', null],
+                ],
+                flex: 1,
+                spacing: spacing,
+              ),
+              // Logout button
+              _logoutButton(),
+              SizedBox(height: spacing),
+            ],
+          ),
         ),
       ),
     );
