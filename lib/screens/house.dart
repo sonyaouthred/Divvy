@@ -96,34 +96,31 @@ class _HouseState extends State<House> {
         Text('Members', style: DivvyTheme.bodyBoldBlack),
         SizedBox(height: spacing),
         // Display all member tiles
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: memberKeys.length,
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              final name = memberKeys[index];
-              // Render the member's profile picture and name
-              return Padding(
-                padding: EdgeInsets.only(right: spacing),
-                child: InkWell(
-                  onTap: () => _openMemberPage(context, name),
-                  child: Column(
-                    children: [
-                      // User profile image
-                      Container(
-                        decoration: DivvyTheme.profileCircle(_members[name]!),
-                        height: 60,
-                        width: 60,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children:
+                memberKeys.map((name) {
+                  return Padding(
+                    padding: EdgeInsets.only(right: spacing),
+                    child: InkWell(
+                      onTap: () => _openMemberPage(context, name),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: DivvyTheme.profileCircle(
+                              _members[name]!,
+                            ),
+                            height: 60,
+                            width: 60,
+                          ),
+                          SizedBox(height: spacing / 2),
+                          Text(name, style: DivvyTheme.bodyBlack),
+                        ],
                       ),
-                      SizedBox(height: spacing / 2),
-                      Text(name, style: DivvyTheme.bodyBlack),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  );
+                }).toList(),
           ),
         ),
       ],
