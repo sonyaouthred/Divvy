@@ -36,7 +36,7 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.0-1.0.pre.396' # Currently set to mine can be changed
+          flutter-version: '3.32.0' # Currently set to mine can be changed
           dart-verion: '3.9.0' # Same here
           channel: 'main' # might change if want stable
       - run: flutter pub get 
