@@ -106,6 +106,13 @@ class DivvyTheme {
       color: mediumGreen,
     ),
   );
+  static TextStyle largeBoldMedWhite = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 20,
+      color: white,
+    ),
+  );
   static TextStyle smallBoldMedGreen = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w700,
@@ -114,6 +121,13 @@ class DivvyTheme {
     ),
   );
 
+  static TextStyle smallBoldMedWhite = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 15,
+      color: white,
+    ),
+  );
   // Box decorations
 
   static BoxDecoration standardBox = BoxDecoration(
@@ -127,6 +141,14 @@ class DivvyTheme {
   static BoxDecoration circleWhite = BoxDecoration(
     color: DivvyTheme.white,
     shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 10, spreadRadius: 0),
+    ],
+  );
+
+  static BoxDecoration oval(Color color) => BoxDecoration(
+    color: color,
+    borderRadius: BorderRadius.circular(50),
     boxShadow: [
       BoxShadow(color: DivvyTheme.shadow, blurRadius: 10, spreadRadius: 0),
     ],

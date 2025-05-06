@@ -64,13 +64,14 @@ import 'package:flutter/foundation.dart';
 // }
 
 class DivvyProvider extends ChangeNotifier {
+  late final Member _currentUser;
   late final House _house;
   late final List<Member> _members;
   late final List<Subgroup> _subgroups;
   late final List<Chore> _chores;
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
 
-  DivvyProvider() {
+  DivvyProvider({required MemberID currentUserID}) {
     final data = Data();
 
     // get house info
@@ -106,6 +107,9 @@ class DivvyProvider extends ChangeNotifier {
           : choreinsts[choreInst.choreID]!.add(choreInst);
     }
     _choreInstances = choreinsts;
+
+    // Initialize current user
+    _currentUser = _members.firstWhere((user) => user.id == currentUserID);
   }
 
   /// Getters
@@ -114,10 +118,16 @@ class DivvyProvider extends ChangeNotifier {
   List<Member> get members => List.from(_members);
   List<Subgroup> get subgroups => List.from(_subgroups);
   List<Chore> get chores => List.from(_chores);
+  Member get currentUser => _currentUser;
 
   /// Returns list of chore instances with a given super chore ID
   List<ChoreInst> getChoreInstancesFromID(ChoreID id) {
     return _choreInstances[id] ?? [];
+  }
+
+  /// Returns a super chore with the passed id
+  Chore getSuperChore(ChoreID id) {
+    return _chores.firstWhere((chore) => chore.id == id);
   }
 
   /// Returns all chore superclasses assigned to the passed member

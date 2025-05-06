@@ -10,7 +10,7 @@ class Chore {
   // List of people this chore is assigned to
   final List<MemberID> _assignees;
   final List<ChoreInstID> _instances;
-  // 1 = sunday, ...7 = saturday
+  // 1 = monday, ... 7 = sunday
   final List<int> _dayOfWeek;
 
   Chore({
