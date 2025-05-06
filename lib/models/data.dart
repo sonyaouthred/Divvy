@@ -76,7 +76,7 @@ class Data {
       'name': 'Downstairs bathroom',
       'description':
           'Clean the downstairs bathroom - counters, floors, toilet, and shower. Don\'t forget the sink!',
-      'frequency': Frequency.biweekly.name,
+      'frequency': Frequency.weekly.name,
       'dayOfWeek': [2, 5],
       'instances': ['gksdgtjew5u320', 't4ewoj092u3gvnfgsew'],
       'emoji': '🚽',
@@ -101,7 +101,7 @@ class Data {
       'id': 't43iojy4io9ngh',
       'name': 'Battle cleanup',
       'description': 'General cleanup duties after saving the world',
-      'frequency': Frequency.biweekly.name,
+      'frequency': Frequency.weekly.name,
       'dayOfWeek': [3, 7],
       'instances': [
         'fkdeotj32ignbks',

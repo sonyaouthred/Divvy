@@ -19,17 +19,20 @@ String formatDayMonth(DateTime date) {
 
 /// Generates dates for recurring expenses based on frequency.
 /// Parameters:
-///  - frequency: How often the expense should recur (Daily, Weekly, Monthly, or biweekly)
+///  - frequency: How often the expense should recur (Daily, Weekly, Monthly)
 /// Returns: List of DateTime objects representing all occurrence dates. Only generates
-/// for a 180-day period
-/// TODO: OMG NEEDS TO BE TESTED
+/// for a 90-day period
+/// Expected behavior:
+///   - monthly: repeat once monthly on the same date for 90 day period
+///   - daily: repeat every day for 90 + start date period
+///   - weekly: repeat weekly on the [daysOfWeek] weekdays for a 90 day period
 List<DateTime> getDateList(
   Frequency frequency,
   List<int> daysOfWeek,
   DateTime startDate,
 ) {
   final List<DateTime> dates = [];
-  final endDate = startDate.add(const Duration(days: 180));
+  final endDate = startDate.add(const Duration(days: 90));
   switch (frequency) {
     case Frequency.monthly:
       // For a montly chore, ignore days of week
@@ -56,30 +59,8 @@ List<DateTime> getDateList(
         curr = DateTime(nextMonth.year, nextMonth.month, day);
         curr = adjustDaylightSavings(curr);
       }
-      break;
+      return dates;
     case Frequency.weekly:
-      DateTime curr = startDate;
-      curr = curr.add(const Duration(days: 7));
-      // Adjust for daylight savings (if applicable)
-      curr = adjustDaylightSavings(curr);
-      while (curr.isBefore(endDate)) {
-        // Add the new date to the list
-        dates.add(curr);
-        // Add seven days (one week) until the start date is after the end date
-        DateTime newDate = curr.add(const Duration(days: 7));
-
-        // Adjust for daylight savings (if applicable)
-        newDate = adjustDaylightSavings(newDate);
-        curr = newDate;
-      }
-      // Loop exits before the end date is added, so check if it should be added
-      if (startDate.difference(endDate).inDays % 7 == 0) {
-        // start and end date are exactly some # of weeks apart,
-        // so the end date should be included.
-        dates.add(endDate);
-      }
-      break;
-    case Frequency.biweekly:
       DateTime curr = startDate;
       final currDayOfWeek = curr.weekday;
       final smallestWeekday = daysOfWeek.reduce((a, b) => a < b ? a : b);
@@ -88,14 +69,15 @@ List<DateTime> getDateList(
         final diff = currDayOfWeek - smallestWeekday;
         curr = curr.subtract(Duration(days: diff));
       }
-      dates.addAll(getDatesFromWeek(curr, daysOfWeek));
+      dates.addAll(getDatesFromWeek(curr, daysOfWeek, endDate));
       // advance week
       curr = curr.add(const Duration(days: 7));
       // Adjust for daylight savings (if applicable)
       curr = adjustDaylightSavings(curr);
+      // Now iterate until we get to the end date!
       while (curr.isBefore(endDate)) {
         // Add the new date to the list
-        dates.addAll(getDatesFromWeek(curr, daysOfWeek));
+        dates.addAll(getDatesFromWeek(curr, daysOfWeek, endDate));
         // Add seven days (one week) until the start date is after the end date
         DateTime newDate = curr.add(const Duration(days: 7));
 
@@ -103,16 +85,19 @@ List<DateTime> getDateList(
         newDate = adjustDaylightSavings(newDate);
         curr = newDate;
       }
+
       // Loop exits before the end date is added, so check if it should be added
       if (startDate.difference(endDate).inDays % 7 == 0) {
         // start and end date are exactly some # of weeks apart,
         // so the end date should be included.
         dates.add(endDate);
       }
-      // Now remove any dates before the start date... not perfect, ik
+      // Now remove any extra dates... not perfect, ik
       dates.removeWhere((date) => date.isBefore(startDate));
-      break;
+      return dates;
     case Frequency.daily:
+      // Add start date
+      dates.add(startDate);
       DateTime curr = startDate;
       // need to fencepost
       curr = curr.add(const Duration(days: 1));
@@ -133,23 +118,30 @@ List<DateTime> getDateList(
       }
       // Loop exits before the end date is added, so make sure it is added
       dates.add(endDate);
-      break;
+      return dates;
   }
-  return dates;
 }
 
 // Given a start date, returns a list of all dates in week with the same
 // weekday numbers as in the inputted list.
-// Start date must always be the smallest day of the week in list.
+// Does not add any days past the end date
+// INVARIANT: Start date must always be the smallest day of the week in list.
 // E.g. Start date Monday (3) May 5, 2025 with daysOfWeek
 // [3, 5, 7] returns
 // [May 7, 2025; May 9, 2025; May 11, 2025]
-List<DateTime> getDatesFromWeek(DateTime start, List<int> daysOfWeek) {
+List<DateTime> getDatesFromWeek(
+  DateTime start,
+  List<int> daysOfWeek,
+  DateTime end,
+) {
+  if (start.isAfter(end)) return [];
   final List<DateTime> res = [start];
   DateTime curr = start;
   curr = curr.add(const Duration(days: 1));
   while (curr.weekday != 1) {
     if (daysOfWeek.contains(curr.weekday)) {
+      // Make sure we're not over-adding
+      if (curr.isAfter(end)) break;
       res.add(curr);
     }
     curr = curr.add(const Duration(days: 1));
@@ -232,3 +224,208 @@ String getNameOfWeekday(int weekday) => switch (weekday) {
   7 => 'Sunday',
   int() => '?',
 };
+
+
+  //   group('recurrenceDates', () {
+  //     group('daily', () {
+  //       test('Daily recurrence normal', () {
+  //         final startDate = DateTime(2024, 11, 12);
+  //         final endDate = DateTime(2024, 11, 16);
+  //         final dates = getDateList(Frequency.daily, startDate);
+
+  //         expect(dates, [
+  //           DateTime(2024, 11, 12),
+  //           DateTime(2024, 11, 13),
+  //           DateTime(2024, 11, 14),
+  //           DateTime(2024, 11, 15),
+  //           DateTime(2024, 11, 16),
+  //         ]);
+  //       });
+  //       test('Daily recurrence daylight savings fall', () {
+  //         final startDate = DateTime(2024, 11, 1);
+  //         final endDate = DateTime(2024, 11, 5);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.daily);
+
+  //         expect(dates, [
+  //           DateTime(2024, 11, 1),
+  //           DateTime(2024, 11, 2),
+  //           DateTime(2024, 11, 3),
+  //           DateTime(2024, 11, 4),
+  //           DateTime(2024, 11, 5),
+  //         ]);
+  //       });
+
+  //       test('Daily recurrence daylight savings spring', () {
+  //         final startDate = DateTime(2025, 3, 8);
+  //         final endDate = DateTime(2025, 3, 12);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.daily);
+
+  //         expect(dates, [
+  //           DateTime(2025, 3, 8),
+  //           DateTime(2025, 3, 9),
+  //           DateTime(2025, 3, 10),
+  //           DateTime(2025, 3, 11),
+  //           DateTime(2025, 3, 12),
+  //         ]);
+  //       });
+
+  //       test('Daily recurrence edge - leap year', () {
+  //         // test for switching between months/february weirdness
+  //         final startDate = DateTime(2024, 2, 25);
+  //         final endDate = DateTime(2024, 3, 4);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.daily);
+
+  //         expect(dates, [
+  //           DateTime(2024, 2, 25),
+  //           DateTime(2024, 2, 26),
+  //           DateTime(2024, 2, 27),
+  //           DateTime(2024, 2, 28),
+  //           DateTime(2024, 2, 29),
+  //           DateTime(2024, 3, 1),
+  //           DateTime(2024, 3, 2),
+  //           DateTime(2024, 3, 3),
+  //           DateTime(2024, 3, 4),
+  //         ]);
+  //       });
+  //     });
+  //     group('weekly', () {
+  //       test('Weekly recurrence with fall savings', () {
+  //         final startDate = DateTime(2024, 11, 1);
+  //         final endDate = DateTime(2024, 12, 1);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.weekly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 11, 1),
+  //           DateTime(2024, 11, 8),
+  //           DateTime(2024, 11, 15),
+  //           DateTime(2024, 11, 22),
+  //           DateTime(2024, 11, 29),
+  //         ]);
+  //       });
+  //       test('Weekly recurrence edge case end date is included', () {
+  //         final startDate = DateTime(2024, 12, 2);
+  //         final endDate = DateTime(2024, 12, 16);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.weekly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 12, 2),
+  //           DateTime(2024, 12, 9),
+  //           DateTime(2024, 12, 16),
+  //         ]);
+  //       });
+  //       test('Weekly recurrence edge case, day is 31', () {
+  //         final startDate = DateTime(2024, 12, 31);
+  //         final endDate = DateTime(2025, 3, 14);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.weekly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 12, 31),
+  //           DateTime(2025, 1, 7),
+  //           DateTime(2025, 1, 14),
+  //           DateTime(2025, 1, 21),
+  //           DateTime(2025, 1, 28),
+  //           DateTime(2025, 2, 4),
+  //           DateTime(2025, 2, 11),
+  //           DateTime(2025, 2, 18),
+  //           DateTime(2025, 2, 25),
+  //           DateTime(2025, 3, 4),
+  //           DateTime(2025, 3, 11),
+  //         ]);
+  //       });
+  //     });
+
+  //     group('monthly', () {
+  //       test('Monthly recurrence last day of month leap year', () {
+  //         final startDate = DateTime(2024, 1, 31);
+  //         final endDate = DateTime(2024, 6, 1);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.monthly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 1, 31),
+  //           DateTime(2024, 2, 29),
+  //           DateTime(2024, 3, 31),
+  //           DateTime(2024, 4, 30),
+  //           DateTime(2024, 5, 31),
+  //         ]);
+  //       });
+  //       test('Monthly recurrence 30th of month', () {
+  //         final startDate = DateTime(2024, 6, 30);
+  //         final endDate = DateTime(2024, 8, 22);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.monthly);
+
+  //         expect(dates, [DateTime(2024, 6, 30), DateTime(2024, 7, 30)]);
+  //       });
+  //       test('Monthly recurrence 1st of month, year change', () {
+  //         final startDate = DateTime(2024, 11, 1);
+  //         final endDate = DateTime(2025, 2, 16);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.monthly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 11, 1),
+  //           DateTime(2024, 12, 1),
+  //           DateTime(2025, 1, 1),
+  //           DateTime(2025, 2, 1),
+  //         ]);
+  //       });
+  //       test('Monthly recurrence last day of month year change', () {
+  //         final startDate = DateTime(2024, 11, 30);
+  //         final endDate = DateTime(2025, 3, 16);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.monthly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 11, 30),
+  //           DateTime(2024, 12, 30),
+  //           DateTime(2025, 1, 30),
+  //           DateTime(2025, 2, 28),
+  //         ]);
+  //       });
+  //       test('Monthly recurrence year change daylight savings', () {
+  //         final startDate = DateTime(2024, 11, 3);
+  //         final endDate = DateTime(2025, 2, 16);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.monthly);
+
+  //         expect(dates, [
+  //           DateTime(2024, 11, 3),
+  //           DateTime(2024, 12, 3),
+  //           DateTime(2025, 1, 3),
+  //           DateTime(2025, 2, 3),
+  //         ]);
+  //       });
+  //     });
+
+  //     group('annually', () {
+  //       test('Annually recurrence, leap year', () {
+  //         final startDate = DateTime(2020, 2, 29);
+  //         final endDate = DateTime(2028, 2, 28);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.annually);
+
+  //         expect(dates, [
+  //           DateTime(2020, 2, 29),
+  //           DateTime(2021, 2, 28),
+  //           DateTime(2022, 2, 28),
+  //           DateTime(2023, 2, 28),
+  //           DateTime(2024, 2, 28),
+  //           DateTime(2025, 2, 28),
+  //           DateTime(2026, 2, 28),
+  //           DateTime(2027, 2, 28),
+  //         ]);
+  //       });
+  //       test('Annually recurrence, daylight savings', () {
+  //         final startDate = DateTime(2020, 3, 9);
+  //         final endDate = DateTime(2028, 3, 28);
+  //         final dates = recurrenceDates(startDate, endDate, Frequency.annually);
+
+  //         expect(dates, [
+  //           DateTime(2020, 3, 9),
+  //           DateTime(2021, 3, 9),
+  //           DateTime(2022, 3, 9),
+  //           DateTime(2023, 3, 9),
+  //           DateTime(2024, 3, 9),
+  //           DateTime(2025, 3, 9),
+  //           DateTime(2026, 3, 9),
+  //           DateTime(2027, 3, 9),
+  //           DateTime(2028, 3, 9),
+  //         ]);
+  //       });
+  //     });
+  // });

@@ -60,7 +60,7 @@ class Chore {
   List<int> get dayOfWeek => List.from(_dayOfWeek);
 }
 
-enum Frequency { daily, weekly, biweekly, monthly }
+enum Frequency { daily, weekly, monthly }
 
 /// Represents a specific instance of a chore
 class ChoreInst {
