@@ -37,7 +37,7 @@ class DivvyTheme {
   );
   static TextStyle largeHeaderBlack = GoogleFonts.inter(
     textStyle: const TextStyle(
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       fontSize: 20,
       color: black,
     ),
@@ -80,7 +80,7 @@ class DivvyTheme {
   static TextStyle detailGrey = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.normal,
-      fontSize: 10,
+      fontSize: 11,
       color: lightGrey,
     ),
   );

@@ -1,4 +1,5 @@
 import 'package:divvy/models/chore.dart';
+import 'package:divvy/models/divvy_theme.dart';
 import 'package:flutter/material.dart';
 
 class Data {
@@ -6,7 +7,7 @@ class Data {
     'id': 'gjkldsjfdklsjfsdfdsa',
     'dateCreated': DateTime(2025, 5, 1, 12, 33, 52),
     'imageID': 'fdskglfhrktlewoirfdsnvn',
-    'name': 'Avenger Tower',
+    'name': 'Avengers Tower',
     'members': [
       'gj343udjkbvjso',
       '24889rhgksje',
@@ -20,7 +21,7 @@ class Data {
       'id': 'gj343udjkbvjso',
       'name': 'Tony Stark',
       'dateJoined': DateTime(2025, 5, 1, 12, 33, 52),
-      'profilePicture': Colors.red,
+      'profilePicture': DivvyTheme.darkGreen,
       'onTimePct': 20,
       'email': 'iamironman@avengers.com',
       'chores': ['fjdklt3953oigdss', '4o3u560rihgklfse', 't43iojy4io9ngh'],
@@ -30,7 +31,7 @@ class Data {
       'id': '24889rhgksje',
       'name': 'Natasha',
       'dateJoined': DateTime(2025, 5, 2, 12, 33, 52),
-      'profilePicture': Colors.black,
+      'profilePicture': DivvyTheme.darkGrey,
       'onTimePct': 99,
       'email': 'redacted@avengers.com',
       'chores': ['tji35932jglkmsklgewr', '4o3u560rihgklfse', 't43iojy4io9ngh'],
@@ -40,7 +41,7 @@ class Data {
       'id': '4392glkslkriep',
       'name': 'Peter Parker',
       'dateJoined': DateTime(2025, 5, 3, 12, 33, 52),
-      'profilePicture': Colors.blue,
+      'profilePicture': DivvyTheme.mediumGreen,
       'onTimePct': 65,
       'email': 'friendlyneighborhoodspiderman@avengers.com',
       'chores': ['fjdklt3953oigdss', '4o3u560rihgklfse', 't43iojy4io9ngh'],
@@ -50,7 +51,7 @@ class Data {
       'id': 'e4930493jgjg3032',
       'name': 'Nick Fury',
       'dateJoined': DateTime(2025, 5, 4, 12, 33, 52),
-      'profilePicture': Colors.purple,
+      'profilePicture': DivvyTheme.lightGreen,
       'onTimePct': 82,
       'email': 'fury@shield.gov',
       'chores': ['t43iojy4io9ngh'],

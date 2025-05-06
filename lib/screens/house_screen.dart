@@ -6,6 +6,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/widgets/leaderboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,6 @@ class House extends StatefulWidget {
 class _HouseState extends State<House> {
   late List<Member> _members;
   late List<Subgroup> _subgroups;
-  late List<Member> _sortedLeaderboard;
 
   @override
   void initState() {
@@ -28,7 +28,6 @@ class _HouseState extends State<House> {
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _members = providerRef.members;
     _subgroups = providerRef.subgroups;
-    _sortedLeaderboard = providerRef.getLeaderboardSorted(3);
   }
 
   @override
@@ -40,7 +39,6 @@ class _HouseState extends State<House> {
         // refresh data from provider
         _members = provider.members;
         _subgroups = provider.subgroups;
-        _sortedLeaderboard = provider.getLeaderboardSorted(3);
 
         return SizedBox.expand(
           child: SingleChildScrollView(
@@ -53,7 +51,7 @@ class _HouseState extends State<House> {
                   // Members list
                   _displayMembers(spacing),
                   SizedBox(height: spacing),
-                  _displayLeaderboard(spacing),
+                  Leaderboard(title: 'Leaderboard'),
                   SizedBox(height: spacing),
                   // Display add roommate and settings buttons
                   Row(
@@ -116,7 +114,7 @@ class _HouseState extends State<House> {
                             width: 60,
                           ),
                           SizedBox(height: spacing / 2),
-                          Text(member.name, style: DivvyTheme.bodyBlack),
+                          Text(member.name, style: DivvyTheme.smallBodyBlack),
                         ],
                       ),
                     ),
@@ -125,55 +123,6 @@ class _HouseState extends State<House> {
           ),
         ),
       ],
-    );
-  }
-
-  /// Displays the leaderboard with their on-time percentages.
-  Widget _displayLeaderboard(double spacing) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Leaderboard', style: DivvyTheme.bodyBoldBlack),
-        SizedBox(height: spacing),
-        Container(
-          padding: EdgeInsets.all(spacing),
-          decoration: DivvyTheme.standardBox,
-          child: Column(
-            // this can be optimized haha
-            children: [
-              _leaderboardEntry(1, _sortedLeaderboard[0], spacing),
-              SizedBox(height: spacing),
-              _leaderboardEntry(2, _sortedLeaderboard[1], spacing),
-              SizedBox(height: spacing),
-              _leaderboardEntry(3, _sortedLeaderboard[2], spacing),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Displays an individual entry on the leaderboard
-  Widget _leaderboardEntry(int position, Member member, double spacing) {
-    return InkWell(
-      onTap: () => _openMemberPage(context, member),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text('#$position: ', style: DivvyTheme.bodyBlack),
-          SizedBox(width: spacing / 2),
-          Container(
-            decoration: DivvyTheme.profileCircle(member.profilePicture),
-            height: 25,
-            width: 25,
-          ),
-          SizedBox(width: spacing / 2),
-          Text(
-            '${member.name}, ${member.onTimePct}% on time',
-            style: DivvyTheme.bodyBlack,
-          ),
-        ],
-      ),
     );
   }
 

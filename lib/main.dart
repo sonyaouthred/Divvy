@@ -19,7 +19,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       // dummy current user is Tony Stark
-      create: (context) => DivvyProvider(currentUserID: 'gj343udjkbvjso'),
+      create: (context) => DivvyProvider(currentUserID: '24889rhgksje'),
       child: MaterialApp(
         home: Theme(
           data: ThemeData(
