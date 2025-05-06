@@ -7,11 +7,14 @@ environment:
   sdk: ^3.8.0-265.0.dev
 
 dependencies:
+  cloud_firestore: ^5.6.7
   cupertino_icons: ^1.0.8
+  firebase_core: ^3.13.0
   flutter:
     sdk: flutter
   google_fonts: ^6.2.1
   image_picker: ^1.1.2
+  provider: ^6.1.5
 
 dev_dependencies:
   flutter_test:
