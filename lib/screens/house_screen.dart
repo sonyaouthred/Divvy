@@ -3,8 +3,12 @@
 // ignore_for_file: avoid_print
 
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/member.dart';
+import 'package:divvy/models/subgroup.dart';
+import 'package:divvy/providers/divvy_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class House extends StatefulWidget {
   const House({super.key});
@@ -14,76 +18,72 @@ class House extends StatefulWidget {
 }
 
 class _HouseState extends State<House> {
-  // To be replaced with actual data types
-  late Map<String, Color> _members;
-  late Map<String, Color> _subgroups;
-  late Map<String, double> _leaderboard;
+  late List<Member> _members;
+  late List<Subgroup> _subgroups;
+  late List<Member> _sortedLeaderboard;
 
   @override
   void initState() {
     super.initState();
-    // Dummy data
-    _members = {
-      'Amy': DivvyTheme.darkGreen,
-      'Jo': DivvyTheme.mediumGreen,
-      'Meg': DivvyTheme.lightGreen,
-      'Beth': DivvyTheme.darkGrey,
-      'Amys': DivvyTheme.darkGreen,
-      'Jos': DivvyTheme.mediumGreen,
-      'Mesg': DivvyTheme.lightGreen,
-      'Besth': DivvyTheme.darkGrey,
-    };
-    _subgroups = {
-      'Upstairs Area': Colors.lightBlueAccent,
-      'Main floor': Colors.yellow,
-    };
-    _leaderboard = {'Amy': 0.75, 'Jo': 0.72, 'Meg': 0.65};
+    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
+    _members = providerRef.members;
+    _subgroups = providerRef.subgroups;
+    _sortedLeaderboard = providerRef.getLeaderboardSorted(3);
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
-    return SizedBox.expand(
-      child: SingleChildScrollView(
-        child: Container(
-          width: width,
-          padding: EdgeInsets.symmetric(horizontal: spacing),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Members list
-              _displayMembers(spacing),
-              SizedBox(height: spacing),
-              _displayLeaderboard(spacing),
-              SizedBox(height: spacing),
-              // Display add roommate and settings buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Consumer<DivvyProvider>(
+      builder: (context, provider, child) {
+        // refresh data from provider
+        _members = provider.members;
+        _subgroups = provider.subgroups;
+        _sortedLeaderboard = provider.getLeaderboardSorted(3);
+
+        return SizedBox.expand(
+          child: SingleChildScrollView(
+            child: Container(
+              width: width,
+              padding: EdgeInsets.symmetric(horizontal: spacing),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _boxButton(
-                    title: 'Add Roommate',
-                    icon: Icon(CupertinoIcons.person_add),
-                    spacing: spacing,
-                    callback: _addRoommate,
+                  // Members list
+                  _displayMembers(spacing),
+                  SizedBox(height: spacing),
+                  _displayLeaderboard(spacing),
+                  SizedBox(height: spacing),
+                  // Display add roommate and settings buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _boxButton(
+                        title: 'Add Roommate',
+                        icon: Icon(CupertinoIcons.person_add),
+                        spacing: spacing,
+                        callback: _addRoommate,
+                      ),
+                      SizedBox(width: spacing),
+                      _boxButton(
+                        title: 'Settings',
+                        icon: Icon(CupertinoIcons.settings),
+                        spacing: spacing,
+                        callback: _openSettings,
+                      ),
+                    ],
                   ),
-                  SizedBox(width: spacing),
-                  _boxButton(
-                    title: 'Settings',
-                    icon: Icon(CupertinoIcons.settings),
-                    spacing: spacing,
-                    callback: _openSettings,
-                  ),
+                  SizedBox(height: spacing),
+                  // Display subgroups
+                  _displaySubgroups(spacing),
+                  SizedBox(height: spacing * 3),
                 ],
               ),
-              SizedBox(height: spacing),
-              // Display subgroups
-              _displaySubgroups(spacing),
-              SizedBox(height: spacing * 3),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -91,7 +91,6 @@ class _HouseState extends State<House> {
 
   /// Displays all members as a horizontally scrolling list
   Widget _displayMembers(double spacing) {
-    final List<String> memberKeys = _members.keys.toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -102,22 +101,22 @@ class _HouseState extends State<House> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children:
-                memberKeys.map((name) {
+                _members.map((member) {
                   return Padding(
                     padding: EdgeInsets.only(right: spacing),
                     child: InkWell(
-                      onTap: () => _openMemberPage(context, name),
+                      onTap: () => _openMemberPage(context, member),
                       child: Column(
                         children: [
                           Container(
                             decoration: DivvyTheme.profileCircle(
-                              _members[name]!,
+                              member.profilePicture,
                             ),
                             height: 60,
                             width: 60,
                           ),
                           SizedBox(height: spacing / 2),
-                          Text(name, style: DivvyTheme.bodyBlack),
+                          Text(member.name, style: DivvyTheme.bodyBlack),
                         ],
                       ),
                     ),
@@ -131,7 +130,6 @@ class _HouseState extends State<House> {
 
   /// Displays the leaderboard with their on-time percentages.
   Widget _displayLeaderboard(double spacing) {
-    final leaderboardSorted = _leaderboard.keys.toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -143,26 +141,11 @@ class _HouseState extends State<House> {
           child: Column(
             // this can be optimized haha
             children: [
-              _leaderboardEntry(
-                1,
-                leaderboardSorted[0],
-                _leaderboard[leaderboardSorted[0]]!,
-                spacing,
-              ),
+              _leaderboardEntry(1, _sortedLeaderboard[0], spacing),
               SizedBox(height: spacing),
-              _leaderboardEntry(
-                2,
-                leaderboardSorted[1],
-                _leaderboard[leaderboardSorted[1]]!,
-                spacing,
-              ),
+              _leaderboardEntry(2, _sortedLeaderboard[1], spacing),
               SizedBox(height: spacing),
-              _leaderboardEntry(
-                3,
-                leaderboardSorted[2],
-                _leaderboard[leaderboardSorted[2]]!,
-                spacing,
-              ),
+              _leaderboardEntry(3, _sortedLeaderboard[2], spacing),
             ],
           ),
         ),
@@ -171,28 +154,22 @@ class _HouseState extends State<House> {
   }
 
   /// Displays an individual entry on the leaderboard
-  Widget _leaderboardEntry(
-    int position,
-    String name,
-    double score,
-    double spacing,
-  ) {
-    final userProfileColor = _members[name]!;
+  Widget _leaderboardEntry(int position, Member member, double spacing) {
     return InkWell(
-      onTap: () => _openMemberPage(context, name),
+      onTap: () => _openMemberPage(context, member),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text('#$position: ', style: DivvyTheme.bodyBlack),
           SizedBox(width: spacing / 2),
           Container(
-            decoration: DivvyTheme.profileCircle(userProfileColor),
+            decoration: DivvyTheme.profileCircle(member.profilePicture),
             height: 25,
             width: 25,
           ),
           SizedBox(width: spacing / 2),
           Text(
-            '$name, ${(score * 100).toInt()}% on time',
+            '${member.name}, ${member.onTimePct}% on time',
             style: DivvyTheme.bodyBlack,
           ),
         ],
@@ -230,7 +207,6 @@ class _HouseState extends State<House> {
 
   /// Displays list of subgroups and button to allow user to add a subgroup
   Widget _displaySubgroups(double spacing) {
-    final subgroupKeys = _subgroups.keys.toList();
     return Column(
       children: [
         // Title and add subgroup button
@@ -250,17 +226,15 @@ class _HouseState extends State<House> {
         ),
         // List of subgroups
         ListView.builder(
-          itemCount: subgroupKeys.length,
+          itemCount: _subgroups.length,
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (BuildContext context, int index) {
-            final name = subgroupKeys[index];
             bool isLast = false;
-            if (index == subgroupKeys.length - 1) isLast = true;
+            if (index == _subgroups.length - 1) isLast = true;
             // Render the member's profile picture and name
             return _subgroupTile(
-              name: name,
-              color: _subgroups[name]!,
+              subgroup: _subgroups[index],
               spacing: spacing,
               isLast: isLast,
             );
@@ -273,15 +247,14 @@ class _HouseState extends State<House> {
   /// Displays the tile for a subgroup with their
   /// image and name
   Widget _subgroupTile({
-    required String name,
-    required Color color,
+    required Subgroup subgroup,
     required double spacing,
     required bool isLast,
   }) {
     return Padding(
       padding: EdgeInsets.only(right: spacing),
       child: InkWell(
-        onTap: () => _openSubgroupPage(context, name),
+        onTap: () => _openSubgroupPage(context, subgroup),
         child: Column(
           children: [
             SizedBox(height: spacing / 2),
@@ -292,12 +265,14 @@ class _HouseState extends State<House> {
                 Row(
                   children: [
                     Container(
-                      decoration: DivvyTheme.profileCircle(_subgroups[name]!),
+                      decoration: DivvyTheme.profileCircle(
+                        subgroup.profilePicture,
+                      ),
                       height: 25,
                       width: 25,
                     ),
                     SizedBox(width: spacing / 2),
-                    Text(name, style: DivvyTheme.bodyBlack),
+                    Text(subgroup.name, style: DivvyTheme.bodyBlack),
                   ],
                 ),
                 Icon(
@@ -336,14 +311,14 @@ class _HouseState extends State<House> {
   }
 
   /// Will open the passed member's page
-  void _openMemberPage(BuildContext context, String name) {
-    print('Opening $name\'s page');
+  void _openMemberPage(BuildContext context, Member member) {
+    print('Opening ${member.name}\'s page');
     return;
   }
 
   /// Will open the subgroups screen
-  void _openSubgroupPage(BuildContext context, String name) {
-    print('Opening $name\'s page');
+  void _openSubgroupPage(BuildContext context, Subgroup subgroup) {
+    print('Opening ${subgroup.name}\'s page');
     return;
   }
 }

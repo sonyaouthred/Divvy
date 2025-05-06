@@ -1,55 +1,50 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:divvy/models/member.dart';
 
 /// represents a house with a collection of users
 class House {
   // ID of the house. Same as Firestore doc ID
-  HouseID id;
+  final HouseID _id;
   // Date/time house was created. Stored in firestore as TimeStamp
-  DateTime dateCreated;
+  final DateTime _dateCreated;
   // image ID of the house's profile picture. Same as image ID in Cloud Storage
-  String imageID;
+  final String _imageID;
   // user-assigned name of the house
-  String name;
+  final String _name;
   // List of member IDs. Each ID is unique to the user & the same as their
   // firestore doc ID
-  List<MemberID> members;
+  final List<MemberID> _members;
 
   House({
-    required this.id,
-    required this.dateCreated,
-    required this.imageID,
-    required this.name,
-    required this.members,
-  });
+    required HouseID id,
+    required DateTime dateCreated,
+    required String imageID,
+    required String name,
+    required List<MemberID> members,
+  }) : _id = id,
+       _dateCreated = dateCreated,
+       _imageID = imageID,
+       _name = name,
+       _members = members;
 
-  /// From a Firestore document snapshot, return a new Project object
+  /// From a json map, returns a new House object
   /// with relevant fields filled out.
-  factory House.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> snapshot,
-    SnapshotOptions? options,
-  ) {
-    final data = snapshot.data();
+  factory House.fromJson(Map<String, dynamic> json) {
     return House(
-      name: data?['name'],
-      id: snapshot.id,
-      members: (data?['members'] as List<dynamic>).cast<MemberID>(),
-      dateCreated: (data?['dateCreated'] as Timestamp).toDate(),
-      imageID: data?['imageID'],
+      name: json['name'],
+      id: json['id'],
+      members: (json['members'] as List<dynamic>).cast<MemberID>(),
+      dateCreated: json['dateCreated'],
+      imageID: json['imageID'],
     );
   }
 
-  /// Create a JSON-like object to be stored in firestore.
-  Map<String, dynamic> toFirestore() {
-    return {
-      'name': name,
-      'members': members,
-      'dateCreated': Timestamp.fromDate(dateCreated),
-      'imageID': imageID,
-    };
-  }
+  HouseID get id => _id;
+  DateTime get dateCreated => _dateCreated;
+  String get imageID => _imageID;
+  String get name => _name;
+  List<MemberID> get members => List.from(_members);
 }
 
 // Simplify definitions
 typedef HouseID = String;
 typedef ImageID = String;
-typedef MemberID = String;

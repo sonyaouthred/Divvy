@@ -1,10 +1,12 @@
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/calendar.dart';
 import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/dashboard.dart';
-import 'package:divvy/screens/house.dart';
+import 'package:divvy/screens/house_screen.dart';
 import 'package:divvy/screens/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MainApp());
@@ -15,13 +17,16 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Theme(
-        data: ThemeData(
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
+    return ChangeNotifierProvider(
+      create: (context) => DivvyProvider(),
+      child: MaterialApp(
+        home: Theme(
+          data: ThemeData(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: BottomNavigationBarExample(),
         ),
-        child: BottomNavigationBarExample(),
       ),
     );
   }
@@ -56,7 +61,7 @@ class _BottomNavigationBarExampleState
   @override
   void initState() {
     super.initState();
-    _houseName = 'Super cool house';
+    _houseName = Provider.of<DivvyProvider>(context, listen: false).houseName;
     _titles = <Widget>[
       Text('Calendar', style: DivvyTheme.screenTitle),
       Text('Chores', style: DivvyTheme.screenTitle),
