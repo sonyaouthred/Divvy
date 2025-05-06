@@ -145,14 +145,12 @@ List<DateTime> getDateList(
 // [3, 5, 7] returns
 // [May 7, 2025; May 9, 2025; May 11, 2025]
 List<DateTime> getDatesFromWeek(DateTime start, List<int> daysOfWeek) {
-  print(start);
   final List<DateTime> res = [start];
   DateTime curr = start;
   curr = curr.add(const Duration(days: 1));
   while (curr.weekday != 1) {
     if (daysOfWeek.contains(curr.weekday)) {
       res.add(curr);
-      print('adding $curr');
     }
     curr = curr.add(const Duration(days: 1));
   }
@@ -217,3 +215,20 @@ String getFormattedTime(DateTime date) {
     return '${date.hour}:$minuteTime AM';
   }
 }
+
+/// Returns true if two dates are the same
+bool isSameDay(DateTime d1, DateTime d2) {
+  return d1.day == d2.day && d1.month == d2.month && d1.year == d2.year;
+}
+
+/// Returns a one-letter string for the current weekday
+String getNameOfWeekday(int weekday) => switch (weekday) {
+  1 => 'Monday',
+  2 => 'Tuesday',
+  3 => 'Wednesday',
+  4 => 'Thursday',
+  5 => 'Friday',
+  6 => 'Saturday',
+  7 => 'Sunday',
+  int() => '?',
+};

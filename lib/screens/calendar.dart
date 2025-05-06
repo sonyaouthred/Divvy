@@ -5,7 +5,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/util/date_funcs.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -79,7 +79,7 @@ class _CalendarState extends State<Calendar> {
   // Allows user to select a date range
   Widget _selectDateRange() {
     return InkWell(
-      onTap: () => print('selecting date range...'),
+      onTap: () => _changeDateRange(context, DateSelection.month),
       child: SizedBox(
         height: 45,
         child: Row(
@@ -180,7 +180,7 @@ class _CalendarState extends State<Calendar> {
       children: [
         // display dates
         Text(
-          '${_getNameOfWeekday(_selectedDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(_selectedDate)}:',
+          '${getNameOfWeekday(_selectedDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(_selectedDate)}:',
           style: DivvyTheme.bodyBoldBlack,
         ),
         // display chores
@@ -188,81 +188,16 @@ class _CalendarState extends State<Calendar> {
           padding: EdgeInsets.all(spacing / 2),
           child: Column(
             children:
-                choreList.map((chore) => _choreTile(chore, spacing)).toList(),
+                choreList.map((chore) => ChoreTile(choreInst: chore)).toList(),
           ),
         ),
       ],
     );
   }
 
-  /// Renders a tile with information about a chore.
-  /// When tapped, opens chore page
-  Widget _choreTile(ChoreInst choreInst, double spacing) {
-    // Get super chore for information
-    final superChore = Provider.of<DivvyProvider>(
-      context,
-      listen: false,
-    ).getSuperChore(choreInst.choreID);
-    // Build chore tile
-    return InkWell(
-      onTap: () => _openChoreInstancePage(context, choreInst.id),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                flex: 7,
-                child: Row(
-                  children: [
-                    // Display chore emoji
-                    Text(superChore.emoji, style: TextStyle(fontSize: 40)),
-                    SizedBox(width: spacing / 1.2),
-                    // display chore name & time due
-                    // wrapped with flexible to ensure text wraps
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            superChore.name,
-                            style: DivvyTheme.bodyBlack,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Due at ${getFormattedTime(choreInst.dueDate)}',
-                            style: DivvyTheme.detailGrey,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Display chevron icon
-              Flexible(
-                flex: 1,
-                child: Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
-          Divider(color: DivvyTheme.shadow),
-        ],
-      ),
-    );
-  }
-
   //////////////////////// Util Functions ////////////////////////
 
-  void _openChoreInstancePage(BuildContext context, ChoreInstID id) {
-    print('Opening chore instance $id');
-  }
-
-  void _changeDateRange(DateSelection newRange) {
+  void _changeDateRange(BuildContext context, DateSelection newRange) {
     print('changing range');
     // will need to update the selected range
     // and the list of dates
@@ -279,23 +214,6 @@ class _CalendarState extends State<Calendar> {
     7 => 'S',
     int() => '?',
   };
-
-  /// Returns a one-letter string for the current weekday
-  String _getNameOfWeekday(int weekday) => switch (weekday) {
-    1 => 'Monday',
-    2 => 'Tuesday',
-    3 => 'Wednesday',
-    4 => 'Thursday',
-    5 => 'Friday',
-    6 => 'Saturday',
-    7 => 'Sunday',
-    int() => '?',
-  };
-
-  /// Returns true if two dates are the same
-  bool isSameDay(DateTime d1, DateTime d2) {
-    return d1.day == d2.day && d1.month == d2.month && d1.year == d2.year;
-  }
 }
 
 enum DateSelection { week, month }

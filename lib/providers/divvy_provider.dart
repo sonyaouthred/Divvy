@@ -6,6 +6,7 @@ import 'package:divvy/models/data.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
+import 'package:divvy/util/date_funcs.dart';
 import 'package:flutter/foundation.dart';
 
 // typedef ChoreID = String;
@@ -150,6 +151,90 @@ class DivvyProvider extends ChangeNotifier {
       // Add all instances assigned to this user.
       res.addAll(instances.where((inst) => inst.assignee == member).toList());
     }
+    return res;
+  }
+
+  /// Returns all chore instances assigned to the passed member
+  /// in the next week - not overdue or due today.
+  List<ChoreInst> getUpcomingChores(MemberID member) {
+    final List<ChoreInst> res = [];
+    final List<Chore> chores = getMemberChores(member);
+    for (Chore chore in chores) {
+      final instances = _choreInstances[chore.id];
+      // should never be triggered
+      if (instances == null) break;
+      // Add all instances assigned to this user.
+      res.addAll(
+        instances
+            .where(
+              (inst) =>
+                  inst.assignee == member &&
+                  // Check if the due date is before now
+                  !inst.dueDate.isBefore(DateTime.now()) &&
+                  // check that due date is not today
+                  !isSameDay(inst.dueDate, DateTime.now()) &&
+                  // Checks that the due date is within a week
+                  // from now
+                  inst.dueDate
+                      .subtract(const Duration(days: 7))
+                      .isBefore(DateTime.now()),
+            )
+            .toList(),
+      );
+    }
+    res.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
+    return res;
+  }
+
+  /// Returns list of all chore instances due today for a given member
+  /// List is sorted by time
+  List<ChoreInst> getTodayChores(MemberID member) {
+    final List<ChoreInst> res = [];
+    final List<Chore> chores = getMemberChores(member);
+    for (Chore chore in chores) {
+      final instances = _choreInstances[chore.id];
+      // should never be triggered
+      if (instances == null) break;
+      // add all chores due today & assigned to this member
+      res.addAll(
+        instances
+            .where(
+              (inst) =>
+                  inst.assignee == member &&
+                  // Check if the due date is today
+                  isSameDay(inst.dueDate, DateTime.now()),
+            )
+            .toList(),
+      );
+    }
+    res.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
+    return res;
+  }
+
+  /// Retuns list of all chore instances overdue for a given member
+  /// List is sorted by date
+  List<ChoreInst> getOverdueChores(MemberID member) {
+    final List<ChoreInst> res = [];
+    final List<Chore> chores = getMemberChores(member);
+    for (Chore chore in chores) {
+      final instances = _choreInstances[chore.id];
+      // should never be triggered
+      if (instances == null) break;
+      // add all chores overdue & assigned to this member
+      res.addAll(
+        instances
+            .where(
+              (inst) =>
+                  inst.assignee == member &&
+                  // Check if the due date is before now
+                  inst.dueDate.isBefore(DateTime.now()) &&
+                  // make sure it hasn't been done
+                  !inst.isDone,
+            )
+            .toList(),
+      );
+    }
+    res.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
     return res;
   }
 
