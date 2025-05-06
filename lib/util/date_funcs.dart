@@ -23,8 +23,8 @@ String formatDayMonth(DateTime date) {
 /// Returns: List of DateTime objects representing all occurrence dates. Only generates
 /// for a 90-day period
 /// Expected behavior:
-///   - monthly: repeat once monthly on the same date for 90 day period
-///   - daily: repeat every day for 90 + start date period
+///   - monthly: repeat once monthly on the same date for 3 months
+///   - daily: repeat every day for 90 days + start date
 ///   - weekly: repeat weekly on the [daysOfWeek] weekdays for a 90 day period
 List<DateTime> getDateList(
   Frequency frequency,
@@ -32,9 +32,11 @@ List<DateTime> getDateList(
   DateTime startDate,
 ) {
   final List<DateTime> dates = [];
-  final endDate = startDate.add(const Duration(days: 90));
+  DateTime endDate = startDate.add(const Duration(days: 90));
   switch (frequency) {
     case Frequency.monthly:
+      // End date should be adjusted to only be three months after.
+      endDate = Jiffy.parseFromDateTime(startDate).add(months: 3).dateTime;
       // For a montly chore, ignore days of week
       // Check if the user has requested the last day of a given month
       bool wantLastDay = isLastDay(startDate);
@@ -55,7 +57,7 @@ List<DateTime> getDateList(
           // date of the month
           day = DateTime(nextMonth.year, nextMonth.month + 1, 0).day;
         }
-        // set the
+        // set the current date to be the next month
         curr = DateTime(nextMonth.year, nextMonth.month, day);
         curr = adjustDaylightSavings(curr);
       }

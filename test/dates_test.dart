@@ -150,7 +150,6 @@ void main() {
         DateTime(2025, 1, 1),
         DateTime(2025, 2, 1),
         DateTime(2025, 3, 1),
-        DateTime(2025, 4, 1),
       ]);
     });
     test('Monthly recurring dates, different number of days', () {
