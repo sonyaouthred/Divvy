@@ -4,7 +4,8 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    tags:
+      - 'v*'
 
 jobs:
   flutter_test:
@@ -67,6 +68,6 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/debug/*"
-          tag: v1.0.${{ github.run_number}}
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.TOKEN}}
 
