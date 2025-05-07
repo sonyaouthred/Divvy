@@ -161,5 +161,25 @@ void main() {
         DateTime(2025, 6, 10),
       ]);
     });
+
+    test('Weekly recurrence skips days before start date in the same week', () {
+    final startDate = DateTime(2025, 5, 8); // Thursday
+    final dates = getDateList(Frequency.weekly, [1, 3, 6], startDate);
+    expect(dates, [
+      DateTime(2025, 5, 10), // First Saturday after start date
+      DateTime(2025, 5, 12), // Monday of the next week
+      DateTime(2025, 5, 14), // Wednesday of the next week
+    ]);
+    });
   });
+
+
+
+
+
+
+
+
 }
+
+
