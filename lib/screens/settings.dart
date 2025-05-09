@@ -1,9 +1,12 @@
+import 'package:divvy/models/member.dart';
 import 'package:divvy/screens/chores.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:divvy/providers/divvy_provider.dart';
+import 'package:provider/provider.dart';
 
 /// Displays a settings screen where the user can modify account
 /// settings and leave house/other functions.
@@ -16,7 +19,8 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   // To be replace with process to get actual data
-  late String name;
+  late final Member _currUser; 
+  //late String name;
   File? imageFile;
   final picker = ImagePicker();
 
@@ -25,8 +29,8 @@ class _SettingsState extends State<Settings> {
   @override
   void initState() {
     super.initState();
-    // Initialize name
-    name = 'Temp';
+    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
+    _currUser = providerRef.currentUser;
   }
 
   @override
@@ -44,7 +48,7 @@ class _SettingsState extends State<Settings> {
               _imageSelectionButton(width),
               SizedBox(height: spacing),
               // Greet user
-              _introPhrase(name: name),
+              _introPhrase(name: _currUser.name),
               // Display various settings
               // Account settings
               _infoSections(
@@ -129,6 +133,7 @@ class _SettingsState extends State<Settings> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         image: DecorationImage(
+          // TODO: connect to provider once provider has actual images
           image:
               imageFile == null
                   ? Image.asset('assets/defaultImage.jpg').image
@@ -139,6 +144,7 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  // Todo: adapt into provider info and backend once an image
   /// Gets an image from the user's photo gallery
   Future getImage(ImageSource img) async {
     // pick image from gallary
@@ -281,6 +287,7 @@ class _SettingsState extends State<Settings> {
       },
     );
   }
+  
 
   ///////////////////////////// Navigation /////////////////////////////
 
@@ -290,4 +297,5 @@ class _SettingsState extends State<Settings> {
       context,
     ).push(MaterialPageRoute(builder: (context) => Chores()));
   }
+
 }
