@@ -18,10 +18,11 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  // To be replace with process to get actual data
-  late final Member _currUser; 
-  //late String name;
+  // Current user's data
+  late final Member _currUser;
+  // Current user's profile image
   File? imageFile;
+  // Used to allow user to pull their profile image
   final picker = ImagePicker();
 
   bool themeSwitch = true;
@@ -41,52 +42,58 @@ class _SettingsState extends State<Settings> {
       child: Container(
         padding: EdgeInsets.all(spacing),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Display user's profile image
-              _imageSelectionButton(width),
-              SizedBox(height: spacing),
-              // Greet user
-              _introPhrase(name: _currUser.name),
-              // Display various settings
-              // Account settings
-              _infoSections(
-                icon: Icon(CupertinoIcons.person_crop_circle),
-                text: 'Account Info',
-                buttons: [
-                  ['Change Name', _openChoresScreen],
-                  ['Reset Password', _openChoresScreen],
-                  ['Delete Account', _openChoresScreen],
+          child: Consumer<DivvyProvider>(
+            builder: (context, provider, child) {
+              // Live update data from consumer
+              _currUser = provider.currentUser;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Display user's profile image
+                  _imageSelectionButton(width),
+                  SizedBox(height: spacing),
+                  // Greet user
+                  _introPhrase(name: _currUser.name),
+                  // Display various settings
+                  // Account settings
+                  _infoSections(
+                    icon: Icon(CupertinoIcons.person_crop_circle),
+                    text: 'Account Info',
+                    buttons: [
+                      ['Change Name', _openChoresScreen],
+                      ['Reset Password', _openChoresScreen],
+                      ['Delete Account', _openChoresScreen],
+                    ],
+                    flex: 2,
+                    spacing: spacing,
+                  ),
+                  // Social/house settings
+                  _infoSections(
+                    icon: Icon(Icons.house_outlined),
+                    text: 'House Info',
+                    buttons: [
+                      ['Leave House', _openChoresScreen],
+                      ['Leave Subgroup', _openChoresScreen],
+                    ],
+                    flex: 2,
+                    spacing: spacing,
+                  ),
+                  // App settings
+                  _infoSections(
+                    icon: Icon(Icons.settings_outlined),
+                    text: 'Settings',
+                    buttons: [
+                      ['Appearance', null],
+                    ],
+                    flex: 1,
+                    spacing: spacing,
+                  ),
+                  // Logout button
+                  _logoutButton(),
+                  SizedBox(height: spacing),
                 ],
-                flex: 2,
-                spacing: spacing,
-              ),
-              // Social/house settings
-              _infoSections(
-                icon: Icon(Icons.house_outlined),
-                text: 'House Info',
-                buttons: [
-                  ['Leave House', _openChoresScreen],
-                  ['Leave Subgroup', _openChoresScreen],
-                ],
-                flex: 2,
-                spacing: spacing,
-              ),
-              // App settings
-              _infoSections(
-                icon: Icon(Icons.settings_outlined),
-                text: 'Settings',
-                buttons: [
-                  ['Appearance', null],
-                ],
-                flex: 1,
-                spacing: spacing,
-              ),
-              // Logout button
-              _logoutButton(),
-              SizedBox(height: spacing),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -287,7 +294,6 @@ class _SettingsState extends State<Settings> {
       },
     );
   }
-  
 
   ///////////////////////////// Navigation /////////////////////////////
 
@@ -297,5 +303,4 @@ class _SettingsState extends State<Settings> {
       context,
     ).push(MaterialPageRoute(builder: (context) => Chores()));
   }
-
 }
