@@ -1,9 +1,12 @@
+import 'package:divvy/models/member.dart';
 import 'package:divvy/screens/chores.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:divvy/providers/divvy_provider.dart';
+import 'package:provider/provider.dart';
 
 /// Displays a settings screen where the user can modify account
 /// settings and leave house/other functions.
@@ -15,9 +18,11 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  // To be replace with process to get actual data
-  late String name;
+  // Current user's data
+  late final Member _currUser;
+  // Current user's profile image
   File? imageFile;
+  // Used to allow user to pull their profile image
   final picker = ImagePicker();
 
   bool themeSwitch = true;
@@ -25,8 +30,8 @@ class _SettingsState extends State<Settings> {
   @override
   void initState() {
     super.initState();
-    // Initialize name
-    name = 'Temp';
+    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
+    _currUser = providerRef.currentUser;
   }
 
   @override
@@ -37,52 +42,58 @@ class _SettingsState extends State<Settings> {
       child: Container(
         padding: EdgeInsets.all(spacing),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Display user's profile image
-              _imageSelectionButton(width),
-              SizedBox(height: spacing),
-              // Greet user
-              _introPhrase(name: name),
-              // Display various settings
-              // Account settings
-              _infoSections(
-                icon: Icon(CupertinoIcons.person_crop_circle),
-                text: 'Account Info',
-                buttons: [
-                  ['Change Name', _openChoresScreen],
-                  ['Reset Password', _openChoresScreen],
-                  ['Delete Account', _openChoresScreen],
+          child: Consumer<DivvyProvider>(
+            builder: (context, provider, child) {
+              // Live update data from consumer
+              _currUser = provider.currentUser;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Display user's profile image
+                  _imageSelectionButton(width),
+                  SizedBox(height: spacing),
+                  // Greet user
+                  _introPhrase(name: _currUser.name),
+                  // Display various settings
+                  // Account settings
+                  _infoSections(
+                    icon: Icon(CupertinoIcons.person_crop_circle),
+                    text: 'Account Info',
+                    buttons: [
+                      ['Change Name', _openChoresScreen],
+                      ['Reset Password', _openChoresScreen],
+                      ['Delete Account', _openChoresScreen],
+                    ],
+                    flex: 2,
+                    spacing: spacing,
+                  ),
+                  // Social/house settings
+                  _infoSections(
+                    icon: Icon(Icons.house_outlined),
+                    text: 'House Info',
+                    buttons: [
+                      ['Leave House', _openChoresScreen],
+                      ['Leave Subgroup', _openChoresScreen],
+                    ],
+                    flex: 2,
+                    spacing: spacing,
+                  ),
+                  // App settings
+                  _infoSections(
+                    icon: Icon(Icons.settings_outlined),
+                    text: 'Settings',
+                    buttons: [
+                      ['Appearance', null],
+                    ],
+                    flex: 1,
+                    spacing: spacing,
+                  ),
+                  // Logout button
+                  _logoutButton(),
+                  SizedBox(height: spacing),
                 ],
-                flex: 2,
-                spacing: spacing,
-              ),
-              // Social/house settings
-              _infoSections(
-                icon: Icon(Icons.house_outlined),
-                text: 'House Info',
-                buttons: [
-                  ['Leave House', _openChoresScreen],
-                  ['Leave Subgroup', _openChoresScreen],
-                ],
-                flex: 2,
-                spacing: spacing,
-              ),
-              // App settings
-              _infoSections(
-                icon: Icon(Icons.settings_outlined),
-                text: 'Settings',
-                buttons: [
-                  ['Appearance', null],
-                ],
-                flex: 1,
-                spacing: spacing,
-              ),
-              // Logout button
-              _logoutButton(),
-              SizedBox(height: spacing),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -129,6 +140,7 @@ class _SettingsState extends State<Settings> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         image: DecorationImage(
+          // TODO: connect to provider once provider has actual images
           image:
               imageFile == null
                   ? Image.asset('assets/defaultImage.jpg').image
@@ -139,6 +151,7 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  // Todo: adapt into provider info and backend once an image
   /// Gets an image from the user's photo gallery
   Future getImage(ImageSource img) async {
     // pick image from gallary
