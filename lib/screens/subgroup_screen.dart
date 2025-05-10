@@ -3,6 +3,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,9 +26,10 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _currSubgroup = widget.currSubgroup;
-    _currChores = _currSubgroup.chores
-        .map((choreID) => providerRef.getSuperChore(choreID))
-        .toList();
+    _currChores =
+        _currSubgroup.chores
+            .map((choreID) => providerRef.getSuperChore(choreID))
+            .toList();
     _currMemeber = providerRef.getMembersInSubgroup(_currSubgroup.id);
   }
 
@@ -49,16 +51,14 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
           child: SingleChildScrollView(
             child: Consumer<DivvyProvider>(
               builder: (context, provider, child) {
-                _currChores = _currSubgroup.chores
-                    .map((choreID) => provider.getSuperChore(choreID))
-                    .toList();
+                _currChores =
+                    _currSubgroup.chores
+                        .map((choreID) => provider.getSuperChore(choreID))
+                        .toList();
                 _currMemeber = provider.getMembersInSubgroup(_currSubgroup.id);
                 return Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _displayMembers(spacing),
-                    _displayChores(spacing),
-                  ],
+                  children: [_displayMembers(spacing), _displayChores(spacing)],
                 );
               },
             ),
@@ -69,7 +69,6 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
   }
 
   ///////////////////////////// Widgets /////////////////////////////
-  
 
   /// Listing all of subgroup chores
   Widget _displayChores(double spacing) {
@@ -78,84 +77,21 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Chores', style: DivvyTheme.bodyBoldBlack)
-          ],
+          children: [Text('Chores', style: DivvyTheme.bodyBoldBlack)],
         ),
-        SizedBox(height: spacing / 4),
+        SizedBox(height: spacing / 2),
         // Display the chore tiles for all chores due today
         Padding(
           padding: EdgeInsets.symmetric(horizontal: spacing / 4),
           child: Column(
-            children: _currChores
-                .map((chore) => _outerChoreTile(chore, spacing / 4))
-                .toList(),
+            children:
+                _currChores
+                    .map((chore) => ChoreTile(superChore: chore))
+                    .toList(),
           ),
         ),
         if (_currChores.isNotEmpty) SizedBox(height: spacing / 4),
       ],
-    );
-  }
-
-  // Button of tile
-  Widget _outerChoreTile(Chore superChore, double spacing) {
-    return InkWell(
-      onTap: () => _openSuperChorePage(context, superChore),
-      child: _smallChoreTile(superChore, spacing),
-    );
-  }
-
-  /// Returns a small chore tile
-  Widget _smallChoreTile(Chore superChore, double spacing) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: spacing / 3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: spacing / 4),
-          Row(
-            children: [
-              // name, emoji of chore
-              Flexible(
-                flex: 7,
-                child: Row(
-                  children: [
-                    Text(superChore.emoji, style: TextStyle(fontSize: 40)),
-                    SizedBox(width: spacing / 1.2),
-                    // Display name and details
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            superChore.name,
-                            style: DivvyTheme.bodyBlack,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Tap to view details',
-                            style: DivvyTheme.detailGrey,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Display chevron icon
-              Flexible(
-                flex: 1,
-                child: Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
-          Divider(color: DivvyTheme.shadow),
-        ],
-      ),
     );
   }
 
@@ -166,10 +102,9 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
         // Title and add subgroup button
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Members', style: DivvyTheme.bodyBoldBlack)
-          ],
+          children: [Text('Members', style: DivvyTheme.bodyBoldBlack)],
         ),
+        SizedBox(height: spacing / 2),
         // List of subgroups
         ListView.builder(
           itemCount: _currMemeber.length,
@@ -197,36 +132,40 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
     required double spacing,
     required bool isLast,
   }) {
-    return Padding(
-      padding: EdgeInsets.only(right: spacing),
-      child: InkWell(
-        onTap: () => _openMemberPage(context, member),
-        child: Column(
-          children: [
-            SizedBox(height: spacing / 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // User profile image
-                Row(
-                  children: [
-                    Container(
-                      decoration: DivvyTheme.profileCircle(
-                        member.profilePicture,
-                      ),
-                      height: 25,
-                      width: 25,
-                    ),
-                    SizedBox(width: spacing / 2),
-                    Text(member.name, style: DivvyTheme.bodyBlack),
-                  ],
+    return InkWell(
+      onTap: () => _openMemberPage(context, member),
+      child: Column(
+        children: [
+          SizedBox(height: spacing / 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // User profile image
+              Row(
+                children: [
+                  Container(
+                    decoration: DivvyTheme.profileCircle(member.profilePicture),
+                    height: 25,
+                    width: 25,
+                  ),
+                  SizedBox(width: spacing / 2),
+                  Text(member.name, style: DivvyTheme.bodyBlack),
+                ],
+              ),
+              // Display chevron icon
+              Flexible(
+                flex: 1,
+                child: Icon(
+                  CupertinoIcons.chevron_right,
+                  color: DivvyTheme.lightGrey,
+                  size: 20,
                 ),
-              ],
-            ),
-            SizedBox(height: spacing / 2),
-            if (!isLast) Divider(color: DivvyTheme.beige),
-          ],
-        ),
+              ),
+            ],
+          ),
+          SizedBox(height: spacing / 2),
+          if (!isLast) Divider(color: DivvyTheme.beige),
+        ],
       ),
     );
   }
@@ -234,11 +173,6 @@ class _SubgroupScreenState extends State<SubgroupScreen> {
   ///////////////////////////// util /////////////////////////////
   void _openMemberPage(BuildContext context, Member member) {
     print('Opening ${member.name}\'s page');
-    return;
-  }
-
-  void _openSuperChorePage(BuildContext context, Chore chore) {
-    print('Opening ${chore.name} supre chore page');
     return;
   }
 }

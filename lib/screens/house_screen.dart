@@ -248,7 +248,6 @@ class _HouseState extends State<House> {
 
   /// Will trigger the screen to add a subgroup
   void _addSubgroup(BuildContext context) {
-    print('Adding subgroup');
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => SubgroupAdd()));
@@ -277,8 +276,10 @@ class _HouseState extends State<House> {
   /// Will open the subgroups screen
   void _openSubgroupPage(BuildContext context, Subgroup subgroup) {
     print('Opening ${subgroup.name}\'s page');
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => SubgroupScreen(currSubgroup: subgroup)));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SubgroupScreen(currSubgroup: subgroup),
+      ),
+    );
   }
 }
