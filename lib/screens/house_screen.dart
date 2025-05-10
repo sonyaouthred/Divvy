@@ -7,6 +7,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/house_settings.dart';
+import 'package:divvy/screens/subgroup_screen.dart';
 import 'package:divvy/widgets/leaderboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -272,6 +273,8 @@ class _HouseState extends State<House> {
   /// Will open the subgroups screen
   void _openSubgroupPage(BuildContext context, Subgroup subgroup) {
     print('Opening ${subgroup.name}\'s page');
-    return;
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => SubgroupScreen(currSubgroup: subgroup)));
   }
 }
