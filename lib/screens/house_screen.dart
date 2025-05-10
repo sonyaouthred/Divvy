@@ -7,6 +7,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/house_settings.dart';
+import 'package:divvy/screens/subgroup_add.dart';
 import 'package:divvy/screens/subgroup_screen.dart';
 import 'package:divvy/widgets/leaderboard.dart';
 import 'package:flutter/cupertino.dart';
@@ -248,7 +249,10 @@ class _HouseState extends State<House> {
   /// Will trigger the screen to add a subgroup
   void _addSubgroup(BuildContext context) {
     print('Adding subgroup');
-    return;
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => SubgroupAdd()));
+    //return;
   }
 
   /// Will trigger the screen to add a roommate

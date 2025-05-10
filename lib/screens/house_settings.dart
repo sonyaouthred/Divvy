@@ -2,6 +2,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/chores.dart';
+import 'package:divvy/screens/subgroup_add.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -150,6 +151,9 @@ class _HouseSettingsState extends State<HouseSettings> {
   void _createSubgroup(BuildContext context) {
     // TODO: navigate to subgroup screen
     print('Adding subgroup...');
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => SubgroupAdd()));
   }
 
   /// Choose a subgroup to delete, then confirm user wants to delete them
