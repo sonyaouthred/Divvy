@@ -19,7 +19,7 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   // Current user's data
-  late final Member _currUser;
+  late Member _currUser;
   // Current user's profile image
   File? imageFile;
   // Used to allow user to pull their profile image

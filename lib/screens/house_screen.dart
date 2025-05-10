@@ -6,6 +6,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/house_settings.dart';
 import 'package:divvy/widgets/leaderboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,9 @@ class House extends StatefulWidget {
 }
 
 class _HouseState extends State<House> {
+  // List of members in the house
   late List<Member> _members;
+  // list of subgroups in the house
   late List<Subgroup> _subgroups;
 
   @override
@@ -58,10 +61,10 @@ class _HouseState extends State<House> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _boxButton(
-                        title: 'Add Roommate',
-                        icon: Icon(CupertinoIcons.person_add),
+                        title: 'Manage Chores',
+                        icon: Icon(CupertinoIcons.list_bullet),
                         spacing: spacing,
-                        callback: _addRoommate,
+                        callback: _manageChores,
                       ),
                       SizedBox(width: spacing),
                       _boxButton(
@@ -248,15 +251,16 @@ class _HouseState extends State<House> {
   }
 
   /// Will trigger the screen to add a roommate
-  void _addRoommate(BuildContext context) {
-    print('Adding roommate');
+  void _manageChores(BuildContext context) {
+    print('Opening manage chore page');
     return;
   }
 
-  /// Will open the house settings screen
+  /// Opens the house settings screen
   void _openSettings(BuildContext context) {
-    print('Opening settings');
-    return;
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => HouseSettings()));
   }
 
   /// Will open the passed member's page

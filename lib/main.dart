@@ -4,6 +4,7 @@ import 'package:divvy/screens/calendar.dart';
 import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/dashboard.dart';
 import 'package:divvy/screens/house_screen.dart';
+import 'package:divvy/screens/notifications.dart';
 import 'package:divvy/screens/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -44,11 +45,6 @@ class BottomNavigationBarExample extends StatefulWidget {
 class _BottomNavigationBarExampleState
     extends State<BottomNavigationBarExample> {
   int _selectedIndex = 2;
-  // static const TextStyle optionStyle = TextStyle(
-  //   fontSize: 30,
-  //   fontWeight: FontWeight.bold,
-  // );
-  // Commenting out for testing
   static const List<Widget> _widgetOptions = <Widget>[
     Calendar(),
     Chores(),
@@ -72,6 +68,7 @@ class _BottomNavigationBarExampleState
     ];
   }
 
+  // sets the item tapped as the screen to be displayed
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -87,11 +84,14 @@ class _BottomNavigationBarExampleState
         scrolledUnderElevation: 0,
         backgroundColor: DivvyTheme.background,
         actions: [
-          Container(
-            height: 50,
-            width: 50,
-            padding: EdgeInsets.only(right: 20),
-            child: Icon(Icons.notifications),
+          InkWell(
+            onTap: () => _openNotificationsPage(context),
+            child: Container(
+              height: 50,
+              width: 50,
+              padding: EdgeInsets.only(right: 20),
+              child: Icon(Icons.notifications),
+            ),
           ),
         ],
       ),
@@ -127,5 +127,12 @@ class _BottomNavigationBarExampleState
         onTap: _onItemTapped,
       ),
     );
+  }
+
+  // Opens the notifications page
+  void _openNotificationsPage(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => Notifications()));
   }
 }

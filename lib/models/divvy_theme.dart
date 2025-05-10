@@ -94,9 +94,9 @@ class DivvyTheme {
   );
   static TextStyle smallBodyRed = GoogleFonts.inter(
     textStyle: const TextStyle(
-      fontWeight: FontWeight.normal,
-      fontSize: 13,
-      color: brightRed,
+      fontWeight: FontWeight.w700,
+      fontSize: 12,
+      color: darkRed,
     ),
   );
   static TextStyle largeBoldMedGreen = GoogleFonts.inter(

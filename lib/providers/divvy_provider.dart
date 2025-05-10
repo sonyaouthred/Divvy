@@ -1,6 +1,5 @@
 // import 'dart:async';
 
-// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/data.dart';
 import 'package:divvy/models/house.dart';
@@ -8,61 +7,6 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:flutter/foundation.dart';
-
-// typedef ChoreID = String;
-
-// // Names of databases
-// const choresDB = 'chores';
-// const membersDB = 'members';
-// const subgroupsDB = 'subgroups';
-
-// class WorkbookProvider extends ChangeNotifier {
-//   late DocumentReference<Map<String, dynamic>> _houseDB;
-
-//   Map<ChoreID, Chore> _choreList = {};
-//   StreamSubscription? _choresListener;
-
-//   WorkbookProvider({required DocumentReference<Map<String, dynamic>> houseDB})
-//     : _houseDB = houseDB;
-
-//   /// Load the list of chores
-//   void _loadChores() async {
-//     _choresListener = _houseDB
-//         .collection(choresDB)
-//         .withConverter(
-//           fromFirestore: Chore.fromFirestore,
-//           toFirestore: (Chore chore, _) => chore.toFirestore(),
-//         )
-//         .snapshots()
-//         .listen((querySnapshot) async {
-//           // This code runs every time the query snapshot is updated.
-//           final Map<ChoreID, Chore> chores = {};
-//           for (var doc in querySnapshot.docs) {
-//             // Add Chore to list!
-//             final newChore = doc.data();
-//             chores[newChore.id] = newChore;
-//           }
-//           // now override the list
-//           _choreList = chores;
-//           notifyListeners();
-//         });
-//   }
-
-//   /// Add a chore to the house
-//   /// Returns relevant error message
-//   Future<String?> addChore(String name) async {
-//     try {
-//       // Create new chore JSON object
-//       final newChore = Chore(id: '', name: name).toFirestore();
-//       await _houseDB.collection(choresDB).add(newChore);
-//       // No need to notifyListeners() as stream subscription
-//       // will automatically update.
-//       return null;
-//     } catch (e) {
-//       return e.toString();
-//     }
-//   }
-// }
 
 class DivvyProvider extends ChangeNotifier {
   late final Member _currentUser;
