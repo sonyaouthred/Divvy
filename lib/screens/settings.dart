@@ -1,5 +1,7 @@
 import 'package:divvy/models/member.dart';
 import 'package:divvy/screens/chores.dart';
+import 'package:divvy/util/dialogs.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/models/divvy_theme.dart';
@@ -18,8 +20,12 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  /// Current user. Null if user is signed out/deleted
+  late final User? _user;
+
   // Current user's data
   late Member _currUser;
+
   // Current user's profile image
   File? imageFile;
   // Used to allow user to pull their profile image
@@ -27,11 +33,15 @@ class _SettingsState extends State<Settings> {
 
   bool themeSwitch = true;
 
+  /// show loading indicator when user is logging out
+  bool _isLoggingOut = false;
+
   @override
   void initState() {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _currUser = providerRef.currentUser;
+    _user = FirebaseAuth.instance.currentUser;
   }
 
   @override
@@ -60,24 +70,24 @@ class _SettingsState extends State<Settings> {
                     icon: Icon(CupertinoIcons.person_crop_circle),
                     text: 'Account Info',
                     buttons: [
-                      ['Change Name', _openChoresScreen],
-                      ['Reset Password', _openChoresScreen],
-                      ['Delete Account', _openChoresScreen],
+                      ['Change Name', _changeName],
+                      ['Delete Account', _deleteAccount],
                     ],
                     flex: 2,
                     spacing: spacing,
                   ),
+                  SizedBox(height: spacing / 2),
                   // Social/house settings
                   _infoSections(
                     icon: Icon(Icons.house_outlined),
-                    text: 'House Info',
+                    text: 'House',
                     buttons: [
-                      ['Leave House', _openChoresScreen],
-                      ['Leave Subgroup', _openChoresScreen],
+                      ['Leave House', _leaveHouse],
                     ],
                     flex: 2,
                     spacing: spacing,
                   ),
+                  SizedBox(height: spacing / 2),
                   // App settings
                   _infoSections(
                     icon: Icon(Icons.settings_outlined),
@@ -252,13 +262,16 @@ class _SettingsState extends State<Settings> {
   /// Renders a logout button
   Widget _logoutButton() {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () => _logout(context),
       style: ElevatedButton.styleFrom(
         backgroundColor: DivvyTheme.darkRed,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-        maximumSize: Size(100, 40),
+        minimumSize: Size(100, 40),
       ),
-      child: Text('Log Out', style: DivvyTheme.smallBodyWhite),
+      child:
+          _isLoggingOut
+              ? CupertinoActivityIndicator(color: DivvyTheme.background)
+              : Text('Log Out', style: DivvyTheme.smallBoldMedWhite),
     );
   }
 
@@ -295,12 +308,81 @@ class _SettingsState extends State<Settings> {
     );
   }
 
-  ///////////////////////////// Navigation /////////////////////////////
+  ///////////////////////////// Util /////////////////////////////
 
-  /// Opens the chores screen
-  void _openChoresScreen(BuildContext context) {
-    Navigator.of(
+  /// Change the house's name
+  void _changeName(BuildContext context) async {
+    final newName = await openInputDialog(
       context,
-    ).push(MaterialPageRoute(builder: (context) => Chores()));
+      title: 'Change Name',
+      initText: _currUser.name,
+    );
+    // Process name
+    if (newName != null) {
+      // TODO(bhoop2b): update provider
+      print('Changing name to: $newName');
+    }
+  }
+
+  /// Re-authenticate and delete account for email and password users.
+  /// Must supply password parameter if user is an email user. Otherwise, can be null.
+  void _deleteAccount(BuildContext context) async {
+    final password = await openInputDialog(
+      context,
+      title: 'Re-enter password',
+      hideText: true,
+    );
+    // // Ensure user is not logged out (makes compiler happy)
+    // if (_user == null) return;
+    // // Get user's username & password
+    // try {
+    //   if (_user.email != null) {
+    //     // Now check what provider the user is signed in with.
+    //     if (_isEmailUser() && password != null) {
+    //       // Reauthenticate user with email and password
+    //       final credential = EmailAuthProvider.credential(
+    //         email: _user.email!,
+    //         password: password,
+    //       );
+    //       await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
+    //         credential,
+    //       );
+    //     }
+    //     // Non-email/pwd clients are already reauthenticated
+    //     if (!context.mounted) return;
+    //     await provider.clear();
+    //     final error = await provider.deleteAccount();
+    //     if (error != null && context.mounted) {
+    //       showErrorMessage(context, 'Account Deletion Error', error);
+    //     }
+    //     if (!context.mounted) return;
+    //     Navigator.pop(context);
+    //   }
+    // } catch (e) {
+    //   showErrorMessage(context, 'Invalid password', 'Please try again!');
+    // }
+  }
+
+  /// Allow user to leave a house
+  void _leaveHouse(BuildContext context) async {
+    // Confirm user wants to leave the house
+    final leave = await confirmDeleteDialog(
+      context,
+      'Leave house?',
+      action: 'Leave',
+    );
+    if (leave != null && leave) {
+      print('Leaving house...');
+    } else {
+      print('not leaving house!');
+    }
+  }
+
+  // log the user out
+  void _logout(BuildContext context) async {
+    setState(() {
+      _isLoggingOut = true;
+    });
+    FirebaseAuth.instance.signOut();
   }
 }

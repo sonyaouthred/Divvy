@@ -1,15 +1,23 @@
+import 'package:divvy/firebase_options.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/calendar.dart';
 import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/dashboard.dart';
 import 'package:divvy/screens/house_screen.dart';
+import 'package:divvy/screens/login.dart';
 import 'package:divvy/screens/notifications.dart';
 import 'package:divvy/screens/settings.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the firebase app
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MainApp());
 }
 
@@ -20,30 +28,67 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       // dummy current user is Tony Stark
-      create: (context) => DivvyProvider(currentUserID: '24889rhgksje'),
+      create: (_) => DivvyProvider(currentUserID: '24889rhgksje'),
       child: MaterialApp(
         home: Theme(
           data: ThemeData(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
           ),
-          child: BottomNavigationBarExample(),
+          child: AuthWrapper(),
         ),
       ),
     );
   }
 }
 
-class BottomNavigationBarExample extends StatefulWidget {
-  const BottomNavigationBarExample({super.key});
+/// Ensures that login is shown when the user is not signed in.
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
 
   @override
-  State<BottomNavigationBarExample> createState() =>
-      _BottomNavigationBarExampleState();
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      // Listen for auth state changes
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasData) {
+          // User is signed in
+          // final user = snapshot.data;
+          // user database is under their email
+          // final userDb = FirebaseFirestore.instance.doc('Users/${user!.email}');
+          // final userPathReference =
+          //     FirebaseStorage.instance.ref().child(user.email!);
+
+          // final workbookProvider =
+          //     Provider.of<WorkbookProvider>(context, listen: false);
+
+          // workbookProvider.initialize(
+          //     userDB: userDb, usrImgs: userPathReference);
+
+          // Provide the user-specific WorkbookProvider at the top level
+          return Navigation();
+        } else {
+          // User is not signed in, show Login screen
+          return Login();
+        }
+      },
+    );
+  }
 }
 
-class _BottomNavigationBarExampleState
-    extends State<BottomNavigationBarExample> {
+class Navigation extends StatefulWidget {
+  const Navigation({super.key});
+
+  @override
+  State<Navigation> createState() => _NavigationState();
+}
+
+class _NavigationState extends State<Navigation> {
   int _selectedIndex = 2;
   static const List<Widget> _widgetOptions = <Widget>[
     Calendar(),
