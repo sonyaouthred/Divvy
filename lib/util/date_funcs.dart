@@ -226,3 +226,51 @@ String getNameOfWeekday(int weekday) => switch (weekday) {
   7 => 'Sunday',
   int() => '?',
 };
+
+/// Returns string name of month
+String getNameOfMonth(int month) => switch (month) {
+  1 => 'January',
+  2 => 'February',
+  3 => 'March',
+  4 => 'April',
+  5 => 'May',
+  6 => 'June',
+  7 => 'July',
+  8 => 'August',
+  9 => 'September',
+  10 => 'October',
+  11 => 'November',
+  12 => 'December',
+  int() => '?',
+};
+
+/// Given an initial date, returns a list of dates starting one month before
+/// and ending one month after. Will start with a sunday and end with a saturday.
+/// Actually a list of lists, each encompassing one week
+List<List<DateTime>> getSurroundingDates(DateTime day) {
+  final List<List<DateTime>> dates = [];
+  // get start date
+  DateTime start = day.subtract(const Duration(days: 30));
+  if (start.weekday != DateTime.sunday) {
+    start = start.subtract(Duration(days: start.weekday % 7));
+  }
+
+  // get end date
+  DateTime end = day.add(const Duration(days: 30));
+  if (end.weekday != DateTime.saturday) {
+    final daysToSaturday = (6 - end.weekday + 7) % 7;
+    end = end.add(Duration(days: daysToSaturday));
+  }
+
+  // Now populate list!
+  DateTime curr = start;
+  while (!curr.isAfter(end)) {
+    final week = List.generate(7, (_) {
+      final day = curr;
+      curr = curr.add(const Duration(days: 1));
+      return day;
+    });
+    dates.add(week);
+  }
+  return dates;
+}
