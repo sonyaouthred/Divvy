@@ -143,9 +143,7 @@ class _CreateAccountState extends State<CreateAccount> {
                     child: Container(
                       alignment: Alignment.center,
                       height: 50,
-                      decoration: DivvyTheme.standardBox.copyWith(
-                        color: DivvyTheme.darkGreen,
-                      ),
+                      decoration: DivvyTheme.greenBox,
                       child:
                           _creating
                               ? CupertinoActivityIndicator(

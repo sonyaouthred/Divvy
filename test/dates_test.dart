@@ -162,4 +162,38 @@ void main() {
       ]);
     });
   });
+
+  group('Surrounding dates test', () {
+    test('Gets correct date bounds', () {
+      final today = DateTime.now();
+      final List<List<DateTime>> dates = getSurroundingDates(today);
+      // Expect "biggest" day to be start + 30 days but the
+      // saturday after
+      final lastWeek = dates[dates.length - 1];
+      final biggest = lastWeek.reduce((a, b) => a.isAfter(b) ? a : b);
+      expect(biggest.year, 2025);
+      expect(biggest.month, 6);
+      expect(biggest.day, 14);
+      expect(biggest.weekday, 6);
+      // Expect "smallest" day to be start - 30 days but the
+      // sunday before
+      final firstWeek = dates[0];
+      final smallest = firstWeek.reduce((a, b) => a.isBefore(b) ? a : b);
+      expect(smallest.year, 2025);
+      expect(smallest.month, 4);
+      expect(smallest.day, 6);
+      expect(smallest.weekday, 7);
+      // Make sure each entry is one week
+      for (int i = 0; i < dates.length; i++) {
+        final week = dates[i];
+        // Expect no duplicate dates
+        expect(week.toSet().length, week.length);
+        expect(week.length, 7);
+        // Start with sunday....
+        expect(week[0].weekday, 7);
+        // ... end with saturday
+        expect(week[6].weekday, 6);
+      }
+    });
+  });
 }

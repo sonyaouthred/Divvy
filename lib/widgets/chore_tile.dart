@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, must_be_immutable
 
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
@@ -11,28 +11,40 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 /// Renders a tile with information about a chore.
-/// When tapped, opens chore page
+/// When tapped, opens chore page.
+/// Can display information for a chore instance or a super chore.
+/// INV: if chore instance is not provided, you must provide a
+/// super chore
 class ChoreTile extends StatelessWidget {
-  final ChoreInst choreInst;
+  final ChoreInst? choreInst;
+  Chore? superChore;
   final bool compact;
-  const ChoreTile({super.key, required this.choreInst, this.compact = false});
+  ChoreTile({super.key, this.choreInst, this.superChore, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
     // Get super chore for information
-    final superChore = Provider.of<DivvyProvider>(
-      context,
-      listen: false,
-    ).getSuperChore(choreInst.choreID);
+    if (superChore == null) {
+      if (choreInst == null) return Placeholder();
+      superChore = Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).getSuperChore(choreInst!.choreID);
+    }
     // Build chore tile
     return InkWell(
-      onTap: () => _openChoreInstancePage(context, choreInst.id, choreInst.choreID),
+
+      onTap:
+          () =>
+              choreInst != null
+                  ? _openChoreInstancePage(context, choreInst!.id, choreInst!.choreID)
+                  : _openSuperChorePage(context, superChore!),
       child:
           compact
-              ? _smallChoreTile(superChore, spacing)
-              : _largeChoreTile(superChore, spacing),
+              ? _smallChoreTile(superChore!, spacing)
+              : _largeChoreTile(superChore!, spacing),
     );
   }
 
@@ -44,10 +56,11 @@ class ChoreTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // render due date
-          Text(
-            '${getNameOfWeekday(choreInst.dueDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(choreInst.dueDate)}',
-            style: DivvyTheme.smallBodyGrey,
-          ),
+          if (choreInst != null)
+            Text(
+              '${getNameOfWeekday(choreInst!.dueDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(choreInst!.dueDate)}',
+              style: DivvyTheme.smallBodyGrey,
+            ),
           SizedBox(height: spacing / 4),
           Row(
             children: [
@@ -84,8 +97,12 @@ class ChoreTile extends StatelessWidget {
 
   /// Returns a large chore tile
   Column _largeChoreTile(Chore superChore, double spacing) {
+    // Super chore instances are never overdue
     bool isOverdue =
-        choreInst.dueDate.isBefore(DateTime.now()) && !choreInst.isDone;
+        (choreInst != null)
+            ? (choreInst!.dueDate.isBefore(DateTime.now()) &&
+                !choreInst!.isDone)
+            : false;
     return Column(
       children: [
         Row(
@@ -109,17 +126,20 @@ class ChoreTile extends StatelessWidget {
                           style: DivvyTheme.bodyBlack,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          isOverdue
-                              ? 'Was due ${getNameOfWeekday(choreInst.dueDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(choreInst.dueDate)} at ${getFormattedTime(choreInst.dueDate)}'
-                              : 'Due at ${getFormattedTime(choreInst.dueDate)}',
-                          style: DivvyTheme.detailGrey.copyWith(
-                            color:
-                                isOverdue
-                                    ? DivvyTheme.darkRed
-                                    : DivvyTheme.lightGrey,
+                        if (choreInst != null)
+                          Text(
+                            isOverdue
+                                ? 'Was due ${getNameOfWeekday(choreInst!.dueDate.weekday)}, '
+                                    '${DateFormat.yMMMMd('en_US').format(choreInst!.dueDate)} at '
+                                    '${getFormattedTime(choreInst!.dueDate)}'
+                                : 'Due at ${getFormattedTime(choreInst!.dueDate)}',
+                            style: DivvyTheme.detailGrey.copyWith(
+                              color:
+                                  isOverdue
+                                      ? DivvyTheme.darkRed
+                                      : DivvyTheme.lightGrey,
+                            ),
                           ),
-                        ),
                         Text(
                           'Tap to view details',
                           style: DivvyTheme.detailGrey,
@@ -150,5 +170,9 @@ class ChoreTile extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (ctx) => ChoreInstanceScreen(choreInstanceId: instanceID, choreID: choreId))
     );
+  }
+
+  void _openSuperChorePage(BuildContext context, Chore superChore) {
+    print('Opening super chore ${superChore.id}');
   }
 }

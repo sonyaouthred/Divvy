@@ -114,9 +114,7 @@ class _LoginState extends State<Login> {
                     child: Container(
                       alignment: Alignment.center,
                       height: 50,
-                      decoration: DivvyTheme.textInput.copyWith(
-                        color: DivvyTheme.darkGreen,
-                      ),
+                      decoration: DivvyTheme.greenBox,
                       child:
                           _signingIn
                               ? CupertinoActivityIndicator(

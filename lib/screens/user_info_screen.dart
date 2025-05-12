@@ -11,7 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class UserInfoScreen extends StatefulWidget {
-
   final MemberID memberID;
 
   const UserInfoScreen({super.key, required this.memberID});
@@ -27,12 +26,15 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     final spacing = width * 0.02;
 
     return Consumer<DivvyProvider>(
-
       builder: (context, provider, child) {
         Member member = provider.getMemberById(widget.memberID);
         int memRank = provider.getRank(widget.memberID);
-        List<Subgroup> memberSubgroups = provider.getSubgroupsForMember(widget.memberID);
-        List<ChoreInst> upcomingChores = provider.getUpcomingChores(widget.memberID);
+        List<Subgroup> memberSubgroups = provider.getSubgroupsForMember(
+          widget.memberID,
+        );
+        List<ChoreInst> upcomingChores = provider.getUpcomingChores(
+          widget.memberID,
+        );
 
         return Scaffold(
           backgroundColor: DivvyTheme.background,
@@ -59,30 +61,38 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                             radius: 50,
                             backgroundColor: member.profilePicture,
                           ),
-                          SizedBox(
-                            width: 20,
-                          ),
+                          SizedBox(width: 20),
                           Flexible(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(member.name, style: DivvyTheme.bodyBoldBlack),
-                                Text(member.email, maxLines: 1, style: DivvyTheme.bodyGrey, overflow: TextOverflow.fade,)
+                                Text(
+                                  member.name,
+                                  style: DivvyTheme.bodyBoldBlack,
+                                ),
+                                Text(
+                                  member.email,
+                                  maxLines: 1,
+                                  style: DivvyTheme.bodyGrey,
+                                  overflow: TextOverflow.fade,
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
+                    SizedBox(height: 10),
                     _statsTile(member, memRank),
-                    SizedBox(height: 20,),
+                    SizedBox(height: 20),
                     _subgroupsArea(member, memberSubgroups),
-                    SizedBox(height: 20,),
-                    _upcomingChoreArea(member, upcomingChores, provider, context)
-
+                    SizedBox(height: 20),
+                    _upcomingChoreArea(
+                      member,
+                      upcomingChores,
+                      provider,
+                      context,
+                    ),
                   ],
                 ),
               ),
@@ -93,24 +103,32 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     );
   }
 
-  Widget _upcomingChoreArea(Member member, List<ChoreInst> upcomingChores, DivvyProvider provider, BuildContext context) {
+  Widget _upcomingChoreArea(
+    Member member,
+    List<ChoreInst> upcomingChores,
+    DivvyProvider provider,
+    BuildContext context,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: Text("${member.name}'s Upcoming Chores", style: DivvyTheme.bodyBoldGrey,),
+          child: Text(
+            "${member.name}'s Upcoming Chores",
+            style: DivvyTheme.bodyBoldGrey,
+          ),
         ),
-        upcomingChores.isEmpty ? Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text("No chores as of now", style: DivvyTheme.bodyGrey,),
-        ) : SizedBox(),
-        ...upcomingChores.map(
-          (choreInstance) {
-            return _getChoreInstanceTile(choreInstance, provider, context);
-          }
-        )
-      ]
+        upcomingChores.isEmpty
+            ? Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text("No chores as of now", style: DivvyTheme.bodyGrey),
+            )
+            : SizedBox(),
+        ...upcomingChores.map((choreInstance) {
+          return _getChoreInstanceTile(choreInstance, provider, context);
+        }),
+      ],
     );
   }
 
@@ -118,27 +136,42 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     return DateFormat.yMMMMd('en_US').format(dueDate);
   }
 
-  Widget _getChoreInstanceTile(ChoreInst choreInstance, DivvyProvider provider, BuildContext context) {
+  Widget _getChoreInstanceTile(
+    ChoreInst choreInstance,
+    DivvyProvider provider,
+    BuildContext context,
+  ) {
     Chore chore = provider.getSuperChore(choreInstance.choreID);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Due ${getFormattedDate(choreInstance.dueDate)}", style: DivvyTheme.smallBodyGrey,),
-          ListTile(
-            minTileHeight: 20,
-            title: Text(chore.name),
-            trailing: IconButton(onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (ctx) {
-                  return ChoreInstanceScreen(choreInstanceId: choreInstance.id, choreID: choreInstance.choreID);
-                })
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) {
+              return ChoreInstanceScreen(
+                choreInstanceId: choreInstance.id,
+                choreID: choreInstance.choreID,
               );
-            }, icon: Icon(CupertinoIcons.right_chevron)),
+            },
           ),
-        ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Due ${getFormattedDate(choreInstance.dueDate)}",
+              style: DivvyTheme.smallBodyGrey,
+            ),
+            ListTile(
+              minTileHeight: 20,
+              title: Text(chore.name),
+              trailing: Icon(CupertinoIcons.right_chevron),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -149,32 +182,43 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: Text("${member.name}'s Subgroups", style: DivvyTheme.bodyBoldGrey,),
+          child: Text(
+            "${member.name}'s Subgroups",
+            style: DivvyTheme.bodyBoldGrey,
+          ),
         ),
-        subgroups.isEmpty ? Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text("${member.name} is not part of any subgroup", style: DivvyTheme.bodyGrey,),
-        ) : SizedBox() ,
+        subgroups.isEmpty
+            ? Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                "${member.name} is not part of any subgroup",
+                style: DivvyTheme.bodyGrey,
+              ),
+            )
+            : SizedBox(),
         ...subgroups.map((subgroup) {
           return _subgroupTile(subgroup, context);
-        })
+        }),
       ],
     );
   }
 
   Widget _subgroupTile(Subgroup subgroup, BuildContext context) {
-    return Card(
-      color: DivvyTheme.background,
-      child: ListTile(
-        leading: CircleAvatar(backgroundColor: subgroup.profilePicture,),
-        title: Text(subgroup.name),
-        trailing: IconButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (ctx) => SubgroupScreen(currSubgroup: subgroup))
-            );
-          }, 
-          icon: Icon(CupertinoIcons.right_chevron)),
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => SubgroupScreen(currSubgroup: subgroup),
+          ),
+        );
+      },
+      child: Card(
+        color: DivvyTheme.background,
+        child: ListTile(
+          leading: CircleAvatar(backgroundColor: subgroup.profilePicture),
+          title: Text(subgroup.name),
+          trailing: Icon(CupertinoIcons.right_chevron),
+        ),
       ),
     );
   }
@@ -183,9 +227,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     return Card(
       color: DivvyTheme.background,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 20
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -196,23 +238,16 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   "${member.onTimePct}%",
                   style: DivvyTheme.largeHeaderBlack,
                 ),
-                Text(
-                  "Chores done on time"
-                )
+                Text("Chores done on time"),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "#$memberRank",
-                  style: DivvyTheme.largeHeaderBlack,
-                ),
-                Text(
-                  "In your house"
-                )
+                Text("#$memberRank", style: DivvyTheme.largeHeaderBlack),
+                Text("In your house"),
               ],
-            )
+            ),
           ],
         ),
       ),
