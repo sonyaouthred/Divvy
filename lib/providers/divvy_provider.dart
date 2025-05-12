@@ -65,6 +65,7 @@ class DivvyProvider extends ChangeNotifier {
   List<Chore> get chores => List.from(_chores);
   Member get currentUser => _currentUser;
 
+  /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
     Chore chore = getSuperChore(id);
 
@@ -284,6 +285,7 @@ class DivvyProvider extends ChangeNotifier {
     return sorted.take(num).toList();
   }
 
+  /// Get the rank of a member based on their on time percentage
   int getRank(MemberID memberID) {
     final List<Member> sorted = List.from(_members);
     sorted.sort((a, b) => b.onTimePct.compareTo(a.onTimePct));

@@ -54,7 +54,6 @@ class _CalendarState extends State<Calendar> {
     final indexOfNow = _swipeDates.indexWhere(
       (week) => week.where((day) => isSameDay(day, now)).isNotEmpty,
     );
-    print(indexOfNow);
     _controller = PageController(initialPage: indexOfNow);
     _currMonth = getNameOfMonth(now.month);
   }
@@ -337,7 +336,7 @@ class _CalendarState extends State<Calendar> {
       children: [
         // display dates
         Text(
-          '${getNameOfWeekday(_selectedDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(_selectedDate)}:',
+          '${getNameOfWeekday(_selectedDate.weekday)}, ${getFormattedDate(_selectedDate)}:',
           style: DivvyTheme.bodyBoldBlack,
         ),
         // display chores

@@ -4,7 +4,6 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 /// Displays information about a given chore instance
@@ -137,8 +136,8 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
     );
   }
 
-  String getFormattedDate(DateTime dueDate) {
-    return "${DateFormat.yMMMMd('en_US').format(dueDate)} at ${getFormattedTime(dueDate)}";
+  String getFormattedDateTime(DateTime dueDate) {
+    return "${getFormattedDate(dueDate)} at ${getFormattedTime(dueDate)}";
   }
 
   Widget _displayAssigneeAndDueDate(String assigneeName, DateTime dueDate) {

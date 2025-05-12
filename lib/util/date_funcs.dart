@@ -1,4 +1,5 @@
 import 'package:divvy/models/chore.dart';
+import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 
 /// Formats a DateTime object into a string representation.
@@ -15,6 +16,11 @@ String formatDate(DateTime date) {
 /// Returns: String in the format "mm/dd"
 String formatDayMonth(DateTime date) {
   return '${date.month}/${date.day}';
+}
+
+/// Formats a date nicely
+String getFormattedDate(DateTime dueDate) {
+  return DateFormat.yMMMMd('en_US').format(dueDate);
 }
 
 /// Generates dates for recurring expenses based on frequency.

@@ -54,7 +54,7 @@ class _ChoresState extends State<Chores> {
                   ),
                   // Display subgroup chores
                   SizedBox(height: spacing),
-                  Text('Subgroup Chores', style: DivvyTheme.largeBodyBlack),
+                  Text('Subgroup Chores', style: DivvyTheme.bodyBoldBlack),
                   SizedBox(height: spacing),
                   ...subgroups.map(
                     (subgroup) => _subgroupChoresWidget(
@@ -65,7 +65,7 @@ class _ChoresState extends State<Chores> {
                     ),
                   ),
                   SizedBox(height: spacing / 2),
-                  Text('House Chores', style: DivvyTheme.largeBodyBlack),
+                  Text('House Chores', style: DivvyTheme.bodyBoldBlack),
                   SizedBox(height: spacing / 2),
                   // Display house chores
                   _allHouseChoresWidget(provider, context, spacing),
@@ -114,7 +114,7 @@ class _ChoresState extends State<Chores> {
           children: [
             CircleAvatar(radius: 12, backgroundColor: subgroup.profilePicture),
             SizedBox(width: 10),
-            Text(subgroup.name, style: DivvyTheme.bodyBoldBlack),
+            Text(subgroup.name, style: DivvyTheme.bodyBlack),
           ],
         ),
         SizedBox(height: spacing / 2),
