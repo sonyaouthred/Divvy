@@ -4,11 +4,13 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/chore_superclass_screen.dart';
+import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Displays all the chores for this house in subgroup
+/// and general categories.
 class Chores extends StatefulWidget {
   const Chores({super.key});
 
@@ -20,41 +22,53 @@ class _ChoresState extends State<Chores> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final spacing = width * 0.05;
 
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
-        String houseName = provider.houseName;
-
-        List<Subgroup> subgroups = provider.subgroups;
-
+        // Get list of subgroups that this
+        // user is in.
+        List<Subgroup> subgroups = provider.getSubgroupsForMember(
+          provider.currentUser.id,
+        );
         return SizedBox.expand(
           child: SingleChildScrollView(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: width * 0.05),
+              padding: EdgeInsets.all(spacing),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Card(
-                    color: DivvyTheme.background,
-                    elevation: 2,
-                    child: ListTile(
-                      leading: IconButton(
-                        onPressed: () {},
-                        icon: Icon(CupertinoIcons.add),
+                  // Add chore button
+                  InkWell(
+                    onTap: () => print('adding chore'),
+                    child: Container(
+                      decoration: DivvyTheme.textInput,
+                      child: ListTile(
+                        leading: Icon(CupertinoIcons.add),
+                        title: Text(
+                          "Add Chore",
+                          style: DivvyTheme.bodyBoldBlack,
+                        ),
                       ),
-                      title: Text("Add Chore", style: DivvyTheme.bodyBoldBlack),
                     ),
                   ),
-                  SizedBox(height: 20),
-                  Text(
-                    "${provider.houseName}'s Chores",
-                    style: DivvyTheme.bodyBlack,
-                  ),
+                  // Display subgroup chores
+                  SizedBox(height: spacing),
+                  Text('Subgroup Chores', style: DivvyTheme.largeBodyBlack),
+                  SizedBox(height: spacing),
                   ...subgroups.map(
-                    (subgroup) =>
-                        _subgroupChoresWidget(subgroup, provider, context),
+                    (subgroup) => _subgroupChoresWidget(
+                      subgroup,
+                      provider,
+                      context,
+                      spacing,
+                    ),
                   ),
-                  _allHouseChoresWidget(provider, context),
+                  SizedBox(height: spacing / 2),
+                  Text('House Chores', style: DivvyTheme.largeBodyBlack),
+                  SizedBox(height: spacing / 2),
+                  // Display house chores
+                  _allHouseChoresWidget(provider, context, spacing),
                 ],
               ),
             ),
@@ -64,75 +78,59 @@ class _ChoresState extends State<Chores> {
     );
   }
 
-  Widget _allHouseChoresWidget(DivvyProvider provider, BuildContext context) {
+  /// Show all house chores (that don't belong to a certain subgroup)
+  Widget _allHouseChoresWidget(
+    DivvyProvider provider,
+    BuildContext context,
+    double spacing,
+  ) {
     List<Chore> otherChores = provider.getNonSubgroupChores();
     return Column(
-      children: [
-        Padding(
-          padding: EdgeInsetsGeometry.all(10),
-          child: Row(
-            children: [
-              Text("All House Chores", style: DivvyTheme.bodyBoldBlack),
-            ],
-          ),
-        ),
-        ...otherChores.map((chore) => _choreSuperTile(chore, context)),
-      ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children:
+          otherChores
+              .map(
+                (chore) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                  child: ChoreTile(superChore: chore),
+                ),
+              )
+              .toList(),
     );
   }
 
+  /// Show all chores that belong to a given subgroup
   Widget _subgroupChoresWidget(
     Subgroup subgroup,
     DivvyProvider provider,
     BuildContext context,
+    double spacing,
   ) {
+    // list of chores for subgroup
     List<Chore> choresUnderSubgroup = provider.getSubgroupChores(subgroup.id);
-
     return Column(
       children: [
-        Padding(
-          padding: EdgeInsetsGeometry.all(10),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 12,
-                backgroundColor: subgroup.profilePicture,
-              ),
-              SizedBox(width: 10),
-              Text(subgroup.name, style: DivvyTheme.bodyBoldBlack),
-            ],
-          ),
+        Row(
+          children: [
+            CircleAvatar(radius: 12, backgroundColor: subgroup.profilePicture),
+            SizedBox(width: 10),
+            Text(subgroup.name, style: DivvyTheme.bodyBoldBlack),
+          ],
         ),
-        ...choresUnderSubgroup.map((chore) => _choreSuperTile(chore, context)),
-        SizedBox(height: 10),
-        Divider(
-          indent: 10,
-          endIndent: 10,
-          thickness: 0.5,
-          color: DivvyTheme.lightGrey,
+        SizedBox(height: spacing / 2),
+        Column(
+          children:
+              choresUnderSubgroup
+                  .map(
+                    (chore) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                      child: ChoreTile(superChore: chore),
+                    ),
+                  )
+                  .toList(),
         ),
-        SizedBox(height: 10),
+        SizedBox(height: spacing / 2),
       ],
-    );
-  }
-
-  Widget _choreSuperTile(Chore chore, BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (ctx) => ChoreSuperclassScreen(choreID: chore.id),
-          ),
-        );
-      },
-      child: Card(
-        color: DivvyTheme.background,
-        child: ListTile(
-          leading: Text(chore.emoji, style: TextStyle(fontSize: 40)),
-          title: Text(chore.name),
-          trailing: Icon(CupertinoIcons.right_chevron),
-        ),
-      ),
     );
   }
 }

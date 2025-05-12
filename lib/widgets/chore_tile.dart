@@ -4,6 +4,7 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/chore_instance_screen.dart';
+import 'package:divvy/screens/chore_superclass_screen.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +36,14 @@ class ChoreTile extends StatelessWidget {
     }
     // Build chore tile
     return InkWell(
-
       onTap:
           () =>
               choreInst != null
-                  ? _openChoreInstancePage(context, choreInst!.id, choreInst!.choreID)
+                  ? _openChoreInstancePage(
+                    context,
+                    choreInst!.id,
+                    choreInst!.choreID,
+                  )
                   : _openSuperChorePage(context, superChore!),
       child:
           compact
@@ -166,13 +170,29 @@ class ChoreTile extends StatelessWidget {
     );
   }
 
-  void _openChoreInstancePage(BuildContext context, ChoreInstID instanceID, ChoreID choreId) {
+  /// Opens the chore instance page
+  void _openChoreInstancePage(
+    BuildContext context,
+    ChoreInstID instanceID,
+    ChoreID choreId,
+  ) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => ChoreInstanceScreen(choreInstanceId: instanceID, choreID: choreId))
+      MaterialPageRoute(
+        builder:
+            (ctx) => ChoreInstanceScreen(
+              choreInstanceId: instanceID,
+              choreID: choreId,
+            ),
+      ),
     );
   }
 
+  /// Opens the super chore page
   void _openSuperChorePage(BuildContext context, Chore superChore) {
-    print('Opening super chore ${superChore.id}');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => ChoreSuperclassScreen(choreID: superChore.id),
+      ),
+    );
   }
 }

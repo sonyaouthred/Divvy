@@ -19,7 +19,7 @@ class DivvyTheme {
   static const Color lightRed = Color(0xFFEA8484);
   static const Color darkRed = Color(0xFFA70000);
   static const Color shadow = Color(0xFFEAEBED);
-  static const Color altBeige = const Color.fromARGB(255, 225, 223, 216);
+  static const Color altBeige = Color.fromARGB(255, 225, 223, 216);
 
   // Text Themes
 
@@ -53,6 +53,13 @@ class DivvyTheme {
       color: black,
     ),
   );
+  static TextStyle largeBodyBlack = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 17,
+      color: black,
+    ),
+  );
   static TextStyle largeHeaderGrey = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w600,
@@ -60,7 +67,7 @@ class DivvyTheme {
       color: darkGrey,
     ),
   );
-  static TextStyle bodyBoldGrey= GoogleFonts.inter(
+  static TextStyle bodyBoldGrey = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 15,

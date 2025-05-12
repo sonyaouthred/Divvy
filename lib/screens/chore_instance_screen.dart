@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+/// Displays information about a given chore instance
 class ChoreInstanceScreen extends StatefulWidget {
   final ChoreInstID choreInstanceId;
   final ChoreID choreID;
@@ -29,16 +30,20 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
 
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
+        // Get the super chore for this instance
         Chore parentChore = provider.getSuperChore(widget.choreID);
+        // Get the updated instance (potentially with new info) from provider
         ChoreInst choreInstance = provider.getChoreInstanceFromID(
           widget.choreID,
           widget.choreInstanceId,
         );
-
+        // Get the assignee to the chore
         Member thisAssignee = provider.getMemberById(choreInstance.assignee);
+        // Get a list of other people assigned to the chore
         List<Member> otherAssignees = provider.getMembersDoingChore(
           widget.choreID,
         );
+        // Remove the current assingee from list of other assignees
         otherAssignees.removeWhere((member) => member.id == thisAssignee.id);
 
         return Scaffold(

@@ -103,7 +103,12 @@ class _DashboardState extends State<Dashboard> {
       child: Column(
         children:
             _todayChores
-                .map((chore) => ChoreTile(choreInst: chore, compact: true))
+                .map(
+                  (chore) => Padding(
+                    padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                    child: ChoreTile(choreInst: chore, compact: true),
+                  ),
+                )
                 .toList(),
       ),
     );
@@ -128,7 +133,14 @@ class _DashboardState extends State<Dashboard> {
             child: Column(
               children:
                   _todayChores
-                      .map((chore) => ChoreTile(choreInst: chore))
+                      .map(
+                        (chore) => Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: spacing / 2,
+                          ),
+                          child: ChoreTile(choreInst: chore),
+                        ),
+                      )
                       .toList(),
             ),
           ),
@@ -151,7 +163,12 @@ class _DashboardState extends State<Dashboard> {
         Column(
           children:
               _overdueChores
-                  .map((chore) => ChoreTile(choreInst: chore))
+                  .map(
+                    (chore) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                      child: ChoreTile(choreInst: chore),
+                    ),
+                  )
                   .toList(),
         ),
         SizedBox(height: spacing / 2),
