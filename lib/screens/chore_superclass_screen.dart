@@ -6,36 +6,16 @@ import 'package:divvy/screens/chore_instance_screen.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
-import 'package:divvy/screens/user_info_screen.dart';
+import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 /// Displays basic information about a chore superclass
-class ChoreSuperclassScreen extends StatefulWidget {
+class ChoreSuperclassScreen extends StatelessWidget {
   final ChoreID choreID;
 
   const ChoreSuperclassScreen({super.key, required this.choreID});
-
-  @override
-  State<ChoreSuperclassScreen> createState() => _ChoreSuperclassScreenState();
-}
-
-class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
-  String _choreTitle = "";
-  late Chore chore;
-  late List<Member> choreAssignees;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    final providerInst = Provider.of<DivvyProvider>(context, listen: false);
-    chore = providerInst.getSuperChore(widget.choreID);
-    choreAssignees = providerInst.getChoreAssignees(widget.choreID);
-  }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -44,8 +24,8 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Update data from provider
-        chore = provider.getSuperChore(widget.choreID);
-        choreAssignees = provider.getChoreAssignees(widget.choreID);
+        Chore chore = provider.getSuperChore(choreID);
+        List<Member> choreAssignees = provider.getChoreAssignees(choreID);
 
         // Get the list of upcoming chores for this super class
         List<ChoreInst> upcomingChores = [];
@@ -53,13 +33,12 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
           upcomingChores.addAll(
             provider
                 .getUpcomingChores(member.id)
-                .where((chore) => chore.choreID == widget.choreID),
+                .where((chore) => chore.choreID == choreID),
           );
         }
 
         // Sort the upcoming chores by due date
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
-        _choreTitle = chore.name;
 
         return Scaffold(
           backgroundColor: DivvyTheme.background,
@@ -68,6 +47,20 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
             centerTitle: true,
             scrolledUnderElevation: 0,
             backgroundColor: DivvyTheme.background,
+            actions: [
+              // Allow user to take actions for this chore
+              InkWell(
+                onTap: () => _showActionMenu(context),
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                child: Container(
+                  height: 45,
+                  width: 45,
+                  alignment: Alignment.centerLeft,
+                  child: Icon(CupertinoIcons.ellipsis),
+                ),
+              ),
+            ],
           ),
           body: SizedBox.expand(
             child: SingleChildScrollView(
@@ -78,12 +71,13 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: spacing),
-                    _choreEditableTile(chore, _choreTitle, context, provider),
+                    _choreEditableTile(chore, context, spacing),
+                    SizedBox(height: spacing / 2),
                     _customDivider(spacing),
                     _frequencyWidget(chore, spacing),
                     _customDivider(spacing),
-                    _getAssigneesWidget(choreAssignees, spacing),
-                    _customDivider(spacing),
+                    _getAssigneesWidget(context, choreAssignees, spacing),
+                    SizedBox(height: spacing),
                     upcomingChores.isEmpty
                         ? SizedBox()
                         : Text("Upcoming:", style: DivvyTheme.bodyBoldGrey),
@@ -109,6 +103,36 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
     );
   }
 
+  /// Shows a Cupertino action menu that allows user to delete chore
+  void _showActionMenu(BuildContext context) async {
+    final delete = await showCupertinoModalPopup<bool>(
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            title: const Text('Chore Actions'),
+            actions: <CupertinoActionSheetAction>[
+              CupertinoActionSheetAction(
+                /// This parameter indicates the action would perform
+                /// a destructive action such as delete or exit and turns
+                /// the action's text color to red.
+                isDestructiveAction: true,
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: const Text('Delete Chore'),
+              ),
+            ],
+          ),
+    );
+    if (delete != null && delete && context.mounted) {
+      final confirm = await confirmDeleteDialog(context, 'Delete Chore');
+      if (confirm != null && confirm) {
+        // TODO: update provider
+        print('Ok, finally deleting');
+      }
+    }
+  }
+
   /// Shows an upcoming chore instance and who it's assigned to
   Widget _upcomingChoreInstanceTile(
     ChoreInst choreInstance,
@@ -117,17 +141,7 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
     double spacing,
   ) {
     return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (ctx) => ChoreInstanceScreen(
-                  choreInstanceId: choreInstance.id,
-                  choreID: choreInstance.choreID,
-                ),
-          ),
-        );
-      },
+      onTap: () => _openChoreInstance(context, choreInstance),
       child: Column(
         children: [
           _memberTile(member, spacing),
@@ -139,39 +153,6 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
     );
   }
 
-  /// Returns a string representing the frequency
-  String _getFrequencySentence(Frequency frequency) {
-    String dates = '';
-    if (frequency == Frequency.weekly) {
-      for (int day in chore.dayOfWeek) {
-        dates += '${getNameOfWeekday(day)}, ';
-      }
-      // slice trailing comma
-      dates = dates.substring(0, dates.length - 2);
-    }
-    switch (frequency) {
-      case Frequency.daily:
-        return "Once every day";
-      case Frequency.monthly:
-        return "Once every month";
-      case Frequency.weekly:
-        return "${_getRepetition(chore.dayOfWeek.length)} on $dates";
-    }
-  }
-
-  // A string representing how many times this chore is repeated
-  // a week
-  String _getRepetition(int numDays) => switch (numDays) {
-    1 => 'Once every week',
-    2 => 'Twice a week',
-    3 => 'Three times a week',
-    4 => 'Four times a week',
-    5 => 'Five times a week',
-    6 => 'Six times a week',
-    7 => 'Seven times a week',
-    int() => 'Error',
-  };
-
   /// Displays the frequency of the chore
   Widget _frequencyWidget(Chore chore, double spacing) {
     return Column(
@@ -181,7 +162,7 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
         SizedBox(height: spacing / 2),
         // The frequency of the chore
         Text(
-          _getFrequencySentence(chore.frequency),
+          _getFrequencySentence(chore.frequency, chore),
           style: DivvyTheme.bodyBlack,
         ),
       ],
@@ -189,24 +170,18 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
   }
 
   /// Displays all the members currently assigned to this chore
-  Widget _getAssigneesWidget(List<Member> members, double spacing) {
+  Widget _getAssigneesWidget(
+    BuildContext context,
+    List<Member> members,
+    double spacing,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("Assignees:", style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 3),
         ...members.map((member) {
-          return InkWell(
-            onTap: () => _openMemberPage(context, member),
-            child: Column(
-              children: [
-                SizedBox(height: spacing / 2),
-                Container(
-                  padding: EdgeInsets.all(spacing / 2),
-                  child: _memberTile(member, spacing),
-                ),
-              ],
-            ),
-          );
+          return MemberTile(member: member, spacing: spacing);
         }),
       ],
     );
@@ -240,17 +215,13 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
   }
 
   /// Displays the title of the chore and allows user to edit
-  Widget _choreEditableTile(
-    Chore chore,
-    String title,
-    BuildContext context,
-    DivvyProvider provider,
-  ) {
+  Widget _choreEditableTile(Chore chore, BuildContext context, double spacing) {
     return Container(
-      decoration: DivvyTheme.textInput,
+      decoration: DivvyTheme.standardBox,
+      padding: EdgeInsets.symmetric(vertical: spacing / 2),
       child: ListTile(
         leading: Text(chore.emoji, style: TextStyle(fontSize: 40)),
-        title: Text(title, style: DivvyTheme.bodyBlack),
+        title: Text(chore.name, style: DivvyTheme.bodyBlack),
         trailing: IconButton(
           onPressed: () async {
             // prompt for new name and assign if valid
@@ -259,8 +230,11 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
               title: 'Edit Chore Name',
               initText: chore.name,
             );
-            if (newName != null) {
-              provider.changeName(widget.choreID, newName);
+            if (newName != null && context.mounted) {
+              Provider.of<DivvyProvider>(
+                context,
+                listen: false,
+              ).changeName(choreID, newName);
             }
           },
           icon: Icon(CupertinoIcons.pencil),
@@ -269,9 +243,51 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
     );
   }
 
-  void _openMemberPage(BuildContext context, Member member) {
+  ////////////////////////////// Util //////////////////////////////
+
+  /// Returns a string representing the frequency
+  String _getFrequencySentence(Frequency frequency, Chore chore) {
+    String dates = '';
+    if (frequency == Frequency.weekly) {
+      for (int day in chore.dayOfWeek) {
+        dates += '${getNameOfWeekday(day)}, ';
+      }
+      // slice trailing comma
+      dates = dates.substring(0, dates.length - 2);
+    }
+    switch (frequency) {
+      case Frequency.daily:
+        return "Once every day";
+      case Frequency.monthly:
+        return "Once every month";
+      case Frequency.weekly:
+        return "${_getRepetition(chore.dayOfWeek.length)} on $dates";
+    }
+  }
+
+  // A string representing how many times this chore is repeated
+  // a week
+  String _getRepetition(int numDays) => switch (numDays) {
+    1 => 'Once every week',
+    2 => 'Twice a week',
+    3 => 'Three times a week',
+    4 => 'Four times a week',
+    5 => 'Five times a week',
+    6 => 'Six times a week',
+    7 => 'Seven times a week',
+    int() => 'Error',
+  };
+
+  /// Opens screen for a given chore instance
+  void _openChoreInstance(BuildContext context, ChoreInst choreInstance) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id)),
+      MaterialPageRoute(
+        builder:
+            (ctx) => ChoreInstanceScreen(
+              choreInstanceId: choreInstance.id,
+              choreID: choreInstance.choreID,
+            ),
+      ),
     );
   }
 }

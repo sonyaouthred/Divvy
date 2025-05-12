@@ -11,14 +11,9 @@ import 'package:provider/provider.dart';
 
 /// Displays all the chores for this house in subgroup
 /// and general categories.
-class Chores extends StatefulWidget {
+class Chores extends StatelessWidget {
   const Chores({super.key});
 
-  @override
-  State<Chores> createState() => _ChoresState();
-}
-
-class _ChoresState extends State<Chores> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;

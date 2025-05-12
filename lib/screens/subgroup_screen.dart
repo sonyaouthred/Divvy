@@ -3,178 +3,146 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/user_info_screen.dart';
+import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
+import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SubgroupScreen extends StatefulWidget {
-  const SubgroupScreen({super.key, required this.currSubgroup});
-
+class SubgroupScreen extends StatelessWidget {
   final Subgroup currSubgroup;
-  @override
-  State<SubgroupScreen> createState() => _SubgroupScreenState();
-}
-
-class _SubgroupScreenState extends State<SubgroupScreen> {
-  late Subgroup _currSubgroup;
-  late List<Chore> _currChores;
-  late List<Member> _currMemeber;
-
-  @override
-  void initState() {
-    super.initState();
-    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
-    _currSubgroup = widget.currSubgroup;
-    _currChores =
-        _currSubgroup.chores
-            .map((choreID) => providerRef.getSuperChore(choreID))
-            .toList();
-    _currMemeber = providerRef.getMembersInSubgroup(_currSubgroup.id);
-  }
+  const SubgroupScreen({super.key, required this.currSubgroup});
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
-    return Scaffold(
-      backgroundColor: DivvyTheme.background,
-      appBar: AppBar(
-        title: Text(_currSubgroup.name, style: DivvyTheme.screenTitle),
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        backgroundColor: DivvyTheme.background,
-      ),
-      body: SizedBox.expand(
-        child: Container(
-          padding: EdgeInsets.all(spacing),
-          child: SingleChildScrollView(
-            child: Consumer<DivvyProvider>(
-              builder: (context, provider, child) {
-                _currChores =
-                    _currSubgroup.chores
-                        .map((choreID) => provider.getSuperChore(choreID))
-                        .toList();
-                _currMemeber = provider.getMembersInSubgroup(_currSubgroup.id);
-                return Column(
+    return Consumer<DivvyProvider>(
+      builder: (context, provider, child) {
+        final List<Chore> currChores =
+            currSubgroup.chores
+                .map((choreID) => provider.getSuperChore(choreID))
+                .toList();
+        final List<Member> members = provider.getMembersInSubgroup(
+          currSubgroup.id,
+        );
+
+        return Scaffold(
+          backgroundColor: DivvyTheme.background,
+          appBar: AppBar(
+            title: Text(currSubgroup.name, style: DivvyTheme.screenTitle),
+            centerTitle: true,
+            scrolledUnderElevation: 0,
+            backgroundColor: DivvyTheme.background,
+            actions: [
+              // Allow user to take actions for this chore
+              InkWell(
+                onTap: () => _showActionMenu(context),
+                splashColor: Colors.transparent,
+                child: Container(
+                  height: 45,
+                  width: 45,
+                  alignment: Alignment.centerLeft,
+                  child: Icon(CupertinoIcons.ellipsis),
+                ),
+              ),
+            ],
+          ),
+          body: SizedBox.expand(
+            child: Container(
+              padding: EdgeInsets.all(spacing),
+              child: SingleChildScrollView(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [_displayMembers(spacing), _displayChores(spacing)],
-                );
-              },
+                  children: [
+                    // Display members in subgroup
+                    _displayMembers(spacing, members),
+                    // Display chores for subgroup
+                    _displayChores(spacing, currChores),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   ///////////////////////////// Widgets /////////////////////////////
 
-  /// Listing all of subgroup chores
-  Widget _displayChores(double spacing) {
-    // Return view of subgroup chores
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text('Chores', style: DivvyTheme.bodyBoldBlack)],
-        ),
-        SizedBox(height: spacing / 2),
-        // Display the chore tiles for all chores due today
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: spacing / 4),
-          child: Column(
-            children:
-                _currChores
-                    .map((chore) => ChoreTile(superChore: chore))
-                    .toList(),
-          ),
-        ),
-        if (_currChores.isNotEmpty) SizedBox(height: spacing / 4),
-      ],
-    );
-  }
-
   // Displays list of subgroups and button to allow user to add a subgroup
-  Widget _displayMembers(double spacing) {
+  Widget _displayMembers(double spacing, List<Member> members) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Title and add subgroup button
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text('Members', style: DivvyTheme.bodyBoldBlack)],
-        ),
+        Text('Members', style: DivvyTheme.bodyBoldBlack),
         SizedBox(height: spacing / 2),
         // List of subgroups
         ListView.builder(
-          itemCount: _currMemeber.length,
+          itemCount: members.length,
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (BuildContext context, int index) {
-            bool isLast = false;
-            if (index == _currMemeber.length - 1) isLast = true;
             // Render the member's profile picture and name
-            return _memberTile(
-              member: _currMemeber[index],
-              spacing: spacing,
-              isLast: isLast,
-            );
+            return MemberTile(member: members[index], spacing: spacing);
           },
         ),
       ],
     );
   }
 
-  /// Displays the tile for a subgroup with their
-  /// image and name
-  Widget _memberTile({
-    required Member member,
-    required double spacing,
-    required bool isLast,
-  }) {
-    return InkWell(
-      onTap: () => _openMemberPage(context, member),
-      child: Column(
-        children: [
-          SizedBox(height: spacing / 2),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // User profile image
-              Row(
-                children: [
-                  Container(
-                    decoration: DivvyTheme.profileCircle(member.profilePicture),
-                    height: 25,
-                    width: 25,
-                  ),
-                  SizedBox(width: spacing / 2),
-                  Text(member.name, style: DivvyTheme.bodyBlack),
-                ],
-              ),
-              // Display chevron icon
-              Flexible(
-                flex: 1,
-                child: Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 20,
-                ),
-              ),
-            ],
+  /// Listing all of subgroup chores
+  Widget _displayChores(double spacing, List<Chore> currChores) {
+    // Return view of subgroup chores
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Chores', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        // Display the chore tiles for all chores due today
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: spacing / 4),
+          child: Column(
+            children:
+                currChores
+                    .map((chore) => ChoreTile(superChore: chore))
+                    .toList(),
           ),
-          SizedBox(height: spacing / 2),
-          if (!isLast) Divider(color: DivvyTheme.beige),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  ///////////////////////////// util /////////////////////////////
-  void _openMemberPage(BuildContext context, Member member) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id,))
+  /// Shows a Cupertino action menu that allows user to delete subgroup
+  void _showActionMenu(BuildContext context) async {
+    final delete = await showCupertinoModalPopup<bool>(
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            title: const Text('Subgroup Actions'),
+            actions: <CupertinoActionSheetAction>[
+              CupertinoActionSheetAction(
+                /// This parameter indicates the action would perform
+                /// a destructive action such as delete or exit and turns
+                /// the action's text color to red.
+                isDestructiveAction: true,
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
     );
+    if (delete != null && delete && context.mounted) {
+      final confirm = await confirmDeleteDialog(context, 'Delete Subgroup');
+      if (confirm != null && confirm) {
+        // TODO: update provider
+        print('Ok, finally deleting');
+      }
+    }
   }
 }

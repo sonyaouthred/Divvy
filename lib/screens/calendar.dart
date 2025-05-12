@@ -8,7 +8,6 @@ import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 typedef Week = List<DateTime>;

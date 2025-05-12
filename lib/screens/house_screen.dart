@@ -15,26 +15,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class House extends StatefulWidget {
+class House extends StatelessWidget {
   const House({super.key});
-
-  @override
-  State<House> createState() => _HouseState();
-}
-
-class _HouseState extends State<House> {
-  // List of members in the house
-  late List<Member> _members;
-  // list of subgroups in the house
-  late List<Subgroup> _subgroups;
-
-  @override
-  void initState() {
-    super.initState();
-    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
-    _members = providerRef.members;
-    _subgroups = providerRef.subgroups;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +24,10 @@ class _HouseState extends State<House> {
     final spacing = width * 0.05;
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
-        // refresh data from provider
-        _members = provider.members;
-        _subgroups = provider.subgroups;
+        // List of members in the house
+        final List<Member> members = provider.members;
+        // list of subgroups in the house
+        final List<Subgroup> subgroups = provider.subgroups;
 
         return SizedBox.expand(
           child: SingleChildScrollView(
@@ -55,7 +38,7 @@ class _HouseState extends State<House> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Members list
-                  _displayMembers(spacing),
+                  _displayMembers(context, spacing, members),
                   SizedBox(height: spacing),
                   Leaderboard(title: 'Leaderboard'),
                   SizedBox(height: spacing),
@@ -64,6 +47,7 @@ class _HouseState extends State<House> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _boxButton(
+                        context: context,
                         title: 'Manage Chores',
                         icon: Icon(CupertinoIcons.list_bullet),
                         spacing: spacing,
@@ -71,6 +55,7 @@ class _HouseState extends State<House> {
                       ),
                       SizedBox(width: spacing),
                       _boxButton(
+                        context: context,
                         title: 'Settings',
                         icon: Icon(CupertinoIcons.settings),
                         spacing: spacing,
@@ -80,7 +65,7 @@ class _HouseState extends State<House> {
                   ),
                   SizedBox(height: spacing),
                   // Display subgroups
-                  _displaySubgroups(spacing),
+                  _displaySubgroups(context, spacing, subgroups),
                   SizedBox(height: spacing * 3),
                 ],
               ),
@@ -94,7 +79,11 @@ class _HouseState extends State<House> {
   ///////////////////////////// Widgets /////////////////////////////
 
   /// Displays all members as a horizontally scrolling list
-  Widget _displayMembers(double spacing) {
+  Widget _displayMembers(
+    BuildContext context,
+    double spacing,
+    List<Member> members,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -105,7 +94,7 @@ class _HouseState extends State<House> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children:
-                _members.map((member) {
+                members.map((member) {
                   return Padding(
                     padding: EdgeInsets.only(right: spacing),
                     child: InkWell(
@@ -134,6 +123,7 @@ class _HouseState extends State<House> {
 
   /// Button to perform action on tap.
   Widget _boxButton({
+    required BuildContext context,
     required String title,
     required Icon icon,
     required double spacing,
@@ -161,7 +151,11 @@ class _HouseState extends State<House> {
   }
 
   /// Displays list of subgroups and button to allow user to add a subgroup
-  Widget _displaySubgroups(double spacing) {
+  Widget _displaySubgroups(
+    BuildContext context,
+    double spacing,
+    List<Subgroup> subgroups,
+  ) {
     return Column(
       children: [
         // Title and add subgroup button
@@ -180,7 +174,7 @@ class _HouseState extends State<House> {
           ],
         ),
         // List of subgroups
-        ..._subgroups.map(
+        ...subgroups.map(
           (sub) => SubgroupTile(subgroup: sub, spacing: spacing),
         ),
       ],
