@@ -65,14 +65,84 @@ class DivvyProvider extends ChangeNotifier {
   List<Chore> get chores => List.from(_chores);
   Member get currentUser => _currentUser;
 
+  List<Member> getChoreAssignees(ChoreID id) {
+    Chore chore = getSuperChore(id);
+
+    return chore.assignees.map((assigneeId) {
+      return members.firstWhere((member) => member.id == assigneeId);
+    }).toList();
+  }
+
+  List<Chore> getSubgroupChores(SubgroupID id) {
+    Subgroup subgroup  = subgroups.firstWhere((subgroup) => subgroup.id == id);
+
+    return subgroup.chores.map((choreId) {
+      return chores.firstWhere((chore) => chore.id == choreId);
+    },).toList();
+  }
+
+  List<SubgroupID> getAllSubgroupIds() {
+    return subgroups.map((subgroup) => subgroup.id).toList();
+  }
+
+  List<Chore> getAllSubgroupChores() {
+    List<Chore> allSubgroupChores = [];
+    List<SubgroupID> subgroupIDs = getAllSubgroupIds();
+    for (SubgroupID subgroupID in subgroupIDs) {
+      allSubgroupChores.addAll(getSubgroupChores(subgroupID));
+    }
+    
+    return allSubgroupChores;
+  }
+
+  List<Chore> getNonSubgroupChores() {
+    List<Chore> allSubgroupChores = getAllSubgroupChores();
+
+    return chores.where((chore) => !allSubgroupChores.contains(chore)).toList();
+  }
+
   /// Returns list of chore instances with a given super chore ID
   List<ChoreInst> getChoreInstancesFromID(ChoreID id) {
     return _choreInstances[id] ?? [];
   }
 
+  ChoreInst getChoreInstanceFromID(ChoreID choreID, ChoreInstID choreInstanceID) {
+    return _choreInstances[choreID]!.firstWhere((ChoreInst instance) => instance.id == choreInstanceID);
+  }
+
   /// Returns a super chore with the passed id
   Chore getSuperChore(ChoreID id) {
     return _chores.firstWhere((chore) => chore.id == id);
+  }
+
+  List<Member> getMembersDoingChore(ChoreID choreID) {
+    Chore chore = getSuperChore(choreID);
+
+    List<MemberID> memberIdsOfChore = chore.assignees;
+
+    List<Member> membersDoingChore = [];
+
+    for (MemberID memberID in memberIdsOfChore) {
+      membersDoingChore.add(members.firstWhere((member) => member.id == memberID));
+    }
+
+    return membersDoingChore;
+  }
+
+  void changeName(ChoreID choreID, String name) {
+    Chore chore = getSuperChore(choreID);
+    chore.changeName(name);
+    notifyListeners();
+  }
+
+  void toggleChoreInstanceCompletedState(ChoreID choreId, ChoreInstID choreInstId) {
+    ChoreInst choreInstance = _choreInstances[choreId]!.firstWhere((instance) => instance.id == choreInstId);
+    choreInstance.toggleDone();
+    notifyListeners();
+  }
+
+  Member getMemberById(MemberID memberId) {
+    return members.firstWhere((member) => member.id == memberId);
   }
 
   /// Returns all chore superclasses assigned to the passed member
@@ -187,6 +257,14 @@ class DivvyProvider extends ChangeNotifier {
     final List<Member> sorted = List.from(_members);
     sorted.sort((a, b) => b.onTimePct.compareTo(a.onTimePct));
     return sorted.take(num).toList();
+  }
+
+  int getRank(MemberID memberID) {
+    final List<Member> sorted = List.from(_members);
+    sorted.sort((a, b) => b.onTimePct.compareTo(a.onTimePct));
+    return sorted.indexWhere((member) {
+      return member.id == memberID;
+    }) + 1;
   }
 
   /// Returns list of subgroups user is involved in

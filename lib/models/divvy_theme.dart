@@ -18,6 +18,7 @@ class DivvyTheme {
   static const Color brightRed = Color(0xFFFF0000);
   static const Color darkRed = Color(0xFFA70000);
   static const Color shadow = Color(0xFFEAEBED);
+  static const Color altBeige = const Color.fromARGB(255, 225, 223, 216);
 
   // Text Themes
 
@@ -35,11 +36,34 @@ class DivvyTheme {
       color: darkGreen,
     ),
   );
+
+  static TextStyle largeHeaderRed = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 20,
+      color: darkRed,
+    ),
+  );
+
   static TextStyle largeHeaderBlack = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 20,
       color: black,
+    ),
+  );
+  static TextStyle largeHeaderGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 20,
+      color: darkGrey,
+    ),
+  );
+  static TextStyle bodyBoldGrey= GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 15,
+      color: darkGrey,
     ),
   );
   static TextStyle bodyBoldBlack = GoogleFonts.inter(

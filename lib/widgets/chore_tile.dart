@@ -3,6 +3,7 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/chore_instance_screen.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class ChoreTile extends StatelessWidget {
     ).getSuperChore(choreInst.choreID);
     // Build chore tile
     return InkWell(
-      onTap: () => _openChoreInstancePage(context, choreInst.id),
+      onTap: () => _openChoreInstancePage(context, choreInst.id, choreInst.choreID),
       child:
           compact
               ? _smallChoreTile(superChore, spacing)
@@ -145,7 +146,9 @@ class ChoreTile extends StatelessWidget {
     );
   }
 
-  void _openChoreInstancePage(BuildContext context, ChoreInstID id) {
-    print('Opening chore instance $id');
+  void _openChoreInstancePage(BuildContext context, ChoreInstID instanceID, ChoreID choreId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => ChoreInstanceScreen(choreInstanceId: instanceID, choreID: choreId))
+    );
   }
 }

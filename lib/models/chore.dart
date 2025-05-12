@@ -3,7 +3,7 @@ import 'package:divvy/models/member.dart';
 /// Represents a chore object & general information
 class Chore {
   final ChoreID _id;
-  final String _name;
+  String _name;
   final Frequency _frequency;
   final String _emoji;
   final String _description;
@@ -58,6 +58,13 @@ class Chore {
   List<MemberID> get assignees => List.from(_assignees);
   List<ChoreInstID> get instances => List.from(_instances);
   List<int> get dayOfWeek => List.from(_dayOfWeek);
+
+  void changeName(String newName) {
+    if (newName.isNotEmpty) {
+      _name = newName;
+    }
+  }
+  
 }
 
 enum Frequency { daily, weekly, monthly }
@@ -71,7 +78,7 @@ class ChoreInst {
   // Due date
   final DateTime _dueDate;
   // True if done
-  final bool _isDone;
+  bool _isDone;
   // user chore is assigned to
   final MemberID _assignee;
 
@@ -106,6 +113,12 @@ class ChoreInst {
   DateTime get dueDate => _dueDate;
   bool get isDone => _isDone;
   MemberID get assignee => _assignee;
+
+  void toggleDone() {
+    _isDone = !_isDone;
+  }
+
+
 }
 
 typedef ChoreID = String;
