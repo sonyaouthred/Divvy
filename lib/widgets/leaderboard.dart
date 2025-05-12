@@ -3,6 +3,7 @@
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/user_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -86,7 +87,8 @@ class _LeaderboardState extends State<Leaderboard> {
 
   /// Will open the passed member's page
   void _openMemberPage(BuildContext context, Member member) {
-    print('Opening ${member.name}\'s page');
-    return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id,))
+    );
   }
 }

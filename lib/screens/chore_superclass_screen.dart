@@ -3,6 +3,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/chore_instance_screen.dart';
+import 'package:divvy/screens/user_info_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -204,6 +205,7 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
           return Card(
             color: DivvyTheme.background,
             child: ListTile(
+              onTap: () => _openMemberPage(context, member),
               leading: CircleAvatar(backgroundColor: member.profilePicture),
               title: Text(member.name, style: DivvyTheme.bodyBlack),
             ),
@@ -240,6 +242,12 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
           icon: Icon(CupertinoIcons.pencil),
         ),
       ),
+    );
+  }
+  
+  void _openMemberPage(BuildContext context, Member member) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id,))
     );
   }
 }
