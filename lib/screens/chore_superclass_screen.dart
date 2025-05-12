@@ -6,6 +6,7 @@ import 'package:divvy/screens/chore_instance_screen.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
+import 'package:divvy/screens/user_info_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -194,14 +195,17 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
       children: [
         Text("Assignees:", style: DivvyTheme.bodyBoldBlack),
         ...members.map((member) {
-          return Column(
-            children: [
-              SizedBox(height: spacing / 2),
-              Container(
-                padding: EdgeInsets.all(spacing / 2),
-                child: _memberTile(member, spacing),
-              ),
-            ],
+          return InkWell(
+            onTap: () => _openMemberPage(context, member),
+            child: Column(
+              children: [
+                SizedBox(height: spacing / 2),
+                Container(
+                  padding: EdgeInsets.all(spacing / 2),
+                  child: _memberTile(member, spacing),
+                ),
+              ],
+            ),
           );
         }),
       ],
@@ -262,6 +266,12 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
           icon: Icon(CupertinoIcons.pencil),
         ),
       ),
+    );
+  }
+
+  void _openMemberPage(BuildContext context, Member member) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id)),
     );
   }
 }
