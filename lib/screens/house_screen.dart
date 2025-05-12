@@ -8,9 +8,9 @@ import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/house_settings.dart';
 import 'package:divvy/screens/subgroup_add.dart';
-import 'package:divvy/screens/subgroup_screen.dart';
 import 'package:divvy/screens/user_info_screen.dart';
 import 'package:divvy/widgets/leaderboard.dart';
+import 'package:divvy/widgets/subgroup_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -180,68 +180,10 @@ class _HouseState extends State<House> {
           ],
         ),
         // List of subgroups
-        ListView.builder(
-          itemCount: _subgroups.length,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (BuildContext context, int index) {
-            bool isLast = false;
-            if (index == _subgroups.length - 1) isLast = true;
-            // Render the member's profile picture and name
-            return _subgroupTile(
-              subgroup: _subgroups[index],
-              spacing: spacing,
-              isLast: isLast,
-            );
-          },
+        ..._subgroups.map(
+          (sub) => SubgroupTile(subgroup: sub, spacing: spacing),
         ),
       ],
-    );
-  }
-
-  /// Displays the tile for a subgroup with their
-  /// image and name
-  Widget _subgroupTile({
-    required Subgroup subgroup,
-    required double spacing,
-    required bool isLast,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(right: spacing),
-      child: InkWell(
-        onTap: () => _openSubgroupPage(context, subgroup),
-        child: Column(
-          children: [
-            SizedBox(height: spacing / 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // User profile image
-                Row(
-                  children: [
-                    Container(
-                      decoration: DivvyTheme.profileCircle(
-                        subgroup.profilePicture,
-                      ),
-                      height: 25,
-                      width: 25,
-                    ),
-                    SizedBox(width: spacing / 2),
-                    Text(subgroup.name, style: DivvyTheme.bodyBlack),
-                  ],
-                ),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 15,
-                ),
-              ],
-            ),
-            SizedBox(height: spacing / 2),
-            if (!isLast) Divider(color: DivvyTheme.beige),
-          ],
-        ),
-      ),
     );
   }
 
@@ -271,17 +213,7 @@ class _HouseState extends State<House> {
   /// Will open the passed member's page
   void _openMemberPage(BuildContext context, Member member) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id,))
-    );
-  }
-
-  /// Will open the subgroups screen
-  void _openSubgroupPage(BuildContext context, Subgroup subgroup) {
-    print('Opening ${subgroup.name}\'s page');
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SubgroupScreen(currSubgroup: subgroup),
-      ),
+      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id)),
     );
   }
 }
