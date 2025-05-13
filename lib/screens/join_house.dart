@@ -1,8 +1,10 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/screens/create_house.dart';
+import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -17,6 +19,7 @@ class JoinHouse extends StatefulWidget {
 class _JoinHouseState extends State<JoinHouse> {
   late final String _email;
   late TextEditingController _codeController;
+  bool _joining = false;
   @override
   void initState() {
     super.initState();
@@ -61,6 +64,23 @@ class _JoinHouseState extends State<JoinHouse> {
                           'Create a house!',
                           style: DivvyTheme.bodyBlack.copyWith(
                             decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // or logout
+                  Center(
+                    child: InkWell(
+                      onTap: () => _logout(context),
+                      child: SizedBox(
+                        height: 50,
+                        child: Text(
+                          'Log out',
+                          style: DivvyTheme.bodyBlack.copyWith(
+                            decoration: TextDecoration.underline,
+                            color: DivvyTheme.darkRed,
+                            decorationColor: DivvyTheme.darkRed,
                           ),
                         ),
                       ),
@@ -124,7 +144,10 @@ class _JoinHouseState extends State<JoinHouse> {
               height: 50,
               width: width / 4,
               decoration: DivvyTheme.greenBox,
-              child: Text('Join', style: DivvyTheme.largeBoldMedWhite),
+              child:
+                  _joining
+                      ? CupertinoActivityIndicator(color: DivvyTheme.background)
+                      : Text('Join', style: DivvyTheme.largeBoldMedWhite),
             ),
           ),
         ),
@@ -135,8 +158,11 @@ class _JoinHouseState extends State<JoinHouse> {
   /// Join a house and push the home screen
   void _joinHouse(BuildContext context) {
     // TODO: obviously, replace with db call
-    final inputValid = _codeController.text == 'code';
+    final inputValid = _codeController.text == 'lW611f30';
     if (inputValid) {
+      setState(() {
+        _joining = true;
+      });
       // Update user's db with the code
       print('Adding user to house ${_codeController.text}');
       // Push user to home page
@@ -159,6 +185,18 @@ class _JoinHouseState extends State<JoinHouse> {
       PageTransition(
         type: PageTransitionType.fade,
         child: CreateHouse(),
+        duration: Duration(milliseconds: 100),
+      ),
+    );
+  }
+
+  // log the user out
+  void _logout(BuildContext context) async {
+    FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+      PageTransition(
+        type: PageTransitionType.fade,
+        child: Login(),
         duration: Duration(milliseconds: 100),
       ),
     );

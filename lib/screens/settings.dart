@@ -1,4 +1,5 @@
 import 'package:divvy/models/member.dart';
+import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 /// Displays a settings screen where the user can modify account
@@ -19,9 +21,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  /// Current user. Null if user is signed out/deleted
-  late final User? _user;
-
   // Current user's data
   late Member _currUser;
 
@@ -40,7 +39,7 @@ class _SettingsState extends State<Settings> {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _currUser = providerRef.currentUser;
-    _user = FirebaseAuth.instance.currentUser;
+    // _user = FirebaseAuth.instance.currentUser;
   }
 
   @override
@@ -383,5 +382,13 @@ class _SettingsState extends State<Settings> {
       _isLoggingOut = true;
     });
     FirebaseAuth.instance.signOut();
+    // push login screen
+    Navigator.of(context).pushReplacement(
+      PageTransition(
+        type: PageTransitionType.fade,
+        child: Login(),
+        duration: Duration(milliseconds: 100),
+      ),
+    );
   }
 }

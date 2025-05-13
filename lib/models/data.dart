@@ -2,6 +2,7 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:flutter/material.dart';
 
+// use https://pub.dev/packages/nanoid for joinCode
 class Data {
   final house = {
     'id': 'gjkldsjfdklsjfsdfdsa',
@@ -14,6 +15,7 @@ class Data {
       '4392glkslkriep',
       'e4930493jgjg3032',
     ],
+    'joinCode': 'lW611f30',
   };
 
   final members = [

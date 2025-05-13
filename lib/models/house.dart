@@ -13,6 +13,8 @@ class House {
   // List of member IDs. Each ID is unique to the user & the same as their
   // firestore doc ID
   final List<MemberID> _members;
+  // The unique join code for a house.
+  final String _joinCode;
 
   House({
     required HouseID id,
@@ -20,11 +22,13 @@ class House {
     required String imageID,
     required String name,
     required List<MemberID> members,
+    required String joinCode,
   }) : _id = id,
        _dateCreated = dateCreated,
        _imageID = imageID,
        _name = name,
-       _members = members;
+       _members = members,
+       _joinCode = joinCode;
 
   /// From a json map, returns a new House object
   /// with relevant fields filled out.
@@ -35,6 +39,7 @@ class House {
       members: (json['members'] as List<dynamic>).cast<MemberID>(),
       dateCreated: json['dateCreated'],
       imageID: json['imageID'],
+      joinCode: json['joinCode'],
     );
   }
 

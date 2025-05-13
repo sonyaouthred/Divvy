@@ -1,3 +1,4 @@
+import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/firebase/auth_service.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/screens/create_account.dart';
@@ -300,6 +301,14 @@ class _LoginState extends State<Login> {
           _passwordError = 'The email or password provided is incorrect.';
           _signingIn = false;
         });
+      } else if (context.mounted) {
+        Navigator.of(context).pushReplacement(
+          PageTransition(
+            type: PageTransitionType.fade,
+            child: DivvyNavigation(),
+            duration: Duration(milliseconds: 100),
+          ),
+        );
       }
     } else {
       // If any input is invalid, reflect in UI
