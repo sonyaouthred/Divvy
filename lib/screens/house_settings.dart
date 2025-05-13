@@ -1,9 +1,9 @@
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/subgroup_add.dart';
 import 'package:divvy/util/dialogs.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -59,7 +59,7 @@ class _HouseSettingsState extends State<HouseSettings> {
                       icon: Icon(CupertinoIcons.person_fill),
                       text: 'Members',
                       buttons: [
-                        ['Add a member', _addMember],
+                        ['House join code', _showJoinCode],
                         ['Remove a member', _removeUser],
                       ],
                       flex: 2,
@@ -128,7 +128,7 @@ class _HouseSettingsState extends State<HouseSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(entry[0], style: DivvyTheme.bodyGrey),
+                      Text(entry[0], style: DivvyTheme.bodyBlack),
 
                       Icon(
                         CupertinoIcons.chevron_right,
@@ -171,7 +171,10 @@ class _HouseSettingsState extends State<HouseSettings> {
       );
       if (delete != null && delete) {
         if (!context.mounted) return;
-        Provider.of<DivvyProvider>(context, listen: false).deleteSubgroup(_selectedSubgroup!);
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).deleteSubgroup(_selectedSubgroup!);
       } else {
         print('cancelled delete');
       }
@@ -229,18 +232,27 @@ class _HouseSettingsState extends State<HouseSettings> {
     );
   }
 
-  /// Adds user, prompts for email
-  void _addMember(BuildContext context) async {
-    final email = await openInputDialog(
-      context,
-      title: 'Enter member\'s email',
-      prompt: 'Enter email...',
+  /// Shows the join code for the user's house
+  void _showJoinCode(BuildContext context) async {
+    final joinCode =
+        Provider.of<DivvyProvider>(context, listen: false).houseJoinCode;
+    await showCupertinoDialog(
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoAlertDialog(
+            title: Text('House Join Code:'),
+            content: Text(joinCode),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Ok'),
+              ),
+            ],
+          ),
     );
-    // Process emil
-    if (email != null) {
-      if (!context.mounted) return;
-      Provider.of<DivvyProvider>(context, listen: false).addUserHouse(email);
-    }
   }
 
   /// Removes user, prompts for email
@@ -273,7 +285,10 @@ class _HouseSettingsState extends State<HouseSettings> {
         );
         if (delete != null && delete) {
           if (!context.mounted) return;
-          Provider.of<DivvyProvider>(context, listen: false).removeUserHouse(email);
+          Provider.of<DivvyProvider>(
+            context,
+            listen: false,
+          ).removeUserHouse(email);
         } else {
           print('cancelled delete');
         }
@@ -293,28 +308,52 @@ class _HouseSettingsState extends State<HouseSettings> {
     // Process name
     if (newName != null) {
       if (!context.mounted) return;
-      Provider.of<DivvyProvider>(context, listen: false).updateHouseName(newName);
+      Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).updateHouseName(newName);
     }
   }
 
-  /// Opens the chores screen
+  /// Deletes the house
+  /// Reauthenticates and then updates provider
   void _deleteHouse(BuildContext context) async {
-    final password = await openInputDialog(
-      context,
-      title: 'Re-enter password',
-      hideText: true,
-    );
-    final delete = await confirmDeleteDialog(
-      context,
-      'Delete house?',
-      action: 'Delete',
-    );
-
-    if (delete != null && delete) {
+    try {
+      final password = await openInputDialog(
+        context,
+        title: 'Re-enter password',
+        hideText: true,
+      );
+      // get current user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      if (user.email != null) {
+        // Now check what provider the user is signed in with.
+        if (password != null) {
+          // Reauthenticate user with email and password
+          final credential = EmailAuthProvider.credential(
+            email: user.email!,
+            password: password,
+          );
+          await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
+            credential,
+          );
+          if (!context.mounted) return;
+          // confirm user wants to delete hosue
+          final delete = await confirmDeleteDialog(
+            context,
+            'Delete house?',
+            action: 'Delete',
+          );
+          if (delete != null && delete && context.mounted) {
+            // delete house!!
+            Provider.of<DivvyProvider>(context, listen: false).deleteHouse();
+          }
+        }
+      }
+    } catch (e) {
       if (!context.mounted) return;
-      Provider.of<DivvyProvider>(context, listen: false).deleteHouse();
-    } else {
-      print('not deleting house!');
+      showErrorMessage(context, 'Invalid password', 'Please try again!');
     }
   }
 }

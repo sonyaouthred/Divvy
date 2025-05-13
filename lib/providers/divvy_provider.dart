@@ -60,6 +60,7 @@ class DivvyProvider extends ChangeNotifier {
   /// Getters
   String get houseName => _house.name;
   String get houseID => _house.id;
+  String get houseJoinCode => _house.joinCode;
   List<Member> get members => List.from(_members);
   List<Subgroup> get subgroups => List.from(_subgroups);
   List<Chore> get chores => List.from(_chores);

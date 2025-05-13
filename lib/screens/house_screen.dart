@@ -6,6 +6,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/house_chores.dart';
 import 'package:divvy/screens/house_settings.dart';
 import 'package:divvy/screens/subgroup_add.dart';
 import 'package:divvy/screens/user_info_screen.dart';
@@ -193,8 +194,9 @@ class House extends StatelessWidget {
 
   /// Will trigger the screen to add a roommate
   void _manageChores(BuildContext context) {
-    print('Opening manage chore page');
-    return;
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (ctx) => HouseChores()));
   }
 
   /// Opens the house settings screen
