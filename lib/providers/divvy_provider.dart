@@ -65,6 +65,34 @@ class DivvyProvider extends ChangeNotifier {
     _currentUser = _members.firstWhere((user) => user.id == currentUserID);
   }
 
+  ////////////////////////////// Server Functions //////////////////////////////
+
+  /// Posts the inputted data to the server's serverFunc.
+  Future<void> postToServer({
+    required Map<String, dynamic> data,
+    required String serverFunc,
+  }) async {
+    print('[QUERYING SERVER]');
+    final uri = 'http://127.0.0.1:5000/$serverFunc';
+    final headers = {'Content-Type': 'application/json'};
+    final response = await http.post(
+      Uri.parse(uri),
+      headers: headers,
+      body: json.encode(data),
+    );
+    json.decode(response.body);
+  }
+
+  /// Pulls data from the server's inputted serverFunc
+  Future<Map<String, dynamic>> getFromServer({
+    required String serverFunc,
+  }) async {
+    final uri = 'http://127.0.0.1:5000/$serverFunc';
+    final headers = {'Content-Type': 'application/json'};
+    final response = await http.get(Uri.parse(uri), headers: headers);
+    return json.decode(response.body);
+  }
+
   ////////////////////////////// Getters //////////////////////////////
 
   String get houseName => _house.name;
@@ -341,32 +369,10 @@ class DivvyProvider extends ChangeNotifier {
     if (chore == null) return;
     chore.changeName(name);
     // TODO: update DB
-    queryServer();
-    getFromServer();
+    // postToServer();
+    // getFromServer();
     notifyListeners();
   }
-
-  // DEVELOPMENT: Query functions //
-  // DELETE WHEN DONE //
-  Future<void> queryServer() async {
-    print('[QUERYING SERVER]');
-    Map<String, dynamic> request = {'house_id': '48', 'house_name': 'New house test', 'creator_user_id': 'u123'};
-    final uri = 'http://127.0.0.1:5000/add-house';
-    final headers = {'Content-Type': 'application/json'};
-    final response = await http.post(Uri.parse(uri), headers: headers, body: json.encode(request));
-    json.decode(response.body);
-  }
-
-  Future<void> getFromServer() async {
-    final uri = 'http://127.0.0.1:5000/get-house-49';
-    final headers = {'Content-Type': 'application/json'};
-    final response = await http.get(Uri.parse(uri), headers: headers);
-    Map<String, dynamic> body = json.decode(response.body);
-    body.forEach((key, value) {
-      print('$key: $value');
-    });
-  }
-  // END DEV //
 
   /// Toggles if the chore is completed or not
   void toggleChoreInstanceCompletedState({
@@ -488,7 +494,7 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Delete chore (superclass)
+  /// Create a new house with the given name
   void createHouse(String houseName) async {
     final joinCode = await nanoid(10);
     final newHouse = House.fromNew(
@@ -496,11 +502,11 @@ class DivvyProvider extends ChangeNotifier {
       uid: FirebaseAuth.instance.currentUser!.uid,
       joinCode: joinCode,
     );
-    // final jsonHouse = newHouse.toJson();
-    // TODO: update db!!
     print(
       'Creating ${newHouse.name} house (id: ${newHouse.id}): join code ${newHouse.joinCode}}',
     );
+    await postToServer(data: newHouse.toJson(), serverFunc: 'house');
+    // TODO: update user's user doc with id
     notifyListeners();
   }
 
