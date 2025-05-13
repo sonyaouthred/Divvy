@@ -4,6 +4,9 @@ A chore sharing app that aims to eliminates conflicts over chores serving as a n
 
 Build in Flutter, using Firebase as database and connected to backend via Flask.
 
+## Backend
+We have two repos one for backend and this on for frontend in order to run the app with connection to backend you must set up and run the backend repo which is located at https://github.com/Arkanous/DivvyBackend. 
+
 ## Table of Contents
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
