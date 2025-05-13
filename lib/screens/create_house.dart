@@ -1,11 +1,13 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 /// Allows user to join a house using a unique six-digit code.
 class CreateHouse extends StatefulWidget {
@@ -159,7 +161,10 @@ class _CreateHouseState extends State<CreateHouse> {
     }
     // TODO: obviously, replace with db call
     // Update user's db with the code
-    print('Creating house ${_nameController.text}');
+    Provider.of<DivvyProvider>(
+      context,
+      listen: false,
+    ).createHouse(_nameController.text);
     // Push user to home page
     Navigator.of(context).pushReplacement(
       PageTransition(

@@ -284,20 +284,20 @@ List<List<DateTime>> getSurroundingDates(DateTime day) {
 /// Returns a string representing the frequency
 String getFrequencySentence(Chore chore) {
   String dates = '';
-  if (chore.frequency == Frequency.weekly) {
-    for (int day in chore.dayOfWeek) {
+  if (chore.frequency.pattern == Frequency.weekly) {
+    for (int day in chore.frequency.daysOfWeek) {
       dates += '${getNameOfWeekday(day)}, ';
     }
     // slice trailing comma
     dates = dates.substring(0, dates.length - 2);
   }
-  switch (chore.frequency) {
+  switch (chore.frequency.pattern) {
     case Frequency.daily:
       return "Once every day";
     case Frequency.monthly:
       return "Once every month";
     case Frequency.weekly:
-      return "${getRepetition(chore.dayOfWeek.length)} on $dates";
+      return "${getRepetition(chore.frequency.daysOfWeek.length)} on $dates";
   }
 }
 

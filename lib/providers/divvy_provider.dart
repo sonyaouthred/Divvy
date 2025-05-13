@@ -6,7 +6,10 @@ import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/util/date_funcs.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:nanoid/async.dart';
+import 'package:uuid/uuid.dart';
 
 class DivvyProvider extends ChangeNotifier {
   late final Member _currentUser;
@@ -385,6 +388,21 @@ class DivvyProvider extends ChangeNotifier {
   // TODO: implement delete entire house
   void deleteHouse() {
     print('Deleting the house....');
+  }
+
+  /// Delete chore (superclass)
+  void createHouse(String houseName) async {
+    final joinCode = await nanoid(10);
+    final newHouse = House.fromNew(
+      houseName: houseName,
+      uid: FirebaseAuth.instance.currentUser!.uid,
+      joinCode: joinCode,
+    );
+    final jsonHouse = newHouse.toJson();
+    // TODO: update db
+    print(
+      'Creating ${newHouse.name} house (id: ${newHouse.id}): join code ${newHouse.joinCode}}',
+    );
   }
 
   /// Delete chore (superclass)

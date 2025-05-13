@@ -1,7 +1,9 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/subgroup.dart';
+import 'package:flutter/material.dart';
 
 /// represents a house with a collection of users
 class Member {
@@ -41,6 +43,25 @@ class Member {
        _email = email,
        _subgroups = subgroups;
 
+  /// Creates a new member from uid, email, and name.
+  factory Member.fromNew({
+    required String uid,
+    required Email email,
+    required String name,
+  }) {
+    final time = DateTime.now();
+    return Member(
+      chores: [],
+      name: name,
+      id: uid,
+      email: email,
+      dateJoined: time,
+      profilePicture: Colors.black,
+      onTimePct: 0,
+      subgroups: [],
+    );
+  }
+
   /// From a json map, returns a new User object
   /// with relevant fields filled out.
   factory Member.fromJson(Map<String, dynamic> json) {
@@ -48,12 +69,26 @@ class Member {
       name: json['name'],
       id: json['id'],
       chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
-      dateJoined: json['dateJoined'],
+      dateJoined: (json['dateJoined'] as Timestamp).toDate(),
       profilePicture: json['profilePicture'] as Color,
       onTimePct: json['onTimePct'] as int,
       email: json['email'],
       subgroups: (json['subgroups'] as List<dynamic>).cast<SubgroupID>(),
     );
+  }
+
+  /// Returns member object as json
+  Map<String, dynamic> toJson() {
+    return {
+      'name': _name,
+      'id': _id,
+      'chores': _chores,
+      'dateJoined': Timestamp.fromDate(_dateJoined),
+      'profilePicture': _profilePicture,
+      'onTimePct': _onTimePct,
+      'email': _email,
+      'subgroups': _subgroups,
+    };
   }
 
   //// Getters

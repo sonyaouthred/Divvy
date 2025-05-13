@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/member.dart';
+import 'package:uuid/uuid.dart';
+
+const uuid = Uuid();
 
 /// represents a house with a collection of users
 class House {
@@ -30,6 +34,26 @@ class House {
        _members = members,
        _joinCode = joinCode;
 
+  /// Creates a new house object
+  factory House.fromNew({
+    required String houseName,
+    required String uid,
+    required String joinCode,
+  }) {
+    final dateCreated = DateTime.now();
+    // no initial members other than current user
+    final houseID = uuid.v4();
+    final members = [uid];
+    return House(
+      dateCreated: dateCreated,
+      id: houseID,
+      imageID: '',
+      members: members,
+      name: houseName,
+      joinCode: joinCode,
+    );
+  }
+
   /// From a json map, returns a new House object
   /// with relevant fields filled out.
   factory House.fromJson(Map<String, dynamic> json) {
@@ -37,10 +61,22 @@ class House {
       name: json['name'],
       id: json['id'],
       members: (json['members'] as List<dynamic>).cast<MemberID>(),
-      dateCreated: json['dateCreated'],
+      dateCreated: (json['dateCreated'] as Timestamp).toDate(),
       imageID: json['imageID'],
       joinCode: json['joinCode'],
     );
+  }
+
+  /// Converts the house object to a firestore-compatible map
+  Map<String, dynamic> toJson() {
+    return {
+      'name': _name,
+      'id': _id,
+      'members': _members,
+      'dateCreated': Timestamp.fromDate(_dateCreated),
+      'imageID': _imageID,
+      'joinCode': _joinCode,
+    };
   }
 
   HouseID get id => _id;

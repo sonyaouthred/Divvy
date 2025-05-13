@@ -2,6 +2,9 @@ import 'dart:ui';
 
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
+import 'package:uuid/uuid.dart';
+
+const uuid = Uuid();
 
 /// represents a subgroup of users
 class Subgroup {
@@ -29,6 +32,22 @@ class Subgroup {
        _chores = chores,
        _members = members;
 
+  /// Creates a new subgroup object (no chores)
+  factory Subgroup.fromNew({
+    required List<MemberID> members,
+    required String name,
+    required Color color,
+  }) {
+    final id = uuid.v4();
+    return Subgroup(
+      id: id,
+      profilePicture: color,
+      name: name,
+      chores: [],
+      members: members,
+    );
+  }
+
   /// From a json map, returns a new Subgroup object
   /// with relevant fields filled out.
   factory Subgroup.fromJson(Map<String, dynamic> json) {
@@ -39,6 +58,17 @@ class Subgroup {
       members: (json['members'] as List<dynamic>).cast<MemberID>(),
       profilePicture: json['profilePicture'] as Color,
     );
+  }
+
+  /// Returns subgroup object as json
+  Map<String, dynamic> toJson() {
+    return {
+      'name': _name,
+      'id': _id,
+      'chores': _chores,
+      'members': _members,
+      'profilePicture': _profilePicture,
+    };
   }
 
   //// Getters

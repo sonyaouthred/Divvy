@@ -17,8 +17,10 @@ dependencies:
   image_picker: ^1.1.2
   intl: ^0.20.2
   jiffy: ^6.4.3
+  nanoid: ^1.0.0
   page_transition: ^2.2.1
   provider: ^6.1.5
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
