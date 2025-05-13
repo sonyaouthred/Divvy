@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/chore.dart';
-import 'package:divvy/models/divvy_theme.dart';
-import 'package:flutter/material.dart';
 
 // use https://pub.dev/packages/nanoid for joinCode
 class Data {
@@ -10,12 +8,6 @@ class Data {
     'dateCreated': Timestamp.fromDate(DateTime(2025, 5, 1, 12, 33, 52)),
     'imageID': 'fdskglfhrktlewoirfdsnvn',
     'name': 'Avengers Tower',
-    'members': [
-      'gj343udjkbvjso',
-      '24889rhgksje',
-      '4392glkslkriep',
-      'e4930493jgjg3032',
-    ],
     'joinCode': 'lW611f30',
   };
 
@@ -24,8 +16,8 @@ class Data {
       'id': 'gj343udjkbvjso',
       'name': 'Tony Stark',
       'dateJoined': Timestamp.fromDate(DateTime(2025, 5, 1, 12, 33, 52)),
-      'profilePicture': DivvyTheme.darkGreen,
-      'onTimePct': 20,
+      'profilePicture': 'darkGreen',
+      'onTimePct': '20',
       'email': 'iamironman@avengers.com',
       'chores': ['fjdklt3953oigdss', '4o3u560rihgklfse', 't43iojy4io9ngh'],
       'subgroups': ['gwoiut59432jmgkls', 'jti24tu9042jgssdfds'],
@@ -34,8 +26,8 @@ class Data {
       'id': '24889rhgksje',
       'name': 'Natasha',
       'dateJoined': Timestamp.fromDate(DateTime(2025, 5, 2, 12, 33, 52)),
-      'profilePicture': DivvyTheme.darkGrey,
-      'onTimePct': 99,
+      'profilePicture': 'darkGrey',
+      'onTimePct': '99',
       'email': 'redacted@avengers.com',
       'chores': ['tji35932jglkmsklgewr', '4o3u560rihgklfse', 't43iojy4io9ngh'],
       'subgroups': ['jti24tu9042jgssdfds'],
@@ -44,8 +36,8 @@ class Data {
       'id': '4392glkslkriep',
       'name': 'Peter Parker',
       'dateJoined': Timestamp.fromDate(DateTime(2025, 5, 3, 12, 33, 52)),
-      'profilePicture': DivvyTheme.mediumGreen,
-      'onTimePct': 65,
+      'profilePicture': 'mediumGreen',
+      'onTimePct': '65',
       'email': 'friendlyneighborhoodspiderman@avengers.com',
       'chores': ['fjdklt3953oigdss', '4o3u560rihgklfse', 't43iojy4io9ngh'],
       'subgroups': ['gwoiut59432jmgkls', 'jti24tu9042jgssdfds'],
@@ -54,8 +46,8 @@ class Data {
       'id': 'e4930493jgjg3032',
       'name': 'Nick Fury',
       'dateJoined': Timestamp.fromDate(DateTime(2025, 5, 4, 12, 33, 52)),
-      'profilePicture': DivvyTheme.lightGreen,
-      'onTimePct': 82,
+      'profilePicture': 'lightGreen',
+      'onTimePct': '82',
       'email': 'fury@shield.gov',
       'chores': ['t43iojy4io9ngh'],
       'subgroups': [],
@@ -69,8 +61,7 @@ class Data {
       'description':
           'Clean the upstairs bathroom - counters, floors, toilet, and shower. Don\'t forget the sink!',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [4],
-      'instances': ['43u6irohgnklsfe', '4382ht64oiwjgtwep'],
+      'frequencyDays': ['4'],
       'emoji': '🛁',
       'assignees': ['gj343udjkbvjso', '4392glkslkriep'],
     },
@@ -80,8 +71,7 @@ class Data {
       'description':
           'Clean the downstairs bathroom - counters, floors, toilet, and shower. Don\'t forget the sink!',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [2, 5],
-      'instances': ['gksdgtjew5u320', 't4ewoj092u3gvnfgsew'],
+      'frequencyDays': ['2', '5'],
       'emoji': '🚽',
       'assignees': ['24889rhgksje'],
     },
@@ -91,12 +81,7 @@ class Data {
       'description':
           'Wipe down the kitchen counters, take out trash/recycling/compost.',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [1],
-      'instances': [
-        't4j290tu6j3iqonfgskdg',
-        'eit2ieognklsdmbh',
-        'ghkwr0t6j4320jmklh',
-      ],
+      'frequencyDays': ['1'],
       'emoji': '🧑‍🍳',
       'assignees': ['24889rhgksje', 'gj343udjkbvjso', '4392glkslkriep'],
     },
@@ -105,13 +90,7 @@ class Data {
       'name': 'Battle cleanup',
       'description': 'General cleanup duties after saving the world',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [3, 7],
-      'instances': [
-        'fkdeotj32ignbks',
-        't423u69toingbklfswrew',
-        'q3kopr21jthgrjwe3523',
-        't4h23oingmfsngioewt',
-      ],
+      'frequencyDays': ['3', '7'],
       'emoji': '🦸',
       'assignees': [
         'e4930493jgjg3032',
@@ -210,14 +189,14 @@ class Data {
     {
       'id': 'gwoiut59432jmgkls',
       'name': 'Tony & Peter',
-      'profilePicture': Colors.red,
+      'profilePicture': 'red',
       'members': ['gj343udjkbvjso', '4392glkslkriep'],
       'chores': ['fjdklt3953oigdss'],
     },
     {
       'id': 'jti24tu9042jgssdfds',
       'name': 'Avengers',
-      'profilePicture': Colors.lightGreen,
+      'profilePicture': 'lightGreen',
       'members': ['gj343udjkbvjso', '4392glkslkriep', '24889rhgksje'],
       'chores': ['4o3u560rihgklfse'],
     },

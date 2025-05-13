@@ -417,9 +417,6 @@ class DivvyProvider extends ChangeNotifier {
       }
     }
 
-    /// Remove member from house
-    _house.removeMember(id);
-
     // TODO: update db with updated list of house members
     print('$id left the house');
     notifyListeners();

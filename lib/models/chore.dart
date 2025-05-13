@@ -10,29 +10,23 @@ typedef ChoreInstID = String;
 /// Represents a chore object & general information
 class Chore {
   final ChoreID _id;
-  String _name;
+  String name;
   final ChoreFrequency _frequency;
-  final String _emoji;
-  final String _description;
+  final String emoji;
+  final String description;
   // List of people this chore is assigned to
   final List<MemberID> _assignees;
-  final List<ChoreInstID> _instances;
 
   Chore({
     required ChoreID id,
-    required String name,
+    required this.name,
     required ChoreFrequency frequency,
-    required String emoji,
-    required String description,
+    required this.emoji,
+    required this.description,
     required List<MemberID> assignees,
-    required List<ChoreInstID> instances,
   }) : _id = id,
-       _name = name,
        _frequency = frequency,
-       _emoji = emoji,
-       _description = description,
-       _assignees = assignees,
-       _instances = instances;
+       _assignees = assignees;
 
   /// Creates a new parent chore object with no instances.
   factory Chore.fromNew({
@@ -49,7 +43,6 @@ class Chore {
       name: name,
       frequency: choreFreq,
       id: id,
-      instances: [],
       assignees: assignees,
       emoji: emoji,
       description: description,
@@ -62,7 +55,6 @@ class Chore {
     return Chore(
       name: json['name'],
       id: json['id'],
-      instances: (json['instances'] as List<dynamic>).cast<ChoreInstID>(),
       assignees: (json['assignees'] as List<dynamic>).cast<MemberID>(),
       description: json['description'],
       emoji: json['emoji'],
@@ -76,12 +68,11 @@ class Chore {
   /// Returns a json version of the chore object
   Map<String, dynamic> toJson() {
     return {
-      'name': _name,
+      'name': name,
       'id': _id,
-      'instances': _instances,
       'assignees': _assignees,
-      'description': _description,
-      'emoji': _emoji,
+      'description': description,
+      'emoji': emoji,
       'frequencyPattern': _frequency.pattern.name,
       'frequencyDays': _frequency.daysOfWeek,
     };
@@ -90,17 +81,13 @@ class Chore {
   /// Getters
 
   ChoreID get id => _id;
-  String get name => _name;
   ChoreFrequency get frequency => _frequency;
-  String get emoji => _emoji;
-  String get description => _description;
   List<MemberID> get assignees => List.from(_assignees);
-  List<ChoreInstID> get instances => List.from(_instances);
 
   /// Changes the name of a chore
   void changeName(String newName) {
     if (newName.isNotEmpty) {
-      _name = newName;
+      name = newName;
     }
   }
 

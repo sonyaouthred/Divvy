@@ -3,8 +3,11 @@ import 'package:divvy/models/member.dart';
 
 /// Represents basic data about a user, just their id, email, and house id
 class User {
+  // User's uid. Same as their FirebaseAuth ID
   final String id;
+  // User's email
   final Email email;
+  // User's house id that they belong to
   final HouseID houseID;
 
   User({required this.id, required this.email, required this.houseID});

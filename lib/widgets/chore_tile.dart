@@ -26,6 +26,7 @@ class ChoreTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
+
     // Get super chore for information
     if (superChore == null) {
       if (choreInst == null) return Placeholder();
