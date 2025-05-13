@@ -314,4 +314,65 @@ class DivvyProvider extends ChangeNotifier {
     }
     return res;
   }
+
+  /// Updates user name with inputed name
+  // TODO: complete update user name
+  void updateUserName (String name){
+    _currentUser = Member(id: _currentUser.id, dateJoined: _currentUser.dateJoined,
+     profilePicture: _currentUser.profilePicture, name: name, 
+     chores: _currentUser.chores, onTimePct: _currentUser.onTimePct,
+      email: _currentUser.email, subgroups: _currentUser.subgroups);
+    notifyListeners();
+    print('Update user name');
+  }
+
+  /// Removes given user from the house
+  // TODO: complete user removeal from house
+  void userLeavesHouse (Member user){
+    print('${user.name} left the house');
+  }
+
+  /// Deletes a subgroup specified
+  // TODO: complete deleting subgroups
+  void deleteSubgroup (Subgroup subgroup) {
+
+    print('${subgroup.name} has been deleted');
+  }
+
+  /// Add a subgroup specified
+  // TODO: complete adding subgroups
+  void addSubgroup (String name, List<Member> members, List<Chore> chores) {
+    print('${name} subgroup added');
+  }
+
+  /// Removes user from house
+  // TODO: implement remove user from house
+  void removeUserHouse (String email) {
+    print('$email removed from house');
+  }
+
+  /// Add user to house
+  // TODO: implement add user to house
+  void addUserHouse (String email) {
+    print('$email added to house');
+  }
+
+  /// Updating house name
+  // TODO: implemnet update house name
+  void updateHouseName (String newName) {
+    print('$newName is now house name');
+  }
+
+  /// Delete the entire house
+  // TODO: implement delete entire house
+  void deleteHouse () {
+    print('Deleting the house....');
+  }
+
+  /// Delete chore (superclass)
+  // TODO: implement delete chore superclass
+  void deleteSuperclassChore (String choreID) {
+    print('Deleting ${choreID} chore');
+  }
+
 }

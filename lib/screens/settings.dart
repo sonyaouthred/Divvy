@@ -8,6 +8,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:intl/number_symbols_data.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -317,8 +318,8 @@ class _SettingsState extends State<Settings> {
     );
     // Process name
     if (newName != null) {
-      // TODO(bhoop2b): update provider
-      print('Changing name to: $newName');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(context, listen: false).updateUserName(newName);
     }
   }
 
@@ -330,6 +331,7 @@ class _SettingsState extends State<Settings> {
       title: 'Re-enter password',
       hideText: true,
     );
+    
     // // Ensure user is not logged out (makes compiler happy)
     // if (_user == null) return;
     // // Get user's username & password
@@ -370,7 +372,9 @@ class _SettingsState extends State<Settings> {
       action: 'Leave',
     );
     if (leave != null && leave) {
-      print('Leaving house...');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(context, listen: false).userLeavesHouse(_currUser);
+       // TODO: transition to screen of join house only
     } else {
       print('not leaving house!');
     }

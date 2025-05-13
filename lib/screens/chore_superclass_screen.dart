@@ -128,8 +128,8 @@ class ChoreSuperclassScreen extends StatelessWidget {
     if (delete != null && delete && context.mounted) {
       final confirm = await confirmDeleteDialog(context, 'Delete Chore');
       if (confirm != null && confirm) {
-        // TODO: update provider
-        print('Ok, finally deleting');
+        if (!context.mounted) return;
+        Provider.of<DivvyProvider>(context, listen: false,).deleteSuperclassChore(choreID);
       }
     }
   }
