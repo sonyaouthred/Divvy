@@ -76,7 +76,10 @@ void main() {
     test('Weekly recurrence month edge w/ spring savings', () {
       final startDate = DateTime(2025, 2, 22);
       // Every saturday
-      final dates = getDateList(Frequency.weekly, [6], startDate);
+      final dates = getDateList(
+        ChoreFrequency(pattern: Frequency.weekly, daysOfWeek: [6]),
+        startDate,
+      );
 
       expect(dates, [
         DateTime(2025, 2, 22),
@@ -97,7 +100,10 @@ void main() {
     test('Weekly recurrence with multiple days of week', () {
       final startDate = DateTime(2025, 2, 22);
       // Every saturday & monday
-      final dates = getDateList(Frequency.weekly, [1, 6], startDate);
+      final dates = getDateList(
+        ChoreFrequency(pattern: Frequency.weekly, daysOfWeek: [1, 6]),
+        startDate,
+      );
 
       expect(dates, [
         DateTime(2025, 2, 22),
@@ -131,7 +137,10 @@ void main() {
 
     test('Daily recurrence daylight savings fall edge', () {
       final startDate = DateTime(2024, 11, 3);
-      final dates = getDateList(Frequency.daily, [], startDate);
+      final dates = getDateList(
+        ChoreFrequency(pattern: Frequency.daily, daysOfWeek: []),
+        startDate,
+      );
       expect(dates.length, 91);
       // Expect "biggest" day to be start + 90 days
       expect(
@@ -145,7 +154,10 @@ void main() {
     });
     test('Monthly recurring dates', () {
       final startDate = DateTime(2025, 1, 1);
-      final dates = getDateList(Frequency.monthly, [], startDate);
+      final dates = getDateList(
+        ChoreFrequency(pattern: Frequency.monthly, daysOfWeek: []),
+        startDate,
+      );
       expect(dates, [
         DateTime(2025, 1, 1),
         DateTime(2025, 2, 1),
@@ -154,7 +166,10 @@ void main() {
     });
     test('Monthly recurring dates, different number of days', () {
       final startDate = DateTime(2025, 4, 10);
-      final dates = getDateList(Frequency.monthly, [], startDate);
+      final dates = getDateList(
+        ChoreFrequency(pattern: Frequency.monthly, daysOfWeek: []),
+        startDate,
+      );
       expect(dates, [
         DateTime(2025, 4, 10),
         DateTime(2025, 5, 10),

@@ -183,7 +183,14 @@ class _SettingsState extends State<Settings> {
 
   /// Displays greeting to user
   Widget _introPhrase({required String name}) {
-    return Text('Hi, $name!', style: DivvyTheme.largeHeaderBlack);
+    final email = FirebaseAuth.instance.currentUser!.email!;
+    return Column(
+      children: [
+        Text('Hi, $name!', style: DivvyTheme.largeHeaderBlack),
+        // show current user's email
+        Text(email, style: DivvyTheme.bodyGrey),
+      ],
+    );
   }
 
   /// Displays account information sections
