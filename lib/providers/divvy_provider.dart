@@ -490,9 +490,29 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Adds a created chore object to the database
+  /// Adds a created chore superclass object to the database.
+  /// auto generates instances for the next 90 days
   void addChore(Chore chore) {
     _chores.add(chore);
+    final assignees = chore.assignees;
+    // get list of dates we should make instances for
+    final dateList = getDateList(chore.frequency, DateTime.now());
+    final List<ChoreInst> instList = [];
+    for (int i = 0; i < dateList.length; i++) {
+      // get date
+      final date = dateList[i];
+      // get assignee
+      final assignee = assignees[i % assignees.length];
+      // create chore instance
+      final choreInst = ChoreInst.fromNew(
+        superCID: chore.id,
+        due: date,
+        assignee: assignee,
+      );
+      instList.add(choreInst);
+    }
+    // update stored map
+    _choreInstances[chore.id] = instList;
     // TODO: update db!!!!
     print('adding chore object to db');
     notifyListeners();

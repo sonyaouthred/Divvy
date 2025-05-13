@@ -32,14 +32,10 @@ String getFormattedDate(DateTime dueDate) {
 ///   - monthly: repeat once monthly on the same date for 3 months
 ///   - daily: repeat every day for 90 days + start date
 ///   - weekly: repeat weekly on the [daysOfWeek] weekdays for a 90 day period
-List<DateTime> getDateList(
-  Frequency frequency,
-  List<int> daysOfWeek,
-  DateTime startDate,
-) {
+List<DateTime> getDateList(ChoreFrequency frequency, DateTime startDate) {
   final List<DateTime> dates = [];
   DateTime endDate = startDate.add(const Duration(days: 90));
-  switch (frequency) {
+  switch (frequency.pattern) {
     case Frequency.monthly:
       // End date should be adjusted to only be three months after.
       endDate = Jiffy.parseFromDateTime(startDate).add(months: 3).dateTime;
@@ -71,13 +67,15 @@ List<DateTime> getDateList(
     case Frequency.weekly:
       DateTime curr = startDate;
       final currDayOfWeek = curr.weekday;
-      final smallestWeekday = daysOfWeek.reduce((a, b) => a < b ? a : b);
+      final smallestWeekday = frequency.daysOfWeek.reduce(
+        (a, b) => a < b ? a : b,
+      );
       // Verify that start date is the smallest day of the week
       if (currDayOfWeek != smallestWeekday) {
         final diff = currDayOfWeek - smallestWeekday;
         curr = curr.subtract(Duration(days: diff));
       }
-      dates.addAll(getDatesFromWeek(curr, daysOfWeek, endDate));
+      dates.addAll(getDatesFromWeek(curr, frequency.daysOfWeek, endDate));
       // advance week
       curr = curr.add(const Duration(days: 7));
       // Adjust for daylight savings (if applicable)
@@ -85,7 +83,7 @@ List<DateTime> getDateList(
       // Now iterate until we get to the end date!
       while (curr.isBefore(endDate)) {
         // Add the new date to the list
-        dates.addAll(getDatesFromWeek(curr, daysOfWeek, endDate));
+        dates.addAll(getDatesFromWeek(curr, frequency.daysOfWeek, endDate));
         // Add seven days (one week) until the start date is after the end date
         DateTime newDate = curr.add(const Duration(days: 7));
 
