@@ -49,7 +49,7 @@ class _HouseSettingsState extends State<HouseSettings> {
                       text: 'House Info',
                       buttons: [
                         ['Change Name', _changeHouseName],
-                        ['Delete House', _openChoresScreen],
+                        ['Delete House', _deleteHouse],
                       ],
                       flex: 2,
                       spacing: spacing,
@@ -149,8 +149,6 @@ class _HouseSettingsState extends State<HouseSettings> {
   ///////////////////////////// Util /////////////////////////////
 
   void _createSubgroup(BuildContext context) {
-    // TODO: navigate to subgroup screen
-    print('Adding subgroup...');
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => SubgroupAdd()));
@@ -172,7 +170,8 @@ class _HouseSettingsState extends State<HouseSettings> {
         'Delete subgroup ${_selectedSubgroup!.name}?',
       );
       if (delete != null && delete) {
-        print('Deleting subgroup ${_selectedSubgroup!.name}');
+        if (!context.mounted) return;
+        Provider.of<DivvyProvider>(context, listen: false).deleteSubgroup(_selectedSubgroup!);
       } else {
         print('cancelled delete');
       }
@@ -230,7 +229,7 @@ class _HouseSettingsState extends State<HouseSettings> {
     );
   }
 
-  /// Removes user, prompts for email
+  /// Adds user, prompts for email
   void _addMember(BuildContext context) async {
     final email = await openInputDialog(
       context,
@@ -239,8 +238,8 @@ class _HouseSettingsState extends State<HouseSettings> {
     );
     // Process emil
     if (email != null) {
-      // TODO(bhoop2b): update provider
-      print('Adding user: $email');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(context, listen: false).addUserHouse(email);
     }
   }
 
@@ -273,8 +272,8 @@ class _HouseSettingsState extends State<HouseSettings> {
           'Delete ${member.name} ($email)?',
         );
         if (delete != null && delete) {
-          // TODO(bhoop2b): update provider
-          print('Removing user: $email');
+          if (!context.mounted) return;
+          Provider.of<DivvyProvider>(context, listen: false).removeUserHouse(email);
         } else {
           print('cancelled delete');
         }
@@ -293,15 +292,29 @@ class _HouseSettingsState extends State<HouseSettings> {
     );
     // Process name
     if (newName != null) {
-      // TODO(bhoop2b): update provider
-      print('Changing house name to: $newName');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(context, listen: false).updateHouseName(newName);
     }
   }
 
   /// Opens the chores screen
-  void _openChoresScreen(BuildContext context) {
-    Navigator.of(
+  void _deleteHouse(BuildContext context) async {
+    final password = await openInputDialog(
       context,
-    ).push(MaterialPageRoute(builder: (context) => Chores()));
+      title: 'Re-enter password',
+      hideText: true,
+    );
+    final delete = await confirmDeleteDialog(
+      context,
+      'Delete house?',
+      action: 'Delete',
+    );
+
+    if (delete != null && delete) {
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(context, listen: false).deleteHouse();
+    } else {
+      print('not deleting house!');
+    }
   }
 }

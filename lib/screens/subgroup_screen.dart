@@ -140,8 +140,8 @@ class SubgroupScreen extends StatelessWidget {
     if (delete != null && delete && context.mounted) {
       final confirm = await confirmDeleteDialog(context, 'Delete Subgroup');
       if (confirm != null && confirm) {
-        // TODO: update provider
-        print('Ok, finally deleting');
+        if (!context.mounted) return;
+        Provider.of<DivvyProvider>(context, listen: false).deleteSubgroup(currSubgroup);
       }
     }
   }

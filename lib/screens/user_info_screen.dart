@@ -202,8 +202,8 @@ class UserInfoScreen extends StatelessWidget {
         action: 'Remove',
       );
       if (confirm != null && confirm) {
-        // TODO: update provider
-        print('Ok, finally removing');
+        if (!context.mounted) return;
+        Provider.of<DivvyProvider>(context, listen: false).userLeavesHouse(member);
       }
     }
   }

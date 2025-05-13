@@ -341,8 +341,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
         return;
       }
       // OK if subgroup has no chores (?)
-      // TODO: update provider
-      print('adding subgroup!');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(context, listen: false).addSubgroup(_nameController.text, _subgroupMember, _subgroupChore);
     } else {
       if (_nameController.text != '' ||
           _subgroupMember.isNotEmpty ||
