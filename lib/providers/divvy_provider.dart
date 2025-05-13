@@ -9,6 +9,8 @@ import 'package:divvy/util/date_funcs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nanoid/async.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 /// Provides data about a given house and all subgroups,
 /// chores, and members to the Divvy app UI.
@@ -339,8 +341,32 @@ class DivvyProvider extends ChangeNotifier {
     if (chore == null) return;
     chore.changeName(name);
     // TODO: update DB
+    queryServer();
+    getFromServer();
     notifyListeners();
   }
+
+  // DEVELOPMENT: Query functions //
+  // DELETE WHEN DONE //
+  Future<void> queryServer() async {
+    print('[QUERYING SERVER]');
+    Map<String, dynamic> request = {'house_id': '48', 'house_name': 'New house test', 'creator_user_id': 'u123'};
+    final uri = 'http://127.0.0.1:5000/add-house';
+    final headers = {'Content-Type': 'application/json'};
+    final response = await http.post(Uri.parse(uri), headers: headers, body: json.encode(request));
+    json.decode(response.body);
+  }
+
+  Future<void> getFromServer() async {
+    final uri = 'http://127.0.0.1:5000/get-house-49';
+    final headers = {'Content-Type': 'application/json'};
+    final response = await http.get(Uri.parse(uri), headers: headers);
+    Map<String, dynamic> body = json.decode(response.body);
+    body.forEach((key, value) {
+      print('$key: $value');
+    });
+  }
+  // END DEV //
 
   /// Toggles if the chore is completed or not
   void toggleChoreInstanceCompletedState({
