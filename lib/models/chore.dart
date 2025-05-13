@@ -64,7 +64,6 @@ class Chore {
       _name = newName;
     }
   }
-  
 }
 
 enum Frequency { daily, weekly, monthly }
@@ -72,7 +71,7 @@ enum Frequency { daily, weekly, monthly }
 /// Represents a specific instance of a chore
 class ChoreInst {
   // ID of parent chore
-  final ChoreID _parentID;
+  final ChoreID _superID;
   // ID of this instance
   final ChoreInstID _id;
   // Due date
@@ -91,7 +90,7 @@ class ChoreInst {
   }) : _id = id,
        _dueDate = dueDate,
        _isDone = isDone,
-       _parentID = choreID,
+       _superID = choreID,
        _assignee = assignee;
 
   /// From a json map, returns a new Subgroup object
@@ -108,7 +107,7 @@ class ChoreInst {
 
   /// Getters
 
-  ChoreID get choreID => _parentID;
+  ChoreID get superID => _superID;
   ChoreInstID get id => _id;
   DateTime get dueDate => _dueDate;
   bool get isDone => _isDone;
@@ -117,8 +116,6 @@ class ChoreInst {
   void toggleDone() {
     _isDone = !_isDone;
   }
-
-
 }
 
 typedef ChoreID = String;

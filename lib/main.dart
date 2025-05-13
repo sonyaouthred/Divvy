@@ -1,6 +1,7 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/firebase_options.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';

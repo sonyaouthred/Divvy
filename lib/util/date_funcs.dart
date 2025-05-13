@@ -280,3 +280,36 @@ List<List<DateTime>> getSurroundingDates(DateTime day) {
   }
   return dates;
 }
+
+/// Returns a string representing the frequency
+String getFrequencySentence(Chore chore) {
+  String dates = '';
+  if (chore.frequency == Frequency.weekly) {
+    for (int day in chore.dayOfWeek) {
+      dates += '${getNameOfWeekday(day)}, ';
+    }
+    // slice trailing comma
+    dates = dates.substring(0, dates.length - 2);
+  }
+  switch (chore.frequency) {
+    case Frequency.daily:
+      return "Once every day";
+    case Frequency.monthly:
+      return "Once every month";
+    case Frequency.weekly:
+      return "${getRepetition(chore.dayOfWeek.length)} on $dates";
+  }
+}
+
+// A string representing how many times this chore is repeated
+// a week
+String getRepetition(int numDays) => switch (numDays) {
+  1 => 'Once every week',
+  2 => 'Twice a week',
+  3 => 'Three times a week',
+  4 => 'Four times a week',
+  5 => 'Five times a week',
+  6 => 'Six times a week',
+  7 => 'Seven times a week',
+  int() => 'Error',
+};

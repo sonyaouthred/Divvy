@@ -9,6 +9,9 @@ import 'package:provider/provider.dart';
 
 // import 'package:divvy/models/divvy_theme.dart';
 // Commented out for testing
+
+/// Displays the current user's dashboard with their upcoming chores,
+/// house leaderboard, etc.
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
@@ -30,7 +33,11 @@ class _DashboardState extends State<Dashboard> {
     // get tasks due today
     _todayChores = providerRef.getTodayChores(_currUser.id);
     // get tasks in next week
-    _thisWeekChores = providerRef.getUpcomingChores(_currUser.id);
+    _thisWeekChores =
+        providerRef
+            .getUpcomingChores(_currUser.id)
+            .where((chore) => !chore.isDone)
+            .toList();
     // get overdue chores
     _overdueChores = providerRef.getOverdueChores(_currUser.id);
   }
@@ -44,7 +51,11 @@ class _DashboardState extends State<Dashboard> {
         // get tasks due today
         _todayChores = provider.getTodayChores(_currUser.id);
         // get tasks in next week
-        _thisWeekChores = provider.getUpcomingChores(_currUser.id);
+        _thisWeekChores =
+            provider
+                .getUpcomingChores(_currUser.id)
+                .where((chore) => !chore.isDone)
+                .toList();
         // get overdue chores
         _overdueChores = provider.getOverdueChores(_currUser.id);
         return SizedBox.expand(
@@ -63,7 +74,12 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   // display any overdue chores
                   _displayRecentChores(spacing),
-                  Text('Your upcoming tasks:', style: DivvyTheme.bodyBoldBlack),
+                  // Display header for upcoming chores, if it applies
+                  if (_thisWeekChores.isNotEmpty)
+                    Text(
+                      'Your upcoming tasks:',
+                      style: DivvyTheme.bodyBoldBlack,
+                    ),
                   SizedBox(height: spacing / 2),
                   // Only display today's chores if overdue chores exist
                   _displayCompactTodayChores(spacing),

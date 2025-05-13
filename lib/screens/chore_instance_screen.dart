@@ -3,12 +3,15 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/util/date_funcs.dart';
+import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Displays information about a given chore instance
-class ChoreInstanceScreen extends StatefulWidget {
+class ChoreInstanceScreen extends StatelessWidget {
+  // The current chore instance
   final ChoreInstID choreInstanceId;
+  // The ID of the superclass of the chore instance
   final ChoreID choreID;
 
   const ChoreInstanceScreen({
@@ -18,30 +21,23 @@ class ChoreInstanceScreen extends StatefulWidget {
   });
 
   @override
-  State<ChoreInstanceScreen> createState() => _ChoreInstanceScreenState();
-}
-
-class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
-  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final spacing = width * 0.02;
+    final spacing = width * 0.05;
 
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Get the super chore for this instance
-        Chore parentChore = provider.getSuperChore(widget.choreID);
+        Chore parentChore = provider.getSuperChore(choreID);
         // Get the updated instance (potentially with new info) from provider
         ChoreInst choreInstance = provider.getChoreInstanceFromID(
-          widget.choreID,
-          widget.choreInstanceId,
+          choreID,
+          choreInstanceId,
         );
         // Get the assignee to the chore
         Member thisAssignee = provider.getMemberById(choreInstance.assignee);
         // Get a list of other people assigned to the chore
-        List<Member> otherAssignees = provider.getMembersDoingChore(
-          widget.choreID,
-        );
+        List<Member> otherAssignees = provider.getMembersDoingChore(choreID);
         // Remove the current assingee from list of other assignees
         otherAssignees.removeWhere((member) => member.id == thisAssignee.id);
 
@@ -53,40 +49,49 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
             scrolledUnderElevation: 0,
             backgroundColor: DivvyTheme.background,
           ),
-          bottomNavigationBar:
-              isInstanceOverdue(choreInstance)
-                  ? Container(
-                    height: 50, // 👈 this keeps it compact
-                    // color: Colors.red[100], // optional background
-                    padding: EdgeInsets.only(bottom: 15),
-                    child: Center(
-                      child: Text(
-                        "CHORE OVERDUE!",
-                        style: DivvyTheme.largeHeaderRed,
-                      ),
-                    ),
-                  )
-                  : null,
           body: SizedBox.expand(
-            child: SingleChildScrollView(
-              child: Container(
-                width: width,
-                padding: EdgeInsets.symmetric(horizontal: spacing),
-                child: Column(
-                  children: [
-                    _displayChoreName(parentChore.emoji, parentChore.name),
-                    _displayAssigneeAndDueDate(
-                      thisAssignee.name,
-                      choreInstance.dueDate,
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Container(
+                    width: width,
+                    padding: EdgeInsets.symmetric(horizontal: spacing),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: spacing),
+                        // Display name of chore, current assignee,
+                        // and due date
+                        _displayCurrChoreInfo(
+                          parentChore,
+                          choreInstance,
+                          thisAssignee,
+                          spacing,
+                        ),
+                        SizedBox(height: spacing),
+                        // Display the other people assigned to this chore
+                        _displayOtherAssignees(
+                          otherAssignees,
+                          parentChore,
+                          spacing,
+                        ),
+                        SizedBox(height: spacing),
+                        // Display the frequency this chore repeats
+                        _displayFrequency(spacing, parentChore),
+                      ],
                     ),
-                    _displayOtherAssigneesAndFrequency(
-                      otherAssignees,
-                      parentChore.frequency,
-                    ),
-                    _markAsCompleteButton(choreInstance, provider),
-                  ],
+                  ),
                 ),
-              ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: _markCompleteButton(
+                    context,
+                    spacing,
+                    choreInstance,
+                    provider,
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -94,112 +99,143 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
     );
   }
 
-  bool isInstanceOverdue(ChoreInst instance) {
-    return instance.dueDate.isBefore(DateTime.now()) && !instance.isDone;
-  }
+  /// Returns true if the given chore instance is overdue.
+  bool isInstanceOverdue(ChoreInst instance) =>
+      instance.dueDate.isBefore(DateTime.now()) && !instance.isDone;
 
-  Widget _markAsCompleteButton(
-    ChoreInst choreInstance,
-    DivvyProvider provider,
-  ) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          provider.toggleChoreInstanceCompletedState(
-            choreInstance.choreID,
-            choreInstance.id,
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: DivvyTheme.beige,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(12),
-          ),
-        ),
-        child: Text(
-          choreInstance.isDone ? "MARK AS INCOMPLETE" : "MARK AS COMPLETE",
-          style: DivvyTheme.largeHeaderBlack,
-        ),
-      ),
-    );
-  }
-
-  Widget _displayChoreName(String emojiText, String choreName) {
-    return Card(
-      color: DivvyTheme.background,
-      elevation: 2,
-      child: ListTile(
-        leading: Text(emojiText, style: TextStyle(fontSize: 40)),
-        title: Text(choreName, style: DivvyTheme.bodyBlack),
-      ),
-    );
-  }
-
-  String getFormattedDateTime(DateTime dueDate) {
-    return "${getFormattedDate(dueDate)} at ${getFormattedTime(dueDate)}";
-  }
-
-  Widget _displayAssigneeAndDueDate(String assigneeName, DateTime dueDate) {
-    String formattedDate = getFormattedDate(dueDate);
-
-    return Card(
-      color: DivvyTheme.background,
-      elevation: 1,
-
-      child: Container(
-        padding: EdgeInsets.all(10),
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  /// Displays the information for this chore and its instance.
+  Widget _displayCurrChoreInfo(
+    Chore chore,
+    ChoreInst inst,
+    Member assignee,
+    double spacing,
+  ) => Container(
+    decoration: DivvyTheme.textInput,
+    padding: EdgeInsets.only(
+      left: spacing,
+      right: spacing,
+      bottom: spacing,
+      top: spacing * 0.75,
+    ),
+    child: Column(
+      children: [
+        Row(
           children: [
-            Text(
-              "Assignee Name: $assigneeName",
-              style: DivvyTheme.largeHeaderGrey,
+            Text(chore.emoji, style: TextStyle(fontSize: 30)),
+            SizedBox(width: spacing),
+            Text(chore.name, style: DivvyTheme.largeBodyBlack),
+          ],
+        ),
+        SizedBox(height: spacing / 2),
+        // Display current assignee adn their profile picture
+        Row(
+          children: [
+            Text("Assignee: ", style: DivvyTheme.bodyBoldBlack),
+            SizedBox(width: spacing / 2),
+            Container(
+              decoration: DivvyTheme.profileCircle(assignee.profilePicture),
+              height: 25,
+              width: 25,
             ),
-            SizedBox(width: 10),
-            Text("Due Date: $formattedDate", style: DivvyTheme.largeHeaderGrey),
+            SizedBox(width: spacing / 2),
+            Text(assignee.name, style: DivvyTheme.bodyBlack),
           ],
         ),
-      ),
-    );
-  }
-
-  String _getFrequencySentence(Frequency frequency) {
-    if (frequency == Frequency.daily) {
-      return "Once every day.";
-    } else if (frequency == Frequency.monthly) {
-      return "Once every month";
-    } else {
-      return "Once every week";
-    }
-  }
-
-  Widget _displayOtherAssigneesAndFrequency(
-    List<Member> otherAssignees,
-    Frequency frequency,
-  ) {
-    return Card(
-      color: DivvyTheme.background,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        SizedBox(height: spacing),
+        // Displays due date, in red if overdue
+        Row(
           children: [
-            Text("Other Assignees:", style: DivvyTheme.largeHeaderGrey),
-            otherAssignees.isEmpty
-                ? Text("None", style: DivvyTheme.bodyGrey)
-                : SizedBox(),
-            ...otherAssignees.map((assignee) {
-              return Text(assignee.name, style: DivvyTheme.bodyGrey);
-            }),
-            SizedBox(height: 10),
-            Text("Frequency:", style: DivvyTheme.largeHeaderGrey),
-            Text(_getFrequencySentence(frequency), style: DivvyTheme.bodyGrey),
+            Text("Due Date: ", style: DivvyTheme.bodyBoldBlack),
+            SizedBox(width: spacing / 2),
+            Text(
+              getFormattedDate(inst.dueDate),
+              style: DivvyTheme.bodyBlack.copyWith(
+                color:
+                    isInstanceOverdue(inst)
+                        ? DivvyTheme.darkRed
+                        : DivvyTheme.black,
+              ),
+            ),
           ],
         ),
+      ],
+    ),
+  );
+
+  /// Displays the other people this chore is assigned to
+  Widget _displayOtherAssignees(
+    List<Member> otherAssignees,
+    Chore superChore,
+    double spacing,
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("Other Assignees:", style: DivvyTheme.bodyBoldBlack),
+      otherAssignees.isEmpty
+          ? Text("None", style: DivvyTheme.bodyGrey)
+          : SizedBox(),
+      SizedBox(height: spacing / 2),
+      ...otherAssignees.map((assignee) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: spacing / 4),
+          child: MemberTile(member: assignee, spacing: spacing),
+        );
+      }),
+    ],
+  );
+
+  /// The frequency this chore is repeated
+  Widget _displayFrequency(double spacing, Chore superChore) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("Frequency:", style: DivvyTheme.bodyBoldBlack),
+      SizedBox(height: spacing / 4),
+      Text(getFrequencySentence(superChore), style: DivvyTheme.bodyBlack),
+    ],
+  );
+
+  /// Displays if chore is complete or not. Tapping toggles completion
+  Widget _markCompleteButton(
+    BuildContext context,
+    double spacing,
+    ChoreInst choreInst,
+    DivvyProvider provider,
+  ) => InkWell(
+    onTap: () {
+      // Toggle completion and pop screen
+      provider.toggleChoreInstanceCompletedState(
+        superChoreID: choreInst.superID,
+        choreInstId: choreInst.id,
+      );
+      Navigator.of(context).pop();
+    },
+    highlightColor: Colors.transparent,
+    splashColor: Colors.transparent,
+    child: Container(
+      height: 60,
+      margin: EdgeInsets.all(spacing * 3),
+      decoration: DivvyTheme.completeBox(choreInst.isDone),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Display check and text representing current state
+          Icon(
+            Icons.check,
+            color:
+                choreInst.isDone
+                    ? DivvyTheme.background
+                    : DivvyTheme.mediumGreen,
+          ),
+          SizedBox(width: spacing),
+          Text(
+            choreInst.isDone ? 'Complete' : 'Mark Complete',
+            style:
+                choreInst.isDone
+                    ? DivvyTheme.largeBoldMedWhite
+                    : DivvyTheme.largeBoldMedGreen,
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

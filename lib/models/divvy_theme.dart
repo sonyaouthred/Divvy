@@ -178,6 +178,14 @@ class DivvyTheme {
     ],
   );
 
+  static BoxDecoration completeBox(bool isDone) => BoxDecoration(
+    color: isDone ? DivvyTheme.mediumGreen : DivvyTheme.background,
+    borderRadius: BorderRadius.circular(30),
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
+    ],
+  );
+
   static BoxDecoration box(Color color) => BoxDecoration(
     color: DivvyTheme.white,
     border: BoxBorder.all(color: color, width: 2),

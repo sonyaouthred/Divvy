@@ -64,10 +64,13 @@ class UserInfoScreen extends StatelessWidget {
                     // (icon, name, email)
                     _userInfo(member, spacing),
                     SizedBox(height: spacing * 1.5),
+                    // Display user's on-time chore stats
                     _statsTile(member, memRank, spacing),
                     SizedBox(height: spacing * 1.5),
+                    // Display the subgroups this user is a member of
                     _subgroupsArea(member, memberSubgroups, spacing),
                     SizedBox(height: spacing),
+                    // Display the upcoming chores for this user
                     _upcomingChoreArea(
                       member,
                       upcomingChores,
@@ -100,9 +103,9 @@ class UserInfoScreen extends StatelessWidget {
                 Text(member.name, style: DivvyTheme.bodyBoldBlack),
                 Text(
                   member.email,
-                  maxLines: 1,
+                  maxLines: 2,
                   style: DivvyTheme.bodyGrey,
-                  overflow: TextOverflow.fade,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

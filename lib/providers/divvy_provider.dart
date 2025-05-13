@@ -47,9 +47,9 @@ class DivvyProvider extends ChangeNotifier {
     final Map<ChoreID, List<ChoreInst>> choreinsts = {};
     for (var inst in data.choreInstances) {
       final choreInst = ChoreInst.fromJson(inst);
-      choreinsts[choreInst.choreID] == null
-          ? choreinsts[choreInst.choreID] = [choreInst]
-          : choreinsts[choreInst.choreID]!.add(choreInst);
+      choreinsts[choreInst.superID] == null
+          ? choreinsts[choreInst.superID] = [choreInst]
+          : choreinsts[choreInst.superID]!.add(choreInst);
     }
     _choreInstances = choreinsts;
 
@@ -155,11 +155,11 @@ class DivvyProvider extends ChangeNotifier {
   }
 
   /// Toggles if the chore is completed or not
-  void toggleChoreInstanceCompletedState(
-    ChoreID choreId,
-    ChoreInstID choreInstId,
-  ) {
-    ChoreInst choreInstance = _choreInstances[choreId]!.firstWhere(
+  void toggleChoreInstanceCompletedState({
+    required ChoreID superChoreID,
+    required ChoreInstID choreInstId,
+  }) {
+    ChoreInst choreInstance = _choreInstances[superChoreID]!.firstWhere(
       (instance) => instance.id == choreInstId,
     );
     choreInstance.toggleDone();

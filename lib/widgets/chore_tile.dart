@@ -32,7 +32,7 @@ class ChoreTile extends StatelessWidget {
       superChore = Provider.of<DivvyProvider>(
         context,
         listen: false,
-      ).getSuperChore(choreInst!.choreID);
+      ).getSuperChore(choreInst!.superID);
     }
     // Build chore tile
     return InkWell(
@@ -42,7 +42,7 @@ class ChoreTile extends StatelessWidget {
                   ? _openChoreInstancePage(
                     context,
                     choreInst!.id,
-                    choreInst!.choreID,
+                    choreInst!.superID,
                   )
                   : _openSuperChorePage(context, superChore!),
       child:
@@ -132,7 +132,9 @@ class ChoreTile extends StatelessWidget {
                         ),
                         if (choreInst != null)
                           Text(
-                            isOverdue
+                            choreInst!.isDone
+                                ? 'Complete!'
+                                : isOverdue
                                 ? 'Was due ${getNameOfWeekday(choreInst!.dueDate.weekday)}, '
                                     '${DateFormat.yMMMMd('en_US').format(choreInst!.dueDate)} at '
                                     '${getFormattedTime(choreInst!.dueDate)}'

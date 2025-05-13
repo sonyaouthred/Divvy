@@ -48,6 +48,7 @@ class House {
   String get imageID => _imageID;
   String get name => _name;
   List<MemberID> get members => List.from(_members);
+  String get joinCode => _joinCode;
 }
 
 // Simplify definitions
