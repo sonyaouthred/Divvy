@@ -81,6 +81,13 @@ class DivvyTheme {
       color: black,
     ),
   );
+  static TextStyle bodyBoldRed = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 15,
+      color: darkRed,
+    ),
+  );
   static TextStyle bodyBlack = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.normal,

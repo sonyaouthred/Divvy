@@ -19,7 +19,7 @@ class MemberTile extends StatelessWidget {
       highlightColor: Colors.transparent,
       child: Column(
         children: [
-          SizedBox(height: spacing / 2),
+          SizedBox(height: spacing * 0.3),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

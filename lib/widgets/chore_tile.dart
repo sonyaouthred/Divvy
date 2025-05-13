@@ -107,6 +107,7 @@ class ChoreTile extends StatelessWidget {
             ? (choreInst!.dueDate.isBefore(DateTime.now()) &&
                 !choreInst!.isDone)
             : false;
+    print(isOverdue);
     return Column(
       children: [
         Row(

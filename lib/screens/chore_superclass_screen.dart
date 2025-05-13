@@ -38,6 +38,9 @@ class ChoreSuperclassScreen extends StatelessWidget {
           );
         }
 
+        // Get the list of overdue chores for this super class
+        List<ChoreInst> overdueChores = provider.getOverdueChoresByID(chore);
+
         // Sort the upcoming chores by due date
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
 
@@ -78,21 +81,21 @@ class ChoreSuperclassScreen extends StatelessWidget {
                     _frequencyWidget(chore, spacing),
                     _customDivider(spacing),
                     _getAssigneesWidget(context, choreAssignees, spacing),
-                    SizedBox(height: spacing),
-                    upcomingChores.isEmpty
-                        ? SizedBox()
-                        : Text("Upcoming:", style: DivvyTheme.bodyBoldGrey),
-                    SizedBox(height: spacing),
-                    ...upcomingChores.map((ChoreInst choreInst) {
-                      return _upcomingChoreInstanceTile(
-                        choreInst,
-                        choreAssignees.firstWhere(
-                          (member) => member.id == choreInst.assignee,
-                        ),
-                        context,
-                        spacing,
-                      );
-                    }),
+                    SizedBox(height: spacing / 2),
+                    // Display overdue chores (if any)
+                    _displayOverdueChores(
+                      context,
+                      overdueChores,
+                      choreAssignees,
+                      spacing,
+                    ),
+                    // Display upcoming chores (if any)
+                    _displayUpcomingChores(
+                      context,
+                      upcomingChores,
+                      choreAssignees,
+                      spacing,
+                    ),
                     SizedBox(height: spacing * 3),
                   ],
                 ),
@@ -129,130 +132,174 @@ class ChoreSuperclassScreen extends StatelessWidget {
       final confirm = await confirmDeleteDialog(context, 'Delete Chore');
       if (confirm != null && confirm) {
         if (!context.mounted) return;
-        Provider.of<DivvyProvider>(context, listen: false,).deleteSuperclassChore(choreID);
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).deleteSuperclassChore(choreID);
       }
     }
   }
 
+  /// Displays all overdue chores for this chore superclass
+  Widget _displayUpcomingChores(
+    BuildContext context,
+    List<ChoreInst> upcomingChores,
+    List<Member> members,
+    double spacing,
+  ) {
+    if (upcomingChores.isEmpty) return Container();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Upcoming:", style: DivvyTheme.bodyBoldGrey),
+        SizedBox(height: spacing),
+        ...upcomingChores.map((ChoreInst choreInst) {
+          return _choreInstTileWAssignee(
+            choreInst,
+            members.firstWhere((member) => member.id == choreInst.assignee),
+            context,
+            spacing,
+          );
+        }),
+      ],
+    );
+  }
+
+  /// Displays all overdue chores for this chore superclass
+  Widget _displayOverdueChores(
+    BuildContext context,
+    List<ChoreInst> overdueChores,
+    List<Member> members,
+    double spacing,
+  ) {
+    if (overdueChores.isEmpty) return Container();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Overdue:", style: DivvyTheme.bodyBoldRed),
+        SizedBox(height: spacing),
+        ...overdueChores.map((ChoreInst choreInst) {
+          return _choreInstTileWAssignee(
+            choreInst,
+            members.firstWhere((member) => member.id == choreInst.assignee),
+            context,
+            spacing,
+          );
+        }),
+      ],
+    );
+  }
+
   /// Shows an upcoming chore instance and who it's assigned to
-  Widget _upcomingChoreInstanceTile(
+  Widget _choreInstTileWAssignee(
     ChoreInst choreInstance,
     Member member,
     BuildContext context,
     double spacing,
-  ) {
-    return InkWell(
-      onTap: () => _openChoreInstance(context, choreInstance),
-      child: Column(
-        children: [
-          _memberTile(member, spacing),
-          SizedBox(height: spacing / 2),
-          ChoreTile(choreInst: choreInstance),
-          SizedBox(height: spacing / 2),
-        ],
-      ),
-    );
-  }
+  ) => InkWell(
+    onTap: () => _openChoreInstance(context, choreInstance),
+    child: Column(
+      children: [
+        _memberTile(member, spacing),
+        SizedBox(height: spacing / 2),
+        ChoreTile(choreInst: choreInstance),
+        SizedBox(height: spacing / 2),
+      ],
+    ),
+  );
 
   /// Displays the frequency of the chore
-  Widget _frequencyWidget(Chore chore, double spacing) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Frequency:", style: DivvyTheme.bodyBoldBlack),
-        SizedBox(height: spacing / 2),
-        // The frequency of the chore
-        Text(getFrequencySentence(chore), style: DivvyTheme.bodyBlack),
-      ],
-    );
-  }
+  Widget _frequencyWidget(Chore chore, double spacing) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("Frequency:", style: DivvyTheme.bodyBoldBlack),
+      SizedBox(height: spacing / 2),
+      // The frequency of the chore
+      Text(getFrequencySentence(chore), style: DivvyTheme.bodyBlack),
+    ],
+  );
 
   /// Displays all the members currently assigned to this chore
   Widget _getAssigneesWidget(
     BuildContext context,
     List<Member> members,
     double spacing,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Assignees:", style: DivvyTheme.bodyBoldBlack),
-        SizedBox(height: spacing / 3),
-        ...members.map((member) {
-          return MemberTile(member: member, spacing: spacing);
-        }),
-      ],
-    );
-  }
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("Assignees:", style: DivvyTheme.bodyBoldBlack),
+      SizedBox(height: spacing / 2),
+      ...members.map((member) {
+        return MemberTile(member: member, spacing: spacing);
+      }),
+    ],
+  );
 
   // Displays a tile for a given member, including profile photo
   // and name
-  Widget _memberTile(Member member, double spacing) {
-    return Row(
-      children: [
-        Container(
-          decoration: DivvyTheme.profileCircle(member.profilePicture),
-          height: 25,
-          width: 25,
-        ),
-        SizedBox(width: spacing / 2),
-        Text(member.name, style: DivvyTheme.smallBodyBlack),
-      ],
-    );
-  }
+  Widget _memberTile(Member member, double spacing) => Row(
+    children: [
+      Container(
+        decoration: DivvyTheme.profileCircle(member.profilePicture),
+        height: 25,
+        width: 25,
+      ),
+      SizedBox(width: spacing / 2),
+      Text(member.name, style: DivvyTheme.smallBodyBlack),
+    ],
+  );
 
   /// Displays a horizontal divider
-  Widget _customDivider(double spacing) {
-    return Column(
-      children: [
-        SizedBox(height: spacing / 2),
-        Divider(indent: 10, color: DivvyTheme.altBeige),
-        SizedBox(height: spacing / 2),
-      ],
-    );
-  }
+  Widget _customDivider(double spacing) => Column(
+    children: [
+      SizedBox(height: spacing / 2),
+      Divider(indent: 10, color: DivvyTheme.altBeige),
+      SizedBox(height: spacing / 2),
+    ],
+  );
 
   /// Displays the title of the chore and allows user to edit
-  Widget _choreEditableTile(Chore chore, BuildContext context, double spacing) {
-    return Container(
-      decoration: DivvyTheme.standardBox,
-      padding: EdgeInsets.symmetric(vertical: spacing / 2),
-      child: ListTile(
-        leading: Text(chore.emoji, style: TextStyle(fontSize: 40)),
-        title: Text(chore.name, style: DivvyTheme.bodyBlack),
-        trailing: IconButton(
-          onPressed: () async {
-            // prompt for new name and assign if valid
-            final newName = await openInputDialog(
+  Widget _choreEditableTile(
+    Chore chore,
+    BuildContext context,
+    double spacing,
+  ) => Container(
+    decoration: DivvyTheme.standardBox,
+    padding: EdgeInsets.symmetric(vertical: spacing / 2),
+    child: ListTile(
+      leading: Text(chore.emoji, style: TextStyle(fontSize: 40)),
+      title: Text(chore.name, style: DivvyTheme.bodyBlack),
+      trailing: IconButton(
+        onPressed: () async {
+          // prompt for new name and assign if valid
+          final newName = await openInputDialog(
+            context,
+            title: 'Edit Chore Name',
+            initText: chore.name,
+          );
+          if (newName != null && context.mounted) {
+            Provider.of<DivvyProvider>(
               context,
-              title: 'Edit Chore Name',
-              initText: chore.name,
-            );
-            if (newName != null && context.mounted) {
-              Provider.of<DivvyProvider>(
-                context,
-                listen: false,
-              ).changeName(choreID, newName);
-            }
-          },
-          icon: Icon(CupertinoIcons.pencil),
-        ),
+              listen: false,
+            ).changeName(choreID, newName);
+          }
+        },
+        icon: Icon(CupertinoIcons.pencil),
       ),
-    );
-  }
+    ),
+  );
 
   ////////////////////////////// Util //////////////////////////////
 
   /// Opens screen for a given chore instance
-  void _openChoreInstance(BuildContext context, ChoreInst choreInstance) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (ctx) => ChoreInstanceScreen(
-              choreInstanceId: choreInstance.id,
-              choreID: choreInstance.superID,
-            ),
-      ),
-    );
-  }
+  void _openChoreInstance(BuildContext context, ChoreInst choreInstance) =>
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (ctx) => ChoreInstanceScreen(
+                choreInstanceId: choreInstance.id,
+                choreID: choreInstance.superID,
+              ),
+        ),
+      );
 }
