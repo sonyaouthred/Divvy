@@ -377,7 +377,7 @@ class _SettingsState extends State<Settings> {
       Provider.of<DivvyProvider>(
         context,
         listen: false,
-      ).userLeavesHouse(_currUser);
+      ).leaveHouse(_currUser.id);
       // Push join hosue screen
       Navigator.of(context).pushReplacement(
         PageTransition(

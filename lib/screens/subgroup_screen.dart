@@ -10,6 +10,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Displays information about a given subgroup.
+/// Displays name, members, and chores.
+/// Allows user to delete subgroup.
 class SubgroupScreen extends StatelessWidget {
   final Subgroup currSubgroup;
   const SubgroupScreen({super.key, required this.currSubgroup});
@@ -23,6 +26,8 @@ class SubgroupScreen extends StatelessWidget {
         final List<Chore> currChores =
             currSubgroup.chores
                 .map((choreID) => provider.getSuperChore(choreID))
+                // filter out nulls
+                .whereType<Chore>()
                 .toList();
         final List<Member> members = provider.getMembersInSubgroup(
           currSubgroup.id,
@@ -55,11 +60,12 @@ class SubgroupScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Display members in subgroup
                     _displayMembers(spacing, members),
                     // Display chores for subgroup
-                    _displayChores(spacing, currChores),
+                    _displayChores(spacing, currChores, context),
                   ],
                 ),
               ),
@@ -79,7 +85,7 @@ class SubgroupScreen extends StatelessWidget {
       children: [
         // Title and add subgroup button
         Text('Members', style: DivvyTheme.bodyBoldBlack),
-        SizedBox(height: spacing / 2),
+        SizedBox(height: spacing),
         // List of subgroups
         ListView.builder(
           itemCount: members.length,
@@ -95,23 +101,47 @@ class SubgroupScreen extends StatelessWidget {
   }
 
   /// Listing all of subgroup chores
-  Widget _displayChores(double spacing, List<Chore> currChores) {
+  Widget _displayChores(
+    double spacing,
+    List<Chore> currChores,
+    BuildContext context,
+  ) {
     // Return view of subgroup chores
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Chores', style: DivvyTheme.bodyBoldBlack),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Chores', style: DivvyTheme.bodyBoldBlack),
+            InkWell(
+              onTap: () => _addChore(context),
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              child: SizedBox(
+                height: 45,
+                width: 45,
+                child: Icon(CupertinoIcons.add),
+              ),
+            ),
+          ],
+        ),
         SizedBox(height: spacing / 2),
         // Display the chore tiles for all chores due today
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: spacing / 4),
-          child: Column(
-            children:
-                currChores
-                    .map((chore) => ChoreTile(superChore: chore))
-                    .toList(),
+        if (currChores.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: spacing / 4),
+            child: Column(
+              children:
+                  currChores
+                      .map((chore) => ChoreTile(superChore: chore))
+                      .toList(),
+            ),
           ),
-        ),
+        if (currChores.isEmpty)
+          Center(
+            child: Text('No chores yet. Add one!', style: DivvyTheme.bodyGrey),
+          ),
       ],
     );
   }
@@ -138,11 +168,26 @@ class SubgroupScreen extends StatelessWidget {
           ),
     );
     if (delete != null && delete && context.mounted) {
-      final confirm = await confirmDeleteDialog(context, 'Delete Subgroup');
+      final confirm = await confirmDeleteDialog(
+        context,
+        'Delete Subgroup?',
+        message: 'This will also delete all associated chores.',
+      );
       if (confirm != null && confirm) {
         if (!context.mounted) return;
-        Provider.of<DivvyProvider>(context, listen: false).deleteSubgroup(currSubgroup);
+        // Leave screen
+        Navigator.pop(context);
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).deleteSubgroup(currSubgroup.id);
       }
     }
+  }
+
+  /// Add a chore!
+  void _addChore(BuildContext context) {
+    //TODO: connect to add chore
+    print('Add chore');
   }
 }

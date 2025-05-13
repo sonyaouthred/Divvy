@@ -13,7 +13,7 @@ class House {
   // image ID of the house's profile picture. Same as image ID in Cloud Storage
   final String _imageID;
   // user-assigned name of the house
-  final String _name;
+  String _name;
   // List of member IDs. Each ID is unique to the user & the same as their
   // firestore doc ID
   final List<MemberID> _members;
@@ -85,6 +85,18 @@ class House {
   String get name => _name;
   List<MemberID> get members => List.from(_members);
   String get joinCode => _joinCode;
+
+  /// setters
+
+  /// Removes a member from the house
+  void removeMember(MemberID memID) {
+    _members.remove(memID);
+  }
+
+  /// Change the house's name
+  void changeName(String newName) {
+    _name = newName;
+  }
 }
 
 // Simplify definitions

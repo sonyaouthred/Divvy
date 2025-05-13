@@ -25,7 +25,9 @@ class ChoreSuperclassScreen extends StatelessWidget {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Update data from provider
-        Chore chore = provider.getSuperChore(choreID);
+        Chore? chore = provider.getSuperChore(choreID);
+        // If chore no longer exists, show chore not found screen
+        if (chore == null) return _choreNotFoundScreen(width, spacing);
         List<Member> choreAssignees = provider.getChoreAssignees(choreID);
 
         // Get the list of upcoming chores for this super class
@@ -136,6 +138,8 @@ class ChoreSuperclassScreen extends StatelessWidget {
           context,
           listen: false,
         ).deleteSuperclassChore(choreID);
+        // leave screen
+        Navigator.of(context).pop();
       }
     }
   }
@@ -187,6 +191,28 @@ class ChoreSuperclassScreen extends StatelessWidget {
           );
         }),
       ],
+    );
+  }
+
+  /// Displays chore not found screen
+  Scaffold _choreNotFoundScreen(double width, double spacing) {
+    return Scaffold(
+      backgroundColor: DivvyTheme.background,
+      appBar: AppBar(
+        title: Text('Chore', style: DivvyTheme.screenTitle),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        backgroundColor: DivvyTheme.background,
+      ),
+      body: SizedBox.expand(
+        child: Container(
+          width: width,
+          padding: EdgeInsets.symmetric(horizontal: spacing),
+          child: Center(
+            child: Text('404: Chore not found', style: DivvyTheme.bodyBlack),
+          ),
+        ),
+      ),
     );
   }
 

@@ -77,6 +77,13 @@ class Subgroup {
   Color get profilePicture => _profilePicture;
   List<ChoreInstID> get chores => List.from(_chores);
   List<MemberID> get members => List.from(_members);
+
+  /// setters
+
+  /// remove a member from subgroup
+  void removeMember(MemberID memID) {
+    _members.remove(memID);
+  }
 }
 
 // Simplify definitions

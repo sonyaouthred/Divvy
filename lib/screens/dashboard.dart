@@ -117,15 +117,17 @@ class _DashboardState extends State<Dashboard> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: spacing / 4),
       child: Column(
-        children:
-            _todayChores
-                .map(
-                  (chore) => Padding(
-                    padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                    child: ChoreTile(choreInst: chore, compact: true),
-                  ),
-                )
-                .toList(),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Upcoming chores:', style: DivvyTheme.bodyBoldBlack),
+          SizedBox(height: spacing / 2),
+          ..._todayChores.map(
+            (chore) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+              child: ChoreTile(choreInst: chore, compact: true),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -135,6 +137,7 @@ class _DashboardState extends State<Dashboard> {
     if (_overdueChores.isEmpty) {
       // Return view of today's chores
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: spacing / 4),
           // # chores due today
@@ -171,7 +174,7 @@ class _DashboardState extends State<Dashboard> {
         SizedBox(height: spacing / 4),
         // # overdue chores
         Text(
-          'You have ${_overdueChores.length} overdue chore${_todayChores.length == 1 ? '' : 's'}!',
+          'You have ${_overdueChores.length} overdue chore${_overdueChores.length == 1 ? '' : 's'}!',
           style: DivvyTheme.bodyBlack.copyWith(color: DivvyTheme.darkRed),
         ),
         SizedBox(height: spacing / 2),

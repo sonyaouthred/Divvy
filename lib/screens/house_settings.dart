@@ -1,11 +1,13 @@
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/subgroup_add.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 const double _kItemExtent = 32.0;
@@ -174,7 +176,7 @@ class _HouseSettingsState extends State<HouseSettings> {
         Provider.of<DivvyProvider>(
           context,
           listen: false,
-        ).deleteSubgroup(_selectedSubgroup!);
+        ).deleteSubgroup(_selectedSubgroup!.id);
       } else {
         print('cancelled delete');
       }
@@ -285,10 +287,7 @@ class _HouseSettingsState extends State<HouseSettings> {
         );
         if (delete != null && delete) {
           if (!context.mounted) return;
-          Provider.of<DivvyProvider>(
-            context,
-            listen: false,
-          ).removeUserHouse(email);
+          Provider.of<DivvyProvider>(context, listen: false).leaveHouse(email);
         } else {
           print('cancelled delete');
         }
@@ -348,12 +347,20 @@ class _HouseSettingsState extends State<HouseSettings> {
           if (delete != null && delete && context.mounted) {
             // delete house!!
             Provider.of<DivvyProvider>(context, listen: false).deleteHouse();
+            // Push user to join house page
+            Navigator.of(context).pushReplacement(
+              PageTransition(
+                type: PageTransitionType.fade,
+                child: JoinHouse(),
+                duration: Duration(milliseconds: 100),
+              ),
+            );
           }
         }
       }
     } catch (e) {
       if (!context.mounted) return;
-      showErrorMessage(context, 'Invalid password', 'Please try again!');
+      showErrorMessage(context, 'Error deleting house', 'Please try again!');
     }
   }
 }

@@ -7,10 +7,13 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:nanoid/async.dart';
-import 'package:uuid/uuid.dart';
 
+/// Provides data about a given house and all subgroups,
+/// chores, and members to the Divvy app UI.
+/// Interfaces with the database to ensure data is live and
+/// updated.
 class DivvyProvider extends ChangeNotifier {
   late final Member _currentUser;
   late final House _house;
@@ -60,7 +63,8 @@ class DivvyProvider extends ChangeNotifier {
     _currentUser = _members.firstWhere((user) => user.id == currentUserID);
   }
 
-  /// Getters
+  ////////////////////////////// Getters //////////////////////////////
+
   String get houseName => _house.name;
   String get houseID => _house.id;
   String get houseJoinCode => _house.joinCode;
@@ -71,20 +75,29 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
-    Chore chore = getSuperChore(id);
+    Chore? chore = getSuperChore(id);
+    if (chore == null) return [];
 
-    return chore.assignees.map((assigneeId) {
-      return members.firstWhere((member) => member.id == assigneeId);
-    }).toList();
+    return chore.assignees
+        .map((assigneeId) => getMemberById(assigneeId))
+        // Filter out nulls
+        .whereType<Member>()
+        .toList();
   }
 
   /// Returns all super chores that belong to a given subgroup
   List<Chore> getSubgroupChores(SubgroupID id) {
-    Subgroup subgroup = subgroups.firstWhere((subgroup) => subgroup.id == id);
-
-    return subgroup.chores.map((choreId) {
-      return chores.firstWhere((chore) => chore.id == choreId);
-    }).toList();
+    final subgroup =
+        subgroups.where((subgroup) => subgroup.id == id).firstOrNull;
+    if (subgroup == null) return [];
+    // subgroup exists!
+    return subgroup.chores
+        .map((choreId) {
+          return chores.where((chore) => chore.id == choreId).firstOrNull;
+        })
+        // filter out nulls
+        .whereType<Chore>()
+        .toList();
   }
 
   /// Returns all subgroup IDs
@@ -129,50 +142,32 @@ class DivvyProvider extends ChangeNotifier {
   }
 
   /// Returns a super chore with the passed id
-  Chore getSuperChore(ChoreID id) {
-    return _chores.firstWhere((chore) => chore.id == id);
+  Chore? getSuperChore(ChoreID id) {
+    return _chores.where((chore) => chore.id == id).firstOrNull;
   }
 
   /// Returns a list of all members that are assigned to
   /// a given super chore
   List<Member> getMembersDoingChore(ChoreID choreID) {
-    Chore chore = getSuperChore(choreID);
+    Chore? chore = getSuperChore(choreID);
+    if (chore == null) return [];
 
+    // chore exists!
     List<MemberID> memberIdsOfChore = chore.assignees;
-
     List<Member> membersDoingChore = [];
 
     for (MemberID memberID in memberIdsOfChore) {
-      membersDoingChore.add(
-        members.firstWhere((member) => member.id == memberID),
-      );
+      final member = getMemberById(memberID);
+      // make sure member still exists
+      if (member != null) membersDoingChore.add(member);
     }
 
     return membersDoingChore;
   }
 
-  /// Changes the name of a super chore
-  void changeName(ChoreID choreID, String name) {
-    Chore chore = getSuperChore(choreID);
-    chore.changeName(name);
-    notifyListeners();
-  }
-
-  /// Toggles if the chore is completed or not
-  void toggleChoreInstanceCompletedState({
-    required ChoreID superChoreID,
-    required ChoreInstID choreInstId,
-  }) {
-    ChoreInst choreInstance = _choreInstances[superChoreID]!.firstWhere(
-      (instance) => instance.id == choreInstId,
-    );
-    choreInstance.toggleDone();
-    notifyListeners();
-  }
-
   /// Returns the member object matching the inputted ID
-  Member getMemberById(MemberID memberId) {
-    return members.firstWhere((member) => member.id == memberId);
+  Member? getMemberById(MemberID memberId) {
+    return members.where((member) => member.id == memberId).firstOrNull;
   }
 
   /// Returns all chore superclasses assigned to the passed member
@@ -313,81 +308,158 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Returns list of subgroups user is involved in
   List<Subgroup> getSubgroupsForMember(MemberID id) {
-    final member = _members.firstWhere((mem) => mem.id == id);
     final List<Subgroup> res = [];
+    final member = getMemberById(id);
+    if (member == null) return res;
     for (SubgroupID subID in member.subgroups) {
-      res.add(_subgroups.firstWhere((s) => s.id == subID));
+      final subgroup = _subgroups.where((s) => s.id == subID).firstOrNull;
+      // only add subgroup if it still exists
+      if (subgroup != null) res.add(subgroup);
     }
     return res;
   }
 
   /// Returns list of members in subgroup
   List<Member> getMembersInSubgroup(SubgroupID id) {
-    final subgroup = _subgroups.firstWhere((s) => s.id == id);
+    final subgroup = _subgroups.where((s) => s.id == id).firstOrNull;
     final List<Member> res = [];
+    if (subgroup == null) return res;
     for (MemberID memID in subgroup.members) {
-      res.add(_members.firstWhere((m) => m.id == memID));
+      final member = getMemberById(memID);
+      if (member != null) res.add(member);
     }
     return res;
   }
 
-  /// Updates user name with inputed name
-  // TODO: complete update user name
-  void updateUserName(String name) {
-    _currentUser = Member(
-      id: _currentUser.id,
-      dateJoined: _currentUser.dateJoined,
-      profilePicture: _currentUser.profilePicture,
-      name: name,
-      chores: _currentUser.chores,
-      onTimePct: _currentUser.onTimePct,
-      email: _currentUser.email,
-      subgroups: _currentUser.subgroups,
-    );
+  ////////////////////////////// Setters //////////////////////////////
+
+  /// Changes the name of a super chore
+  void changeName(ChoreID choreID, String name) {
+    Chore? chore = getSuperChore(choreID);
+    if (chore == null) return;
+    chore.changeName(name);
+    // TODO: update DB
     notifyListeners();
-    print('Update user name');
+  }
+
+  /// Toggles if the chore is completed or not
+  void toggleChoreInstanceCompletedState({
+    required ChoreID superChoreID,
+    required ChoreInstID choreInstId,
+  }) {
+    ChoreInst choreInstance = _choreInstances[superChoreID]!.firstWhere(
+      (instance) => instance.id == choreInstId,
+    );
+    choreInstance.toggleDone();
+    // TODO: update db
+    notifyListeners();
+  }
+
+  /// Updates user name with inputed name
+  void updateUserName(String name) {
+    _currentUser.name = name;
+    // TODO: update db's members collection
+    notifyListeners();
   }
 
   /// Removes given user from the house
-  // TODO: complete user removeal from house
-  void userLeavesHouse(Member user) {
-    print('${user.name} left the house');
+  void leaveHouse(MemberID id) {
+    // remove user from all subgroups they may be in
+    // delete subgroups that have nobody left
+    for (Subgroup sub in getSubgroupsForMember(id)) {
+      sub.removeMember(id);
+      if (sub.members.isEmpty) {
+        // delete subgroup!
+        // this will handle db update
+        deleteSubgroup(sub.id);
+      }
+    }
+
+    /// remove user from all chores they may have belonged to
+    for (Chore chore in getMemberChores(id)) {
+      chore.removeAssignee(id);
+      if (chore.assignees.isEmpty) {
+        // delete chore bc there are no more users on it
+        // this will handle db update
+        deleteSuperclassChore(chore.id);
+      }
+    }
+
+    /// Remove member from house
+    _house.removeMember(id);
+
+    // TODO: update db with updated list of house members
+    print('$id left the house');
+    notifyListeners();
   }
 
   /// Deletes a subgroup specified
-  // TODO: complete deleting subgroups
-  void deleteSubgroup(Subgroup subgroup) {
-    print('${subgroup.name} has been deleted');
+  void deleteSubgroup(SubgroupID subgroupID) {
+    // Delete any of their chores
+    for (Chore c in getSubgroupChores(subgroupID)) {
+      // delete super chore!
+      // this will handle db update
+      deleteSuperclassChore(c.id);
+    }
+    // Finally, remove the subgroup
+    _subgroups.removeWhere((sub) => sub.id == subgroupID);
+    // TODO: update with subgroup data
+    print('$subgroupID has been deleted');
+    notifyListeners();
   }
 
   /// Add a subgroup specified
   // TODO: complete adding subgroups
-  void addSubgroup(String name, List<Member> members, List<Chore> chores) {
-    print('${name} subgroup added');
-  }
-
-  /// Removes user from house
-  // TODO: implement remove user from house
-  void removeUserHouse(String email) {
-    print('$email removed from house');
-  }
-
-  /// Add user to house
-  // TODO: implement add user to house
-  void addUserHouse(String email) {
-    print('$email added to house');
+  void addSubgroup(
+    String name,
+    List<Member> members,
+    List<Chore> chores,
+    Color color,
+  ) {
+    final newSub = Subgroup.fromNew(
+      name: name,
+      members: members.map((mem) => mem.id).toList(),
+      color: color,
+    );
+    for (Chore c in chores) {
+      // add each chore to db
+      addChore(c);
+    }
+    _subgroups.add(newSub);
+    // TODO: update db with new subgroup doc
+    print('$name subgroup added');
+    notifyListeners();
   }
 
   /// Updating house name
-  // TODO: implemnet update house name
   void updateHouseName(String newName) {
+    _house.changeName(newName);
+    // TODO: update DB
     print('$newName is now house name');
+    notifyListeners();
   }
 
   /// Delete the entire house
   // TODO: implement delete entire house
   void deleteHouse() {
+    // delete all subgroups
+    final subgroups = List.from(_subgroups);
+    for (Subgroup subgroup in subgroups) {
+      // deletes all subgroups & their chores
+      deleteSubgroup(subgroup.id);
+    }
+    final chores = List.from(_chores);
+    for (Chore chore in chores) {
+      // deletes all supers & instances
+      deleteSuperclassChore(chore.id);
+    }
+    final members = List.from(_members);
+    for (Member mem in members) {
+      leaveHouse(mem.id);
+    }
+    // TODO: db needs to delete house doc
     print('Deleting the house....');
+    notifyListeners();
   }
 
   /// Delete chore (superclass)
@@ -398,16 +470,31 @@ class DivvyProvider extends ChangeNotifier {
       uid: FirebaseAuth.instance.currentUser!.uid,
       joinCode: joinCode,
     );
-    final jsonHouse = newHouse.toJson();
-    // TODO: update db
+    // final jsonHouse = newHouse.toJson();
+    // TODO: update db!!
     print(
       'Creating ${newHouse.name} house (id: ${newHouse.id}): join code ${newHouse.joinCode}}',
     );
+    notifyListeners();
   }
 
   /// Delete chore (superclass)
   // TODO: implement delete chore superclass
   void deleteSuperclassChore(String choreID) {
-    print('Deleting ${choreID} chore');
+    // delete all chore instances
+    _choreInstances[choreID] = [];
+    // TODO: update db to delete all chore instance docs
+    _chores.removeWhere((chore) => chore.id == choreID);
+    // TODO: update db to delete chore doc
+    print('Deleting $choreID chore');
+    notifyListeners();
+  }
+
+  /// Adds a created chore object to the database
+  void addChore(Chore chore) {
+    _chores.add(chore);
+    // TODO: update db!!!!
+    print('adding chore object to db');
+    notifyListeners();
   }
 }

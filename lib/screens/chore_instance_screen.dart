@@ -31,18 +31,22 @@ class ChoreInstanceScreen extends StatelessWidget {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Get the super chore for this instance
-        Chore parentChore = provider.getSuperChore(choreID);
+        Chore? parentChore = provider.getSuperChore(choreID);
+
+        // If chore no longer exists, show chore not found screen
+        if (parentChore == null) return _choreNotFoundScreen(width, spacing);
+
         // Get the updated instance (potentially with new info) from provider
         ChoreInst choreInstance = provider.getChoreInstanceFromID(
           choreID,
           choreInstanceId,
         );
         // Get the assignee to the chore
-        Member thisAssignee = provider.getMemberById(choreInstance.assignee);
+        Member? thisAssignee = provider.getMemberById(choreInstance.assignee);
         // Get a list of other people assigned to the chore
         List<Member> otherAssignees = provider.getMembersDoingChore(choreID);
         // Remove the current assingee from list of other assignees
-        otherAssignees.removeWhere((member) => member.id == thisAssignee.id);
+        otherAssignees.removeWhere((member) => member.id == thisAssignee?.id);
 
         return Scaffold(
           backgroundColor: DivvyTheme.background,
@@ -117,6 +121,28 @@ class ChoreInstanceScreen extends StatelessWidget {
     );
   }
 
+  /// Displays chore not found screen
+  Scaffold _choreNotFoundScreen(double width, double spacing) {
+    return Scaffold(
+      backgroundColor: DivvyTheme.background,
+      appBar: AppBar(
+        title: Text('Chore', style: DivvyTheme.screenTitle),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        backgroundColor: DivvyTheme.background,
+      ),
+      body: SizedBox.expand(
+        child: Container(
+          width: width,
+          padding: EdgeInsets.symmetric(horizontal: spacing),
+          child: Center(
+            child: Text('404: Chore not found', style: DivvyTheme.bodyBlack),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Returns true if the given chore instance is overdue.
   bool isInstanceOverdue(ChoreInst instance) =>
       instance.dueDate.isBefore(DateTime.now()) && !instance.isDone;
@@ -126,7 +152,7 @@ class ChoreInstanceScreen extends StatelessWidget {
     BuildContext context,
     Chore chore,
     ChoreInst inst,
-    Member assignee,
+    Member? assignee,
     double spacing,
   ) => Container(
     decoration: DivvyTheme.textInput,
@@ -148,18 +174,22 @@ class ChoreInstanceScreen extends StatelessWidget {
         SizedBox(height: spacing / 2),
         // Display current assignee adn their profile picture
         InkWell(
-          onTap: () => _openMemberPage(context, assignee),
+          onTap:
+              () =>
+                  (assignee != null) ? _openMemberPage(context, assignee) : (),
           child: Row(
             children: [
               Text("Assignee: ", style: DivvyTheme.bodyBoldBlack),
               SizedBox(width: spacing / 2),
-              Container(
-                decoration: DivvyTheme.profileCircle(assignee.profilePicture),
-                height: 25,
-                width: 25,
-              ),
-              SizedBox(width: spacing / 2),
-              Text(assignee.name, style: DivvyTheme.bodyBlack),
+              if (assignee != null)
+                Container(
+                  decoration: DivvyTheme.profileCircle(assignee.profilePicture),
+                  height: 25,
+                  width: 25,
+                ),
+              if (assignee != null) SizedBox(width: spacing / 2),
+              if (assignee != null)
+                Text(assignee.name, style: DivvyTheme.bodyBlack),
             ],
           ),
         ),

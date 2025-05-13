@@ -24,12 +24,16 @@ class UserInfoScreen extends StatelessWidget {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Update fields with provider information
-        Member member = provider.getMemberById(memberID);
+        Member? member = provider.getMemberById(memberID);
         int memRank = provider.getRank(memberID);
         List<Subgroup> memberSubgroups = provider.getSubgroupsForMember(
           memberID,
         );
         List<ChoreInst> upcomingChores = provider.getUpcomingChores(memberID);
+        if (member == null) {
+          // user no longer exists!!
+          return _userNotFoundScreen(width, spacing);
+        }
 
         return Scaffold(
           backgroundColor: DivvyTheme.background,
@@ -84,6 +88,28 @@ class UserInfoScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// Displays user not found screen
+  Scaffold _userNotFoundScreen(double width, double spacing) {
+    return Scaffold(
+      backgroundColor: DivvyTheme.background,
+      appBar: AppBar(
+        title: Text('Member', style: DivvyTheme.screenTitle),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        backgroundColor: DivvyTheme.background,
+      ),
+      body: SizedBox.expand(
+        child: Container(
+          width: width,
+          padding: EdgeInsets.symmetric(horizontal: spacing),
+          child: Center(
+            child: Text('404: Member not found', style: DivvyTheme.bodyBlack),
+          ),
+        ),
+      ),
     );
   }
 
@@ -206,7 +232,10 @@ class UserInfoScreen extends StatelessWidget {
       );
       if (confirm != null && confirm) {
         if (!context.mounted) return;
-        Provider.of<DivvyProvider>(context, listen: false).userLeavesHouse(member);
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).leaveHouse(member.id);
       }
     }
   }

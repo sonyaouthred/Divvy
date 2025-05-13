@@ -20,7 +20,6 @@ class SubgroupAdd extends StatefulWidget {
 
 class _SubgroupAddState extends State<SubgroupAdd> {
   late List<Member> _members;
-  late List<Chore> _chores;
   List<Member> _displayMembers = [];
   final List<Member> _subgroupMember = [];
   final List<Chore> _subgroupChore = [];
@@ -32,10 +31,6 @@ class _SubgroupAddState extends State<SubgroupAdd> {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _members = providerRef.members;
-    // TODO: only allow chores that aren't currently assigned to a group
-    // to be shown. Don't want to override another group.
-    // Possibly even only allow user to create a chore for the subgroup?
-    _chores = providerRef.chores;
     _displayMembers.addAll(_members);
     // Initialize text editing controllers
     _searchController = TextEditingController();
@@ -67,9 +62,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
               padding: EdgeInsets.all(spacing),
               child: Consumer<DivvyProvider>(
                 builder: (context, provider, child) {
-                  // update members & chores live
+                  // update members available
                   _members = provider.members;
-                  _chores = provider.chores;
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,6 +74,7 @@ class _SubgroupAddState extends State<SubgroupAdd> {
                       SizedBox(height: spacing * 2),
                       _displayAssignees(spacing),
                       _displayChores(spacing),
+                      SizedBox(height: spacing * 2),
                       Center(child: _buttons(spacing)),
                       // Buffer for end of scroll view
                       SizedBox(height: spacing * 4),
@@ -245,27 +240,30 @@ class _SubgroupAddState extends State<SubgroupAdd> {
             ),
           ],
         ),
-        SizedBox(height: spacing / 4),
+        if (_subgroupChore.isNotEmpty) SizedBox(height: spacing / 4),
         // Display the chore tiles for all chores due today
         // List of subgroups
-        ListView.builder(
-          itemCount: _chores.length,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (BuildContext context, int index) {
-            bool isLast = false;
-            if (index == _chores.length - 1) isLast = true;
-            // Render the member's profile picture and name
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: spacing / 3),
-              child: _choreTile(
-                chore: _chores[index],
-                spacing: spacing,
-                isLast: isLast,
-              ),
-            );
-          },
-        ),
+        if (_subgroupChore.isNotEmpty)
+          ListView.builder(
+            itemCount: _subgroupChore.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (BuildContext context, int index) {
+              bool isLast = false;
+              if (index == _subgroupChore.length - 1) isLast = true;
+              // Render the member's profile picture and name
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: spacing / 3),
+                child: _choreTile(
+                  chore: _subgroupChore[index],
+                  spacing: spacing,
+                  isLast: isLast,
+                ),
+              );
+            },
+          ),
+        if (_subgroupChore.isEmpty)
+          Text('Add a chore for this subgroup!', style: DivvyTheme.bodyGrey),
       ],
     );
   }
@@ -322,6 +320,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
   ///////////////////////////// Util /////////////////////////////
 
   /// Pop back, either saving changes or abandoning them.
+  /// If user has created chores but opts **not** to save subgroup,
+  /// chores are forgotten
   void _popBack(BuildContext context, bool save) async {
     if (save) {
       // Save subgroup
@@ -340,9 +340,14 @@ class _SubgroupAddState extends State<SubgroupAdd> {
         );
         return;
       }
-      // OK if subgroup has no chores (?)
+      // Saves chores user may have created
       if (!context.mounted) return;
-      Provider.of<DivvyProvider>(context, listen: false).addSubgroup(_nameController.text, _subgroupMember, _subgroupChore);
+      Provider.of<DivvyProvider>(context, listen: false).addSubgroup(
+        _nameController.text,
+        _subgroupMember,
+        _subgroupChore,
+        Colors.black,
+      );
     } else {
       if (_nameController.text != '' ||
           _subgroupMember.isNotEmpty ||
@@ -357,7 +362,6 @@ class _SubgroupAddState extends State<SubgroupAdd> {
           // user does not want to exit, so return
           return;
         }
-        print('exiting');
       }
     }
     if (!context.mounted) return;
@@ -366,6 +370,10 @@ class _SubgroupAddState extends State<SubgroupAdd> {
 
   void _addChore(BuildContext context) {
     //TODO: connect to add chore
+    // IMPORTANT: the add chore screen should **not** add this
+    // chore to the database. This screen will add to db if
+    // user decides to save subgroup.
     print('Add chore');
+    // TODO: after adding chore, add it to _subgroupChores
   }
 }

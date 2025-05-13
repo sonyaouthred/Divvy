@@ -55,16 +55,7 @@ class HouseChores extends StatelessWidget {
                     ),
                     // Display subgroup chores
                     SizedBox(height: spacing),
-                    Text('Subgroup Chores', style: DivvyTheme.bodyBoldBlack),
-                    SizedBox(height: spacing),
-                    ...subgroups.map(
-                      (subgroup) => _subgroupChoresWidget(
-                        subgroup,
-                        provider,
-                        context,
-                        spacing,
-                      ),
-                    ),
+                    _subgroupChores(spacing, subgroups, context),
                     SizedBox(height: spacing / 2),
                     Text('House Chores', style: DivvyTheme.bodyBoldBlack),
                     SizedBox(height: spacing / 2),
@@ -101,16 +92,37 @@ class HouseChores extends StatelessWidget {
     );
   }
 
+  /// Display all chores for user's subgroups
+  Widget _subgroupChores(
+    double spacing,
+    List<Subgroup> subgroups,
+    BuildContext context,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Subgroup Chores', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing),
+        ...subgroups.map(
+          (subgroup) => _subgroupChoresList(subgroup, context, spacing),
+        ),
+      ],
+    );
+  }
+
   /// Show all chores that belong to a given subgroup
-  Widget _subgroupChoresWidget(
+  Widget _subgroupChoresList(
     Subgroup subgroup,
-    DivvyProvider provider,
     BuildContext context,
     double spacing,
   ) {
     // list of chores for subgroup
-    List<Chore> choresUnderSubgroup = provider.getSubgroupChores(subgroup.id);
+    List<Chore> choresUnderSubgroup = Provider.of<DivvyProvider>(
+      context,
+      listen: false,
+    ).getSubgroupChores(subgroup.id);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
@@ -119,18 +131,24 @@ class HouseChores extends StatelessWidget {
             Text(subgroup.name, style: DivvyTheme.bodyBlack),
           ],
         ),
-        SizedBox(height: spacing / 2),
-        Column(
-          children:
-              choresUnderSubgroup
-                  .map(
-                    (chore) => Padding(
-                      padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                      child: ChoreTile(superChore: chore),
-                    ),
-                  )
-                  .toList(),
-        ),
+        SizedBox(height: spacing),
+        if (choresUnderSubgroup.isNotEmpty)
+          Column(
+            children:
+                choresUnderSubgroup
+                    .map(
+                      (chore) => Padding(
+                        padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                        child: ChoreTile(superChore: chore),
+                      ),
+                    )
+                    .toList(),
+          ),
+        if (choresUnderSubgroup.isEmpty)
+          Padding(
+            padding: EdgeInsets.only(left: spacing / 2),
+            child: Text('No chores yet!', style: DivvyTheme.bodyGrey),
+          ),
         SizedBox(height: spacing / 2),
       ],
     );

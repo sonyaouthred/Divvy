@@ -103,6 +103,11 @@ class Chore {
       _name = newName;
     }
   }
+
+  /// Removes assignee
+  void removeAssignee(MemberID memID) {
+    _assignees.remove(memID);
+  }
 }
 
 enum Frequency { daily, weekly, monthly }

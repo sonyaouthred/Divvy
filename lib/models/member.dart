@@ -100,6 +100,9 @@ class Member {
   List<ChoreInstID> get chores => List.from(_chores);
   List<SubgroupID> get subgroups => List.from(_subgroups);
   String get email => _email;
+
+  /// Setters
+  set name(String name) => _name = name;
 }
 
 // Simplify definitions
