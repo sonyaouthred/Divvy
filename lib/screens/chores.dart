@@ -5,11 +5,13 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/chore_superclass_screen.dart';
+import 'package:divvy/screens/edit_or_add_chore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Chores extends StatefulWidget {
+  
   const Chores({super.key});
 
   @override
@@ -34,15 +36,19 @@ class _ChoresState extends State<Chores> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Card(
-                    color: DivvyTheme.background,
-                    elevation: 2,
-                    child: ListTile(
-                      leading: IconButton(
-                        onPressed: () {},
-                        icon: Icon(CupertinoIcons.add),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                              MaterialPageRoute(builder: (ctx) => EditOrAddChore(choreID: null))
+                            );
+                    },
+                    child: Card(
+                      color: DivvyTheme.background,
+                      elevation: 2,
+                      child: ListTile(
+                        leading: Icon(CupertinoIcons.add),
+                        title: Text("Add Chore", style: DivvyTheme.bodyBoldBlack),
                       ),
-                      title: Text("Add Chore", style: DivvyTheme.bodyBoldBlack),
                     ),
                   ),
                   SizedBox(height: 20),

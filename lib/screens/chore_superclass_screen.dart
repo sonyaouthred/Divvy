@@ -37,10 +37,12 @@ class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
         for (Member member in choreAssignees) {
           upcomingChores.addAll(
             provider
-                .getUpcomingChores(member.id)
+                .getUpcomingChoresLessStrict(member.id)
                 .where((chore) => chore.choreID == widget.choreID),
           );
         }
+
+        print(upcomingChores);
 
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
 

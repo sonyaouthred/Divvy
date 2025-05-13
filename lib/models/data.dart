@@ -79,7 +79,7 @@ class Data {
       'frequency': Frequency.weekly.name,
       'dayOfWeek': [2, 5],
       'instances': ['gksdgtjew5u320', 't4ewoj092u3gvnfgsew'],
-      'emoji': '🚽',
+      'emoji': '🚽',  
       'assignees': ['24889rhgksje'],
     },
     {

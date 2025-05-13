@@ -65,6 +65,17 @@ class DivvyProvider extends ChangeNotifier {
   List<Chore> get chores => List.from(_chores);
   Member get currentUser => _currentUser;
 
+  void addChore(Chore chore) {
+    _chores.add(chore);
+    notifyListeners();
+  }
+
+  void addChoreInstances(Chore chore, List<ChoreInst> choreInstances) {
+    _choreInstances[chore.id] = choreInstances;
+    print(choreInstances.length);
+    notifyListeners();
+  }
+
   List<Member> getChoreAssignees(ChoreID id) {
     Chore chore = getSuperChore(id);
 
@@ -192,6 +203,30 @@ class DivvyProvider extends ChangeNotifier {
                   inst.dueDate
                       .subtract(const Duration(days: 7))
                       .isBefore(DateTime.now()),
+            )
+            .toList(),
+      );
+    }
+    res.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
+    return res;
+  }
+
+  List<ChoreInst> getUpcomingChoresLessStrict(MemberID member) {
+    final List<ChoreInst> res = [];
+    final List<Chore> chores = getMemberChores(member);
+    for (Chore chore in chores) {
+      final instances = _choreInstances[chore.id];
+      // should never be triggered
+      if (instances == null) break;
+      // Add all instances assigned to this user.
+      res.addAll(
+        instances
+            .where(
+              (inst) =>
+                  inst.assignee == member &&
+                  // Check if the due date is before now
+                  !inst.dueDate.isBefore(DateTime.now())
+                  // check that due date is not today
             )
             .toList(),
       );
