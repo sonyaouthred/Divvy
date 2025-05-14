@@ -14,12 +14,9 @@ import 'package:divvy/main.dart';
 void main() {
   testWidgets('Find title in AppBar', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MainApp());
+    await tester.pumpWidget(const AuthWrapper());
 
     // Testing if there is an app bar
     expect(find.text('Divvy'), findsOneWidget);
-
-    // Testing if there is a navigation bar
-
   });
 }

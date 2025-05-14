@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 
@@ -14,25 +13,17 @@ class DivvyUser {
   DivvyUser({required this.id, required this.email, required this.houseID});
 
   /// Creates a new user not in a house
-  factory DivvyUser.fromNew({required String uid, required String email}) {
-    return DivvyUser(id: uid, email: email, houseID: '');
-  }
+  factory DivvyUser.fromNew({required String uid, required String email}) =>
+      DivvyUser(id: uid, email: email, houseID: '');
 
   /// Creates a new User object from a JSON object
-  factory DivvyUser.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> snapshot,
-    SnapshotOptions? options,
-  ) {
-    final data = snapshot.data();
-    return DivvyUser(
-      email: data?['email'],
-      id: data?['id'],
-      houseID: data?['houseID'],
-    );
-  }
+  factory DivvyUser.fromJson(Map<String, dynamic> data) =>
+      DivvyUser(email: data['email'], id: data['id'], houseID: data['houseID']);
 
   /// Returns a json object for the current user
-  Map<String, dynamic> toFirestore() {
-    return {'email': email, 'id': id, 'houseID': houseID};
-  }
+  Map<String, dynamic> toFirestore() => {
+    'email': email,
+    'id': id,
+    'houseID': houseID,
+  };
 }

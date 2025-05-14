@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/member.dart';
 import 'package:uuid/uuid.dart';
@@ -146,7 +148,7 @@ class ChoreInst {
     return ChoreInst(
       choreID: json['choreID'],
       id: json['id'],
-      dueDate: (json['dueDate'] as Timestamp).toDate(),
+      dueDate: HttpDate.parse(json['dueDate']),
       isDone: json['isDone'],
       assignee: json['assignee'],
     );
@@ -194,7 +196,7 @@ class ChoreFrequency {
       pattern: Frequency.values.firstWhere(
         (f) => f.name == (pattern as String),
       ),
-      daysOfWeek: (daysOfWeek as List<dynamic>).cast<int>(),
+      daysOfWeek: (daysOfWeek as List<dynamic>).cast<int>().toList(),
     );
   }
 }

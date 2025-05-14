@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -7,8 +6,6 @@ const uuid = Uuid();
 class House {
   // ID of the house. Same as Firestore doc ID
   final HouseID _id;
-  // Date/time house was created. Stored in firestore as TimeStamp
-  final DateTime _dateCreated;
   // image ID of the house's profile picture. Same as image ID in Cloud Storage
   final String _imageID;
   // user-assigned name of the house
@@ -18,12 +15,10 @@ class House {
 
   House({
     required HouseID id,
-    required DateTime dateCreated,
     required String imageID,
     required String name,
     required String joinCode,
   }) : _id = id,
-       _dateCreated = dateCreated,
        _imageID = imageID,
        _name = name,
        _joinCode = joinCode;
@@ -34,43 +29,31 @@ class House {
     required String uid,
     required String joinCode,
   }) {
-    final dateCreated = DateTime.now();
     // no initial members other than current user
     final houseID = uuid.v4();
-    return House(
-      dateCreated: dateCreated,
-      id: houseID,
-      imageID: '',
-      name: houseName,
-      joinCode: joinCode,
-    );
+    return House(id: houseID, imageID: '', name: houseName, joinCode: joinCode);
   }
 
   /// From a json map, returns a new House object
   /// with relevant fields filled out.
-  factory House.fromJson(Map<String, dynamic> json) {
-    return House(
-      name: json['name'],
-      id: json['id'],
-      dateCreated: (json['dateCreated'] as Timestamp).toDate(),
-      imageID: json['imageID'],
-      joinCode: json['joinCode'],
-    );
-  }
+  factory House.fromJson(Map<String, dynamic> json) => House(
+    name: json['name'],
+    id: json['id'],
+    imageID: json['imageID'],
+    joinCode: json['joinCode'],
+  );
 
   /// Converts the house object to a firestore-compatible map
   Map<String, dynamic> toJson() {
     return {
       'name': _name,
       'id': _id,
-      'dateCreated': Timestamp.fromDate(_dateCreated),
       'imageID': _imageID,
       'joinCode': _joinCode,
     };
   }
 
   HouseID get id => _id;
-  DateTime get dateCreated => _dateCreated;
   String get imageID => _imageID;
   String get name => _name;
   String get joinCode => _joinCode;

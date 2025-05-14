@@ -40,13 +40,16 @@ class _SettingsState extends State<Settings> {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _currUser = providerRef.currentUser;
-    // _user = FirebaseAuth.instance.currentUser;
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
+    if (FirebaseAuth.instance.currentUser == null) {
+      // Ensure no null fields are referenced
+      return Container();
+    }
     return SizedBox.expand(
       child: Container(
         padding: EdgeInsets.all(spacing),
@@ -403,6 +406,7 @@ class _SettingsState extends State<Settings> {
     });
     FirebaseAuth.instance.signOut();
     // push login screen
+
     Navigator.of(context).pushReplacement(
       PageTransition(
         type: PageTransitionType.fade,

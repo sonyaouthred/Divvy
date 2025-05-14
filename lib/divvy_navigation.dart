@@ -1,11 +1,15 @@
 import 'package:divvy/models/divvy_theme.dart';
+
+import 'package:divvy/screens/login.dart';
 import 'package:divvy/screens/notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/screens/settings.dart';
 import 'package:divvy/screens/calendar.dart';
 import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/dashboard.dart';
 import 'package:divvy/screens/house_screen.dart';
+import 'package:page_transition/page_transition.dart';
 
 /// Handles bottom navigation flow for the app
 class DivvyNavigation extends StatefulWidget {
@@ -47,6 +51,15 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    if (FirebaseAuth.instance.currentUser == null) {
+      Navigator.of(context).pushReplacement(
+        PageTransition(
+          type: PageTransitionType.fade,
+          child: Login(),
+          duration: Duration(milliseconds: 100),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: _titles[_selectedIndex],

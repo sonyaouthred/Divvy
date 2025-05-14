@@ -1,6 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/firebase_options.dart';
+import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/providers/divvy_provider.dart';
@@ -10,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -17,20 +20,7 @@ void main() async {
 
   // Initialize the firebase app
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MainApp());
-}
-
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      // dummy current user is Tony Stark
-      create: (_) => DivvyProvider(),
-      child: MaterialApp(home: AuthWrapper()),
-    );
-  }
+  runApp(const AuthWrapper());
 }
 
 /// Ensures that login is shown when the user is not signed in.
@@ -53,8 +43,11 @@ class AuthWrapper extends StatelessWidget {
             future: getUserHouse(user.uid),
             builder: (context, asyncSnapshot) {
               if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CupertinoActivityIndicator(color: Colors.white),
+                return Container(
+                  color: DivvyTheme.background,
+                  child: Center(
+                    child: CupertinoActivityIndicator(color: Colors.black),
+                  ),
                 );
               }
               if (asyncSnapshot.hasError) {
@@ -62,25 +55,21 @@ class AuthWrapper extends StatelessWidget {
               }
               final houseID = asyncSnapshot.data ?? '';
               final isInHouse = houseID.isNotEmpty;
-              // Return join house screen if user is not in house
               if (isInHouse) {
-                // initialize provider with house data
-                final provider = Provider.of<DivvyProvider>(
-                  context,
-                  listen: false,
+                // Return regular house app
+                return ChangeNotifierProvider(
+                  create: (_) => DivvyProvider(asyncSnapshot.data!),
+                  child: MaterialApp(home: DivvyNavigation()),
                 );
-                provider.initialize(houseID: asyncSnapshot.data!);
-                // push nav screen
-                return DivvyNavigation();
               } else {
-                // user is not member of house
-                return JoinHouse();
+                // Return join house screen if user is not in house
+                return MaterialApp(home: JoinHouse());
               }
             },
           );
         } else {
           // User is not signed in, show Login screen
-          return Login();
+          return MaterialApp(home: Login());
         }
       },
     );
@@ -88,18 +77,15 @@ class AuthWrapper extends StatelessWidget {
 
   /// Returns user's houseID or empty string if no id
   Future<String> getUserHouse(String uid) async {
-    final userDoc =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .withConverter(
-              fromFirestore: DivvyUser.fromFirestore,
-              toFirestore: (DivvyUser user, _) => user.toFirestore(),
-            )
-            .get();
-
-    final user = userDoc.data();
-    if (user == null) return '';
-    return user.houseID;
+    try {
+      final uri = 'http://127.0.0.1:5000/get-user-$uid';
+      final headers = {'Content-Type': 'application/json'};
+      final response = await get(Uri.parse(uri), headers: headers);
+      final jsonData = json.decode(response.body);
+      final userData = DivvyUser.fromJson(jsonData);
+      return userData.houseID;
+    } catch (e) {
+      return '';
+    }
   }
 }

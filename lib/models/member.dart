@@ -1,7 +1,3 @@
-import 'dart:ffi';
-import 'dart:ui';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
@@ -13,8 +9,6 @@ class Member {
   MemberID _id;
   // User's name
   String name;
-  // Date/time user joined house.
-  DateTime _dateJoined;
   // For now, color of user's profile picture.
   // To be changed when users can add profile pictures.
   Color profilePicture;
@@ -29,15 +23,13 @@ class Member {
 
   Member({
     required MemberID id,
-    required DateTime dateJoined,
     required this.profilePicture,
     required this.name,
     required this.chores,
     required this.onTimePct,
     required this.email,
     required this.subgroups,
-  }) : _id = id,
-       _dateJoined = dateJoined;
+  }) : _id = id;
 
   /// Creates a new member from uid, email, and name.
   factory Member.fromNew({
@@ -45,13 +37,11 @@ class Member {
     required Email email,
     required String name,
   }) {
-    final time = DateTime.now();
     return Member(
       chores: [],
       name: name,
       id: uid,
       email: email,
-      dateJoined: time,
       profilePicture: Colors.black,
       onTimePct: 0,
       subgroups: [],
@@ -65,7 +55,6 @@ class Member {
       name: json['name'],
       id: json['id'],
       chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
-      dateJoined: (json['dateJoined'] as Timestamp).toDate(),
       profilePicture: getColorFromName(json['profilePicture']),
       onTimePct: int.parse(json['onTimePct'] as String),
       email: json['email'],
@@ -79,7 +68,6 @@ class Member {
       'name': name,
       'id': _id,
       'chores': chores,
-      'dateJoined': Timestamp.fromDate(_dateJoined),
       'profilePicture': getNameFromColor(profilePicture),
       'onTimePct': onTimePct,
       'email': email,
@@ -89,7 +77,6 @@ class Member {
 
   //// Getters
   String get id => _id;
-  DateTime get dateJoined => _dateJoined;
 }
 
 // Simplify definitions
