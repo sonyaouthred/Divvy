@@ -8,7 +8,6 @@ import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 typedef Week = List<DateTime>;
@@ -54,7 +53,6 @@ class _CalendarState extends State<Calendar> {
     final indexOfNow = _swipeDates.indexWhere(
       (week) => week.where((day) => isSameDay(day, now)).isNotEmpty,
     );
-    print(indexOfNow);
     _controller = PageController(initialPage: indexOfNow);
     _currMonth = getNameOfMonth(now.month);
   }
@@ -337,7 +335,7 @@ class _CalendarState extends State<Calendar> {
       children: [
         // display dates
         Text(
-          '${getNameOfWeekday(_selectedDate.weekday)}, ${DateFormat.yMMMMd('en_US').format(_selectedDate)}:',
+          '${getNameOfWeekday(_selectedDate.weekday)}, ${getFormattedDate(_selectedDate)}:',
           style: DivvyTheme.bodyBoldBlack,
         ),
         // display chores

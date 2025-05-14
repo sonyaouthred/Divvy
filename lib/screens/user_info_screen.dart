@@ -3,38 +3,37 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/chore_instance_screen.dart';
-import 'package:divvy/screens/subgroup_screen.dart';
+import 'package:divvy/util/dialogs.dart';
+import 'package:divvy/widgets/chore_tile.dart';
+import 'package:divvy/widgets/subgroup_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class UserInfoScreen extends StatefulWidget {
+/// Represents all the information for a given member
+class UserInfoScreen extends StatelessWidget {
   final MemberID memberID;
 
   const UserInfoScreen({super.key, required this.memberID});
 
   @override
-  State<UserInfoScreen> createState() => _UserInfoScreenState();
-}
-
-class _UserInfoScreenState extends State<UserInfoScreen> {
-  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final spacing = width * 0.02;
+    final spacing = width * 0.05;
 
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
-        Member member = provider.getMemberById(widget.memberID);
-        int memRank = provider.getRank(widget.memberID);
+        // Update fields with provider information
+        Member? member = provider.getMemberById(memberID);
+        int memRank = provider.getRank(memberID);
         List<Subgroup> memberSubgroups = provider.getSubgroupsForMember(
-          widget.memberID,
+          memberID,
         );
-        List<ChoreInst> upcomingChores = provider.getUpcomingChores(
-          widget.memberID,
-        );
+        List<ChoreInst> upcomingChores = provider.getUpcomingChores(memberID);
+        if (member == null) {
+          // user no longer exists!!
+          return _userNotFoundScreen(width, spacing);
+        }
 
         return Scaffold(
           backgroundColor: DivvyTheme.background,
@@ -43,6 +42,19 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             centerTitle: true,
             scrolledUnderElevation: 0,
             backgroundColor: DivvyTheme.background,
+            actions: [
+              // Allow user to take actions for this chore
+              InkWell(
+                onTap: () => _showActionMenu(context, member),
+                splashColor: Colors.transparent,
+                child: Container(
+                  height: 45,
+                  width: 45,
+                  alignment: Alignment.centerLeft,
+                  child: Icon(CupertinoIcons.ellipsis),
+                ),
+              ),
+            ],
           ),
           body: SizedBox.expand(
             child: SingleChildScrollView(
@@ -52,46 +64,22 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: spacing),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: member.profilePicture,
-                          ),
-                          SizedBox(width: 20),
-                          Flexible(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  member.name,
-                                  style: DivvyTheme.bodyBoldBlack,
-                                ),
-                                Text(
-                                  member.email,
-                                  maxLines: 1,
-                                  style: DivvyTheme.bodyGrey,
-                                  overflow: TextOverflow.fade,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    _statsTile(member, memRank),
-                    SizedBox(height: 20),
-                    _subgroupsArea(member, memberSubgroups),
-                    SizedBox(height: 20),
+                    // Display user information
+                    // (icon, name, email)
+                    _userInfo(member, spacing),
+                    SizedBox(height: spacing * 1.5),
+                    // Display user's on-time chore stats
+                    _statsTile(member, memRank, spacing),
+                    SizedBox(height: spacing * 1.5),
+                    // Display the subgroups this user is a member of
+                    _subgroupsArea(member, memberSubgroups, spacing),
+                    SizedBox(height: spacing),
+                    // Display the upcoming chores for this user
                     _upcomingChoreArea(
                       member,
                       upcomingChores,
                       provider,
-                      context,
+                      spacing,
                     ),
                   ],
                 ),
@@ -103,135 +91,168 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     );
   }
 
-  Widget _upcomingChoreArea(
-    Member member,
-    List<ChoreInst> upcomingChores,
-    DivvyProvider provider,
-    BuildContext context,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(
-            "${member.name}'s Upcoming Chores",
-            style: DivvyTheme.bodyBoldGrey,
+  /// Displays user not found screen
+  Scaffold _userNotFoundScreen(double width, double spacing) {
+    return Scaffold(
+      backgroundColor: DivvyTheme.background,
+      appBar: AppBar(
+        title: Text('Member', style: DivvyTheme.screenTitle),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        backgroundColor: DivvyTheme.background,
+      ),
+      body: SizedBox.expand(
+        child: Container(
+          width: width,
+          padding: EdgeInsets.symmetric(horizontal: spacing),
+          child: Center(
+            child: Text('404: Member not found', style: DivvyTheme.bodyBlack),
           ),
-        ),
-        upcomingChores.isEmpty
-            ? Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text("No chores as of now", style: DivvyTheme.bodyGrey),
-            )
-            : SizedBox(),
-        ...upcomingChores.map((choreInstance) {
-          return _getChoreInstanceTile(choreInstance, provider, context);
-        }),
-      ],
-    );
-  }
-
-  String getFormattedDate(DateTime dueDate) {
-    return DateFormat.yMMMMd('en_US').format(dueDate);
-  }
-
-  Widget _getChoreInstanceTile(
-    ChoreInst choreInstance,
-    DivvyProvider provider,
-    BuildContext context,
-  ) {
-    Chore chore = provider.getSuperChore(choreInstance.choreID);
-
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (ctx) {
-              return ChoreInstanceScreen(
-                choreInstanceId: choreInstance.id,
-                choreID: choreInstance.choreID,
-              );
-            },
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Due ${getFormattedDate(choreInstance.dueDate)}",
-              style: DivvyTheme.smallBodyGrey,
-            ),
-            ListTile(
-              minTileHeight: 20,
-              title: Text(chore.name),
-              trailing: Icon(CupertinoIcons.right_chevron),
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _subgroupsArea(Member member, List<Subgroup> subgroups) {
+  /// Displays user's image, name, and email
+  Widget _userInfo(Member member, double spacing) {
+    return Padding(
+      padding: EdgeInsets.only(left: spacing / 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          CircleAvatar(radius: 50, backgroundColor: member.profilePicture),
+          SizedBox(width: 20),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(member.name, style: DivvyTheme.bodyBoldBlack),
+                Text(
+                  member.email,
+                  maxLines: 2,
+                  style: DivvyTheme.bodyGrey,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Displays user's upcoming chores
+  Widget _upcomingChoreArea(
+    Member member,
+    List<ChoreInst> upcomingChores,
+    DivvyProvider provider,
+    double spacing,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(
-            "${member.name}'s Subgroups",
-            style: DivvyTheme.bodyBoldGrey,
-          ),
+        Text(
+          "${member.name}'s Upcoming Chores",
+          style: DivvyTheme.bodyBoldBlack,
         ),
+        SizedBox(height: spacing / 3),
+        upcomingChores.isEmpty
+            ? Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text("No upcoming chores.", style: DivvyTheme.bodyGrey),
+            )
+            : SizedBox(),
+        ...upcomingChores.map((choreInstance) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+            child: ChoreTile(choreInst: choreInstance),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// Display subgroups for this member
+  Widget _subgroupsArea(
+    Member member,
+    List<Subgroup> subgroups,
+    double spacing,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("${member.name}'s Subgroups", style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 3),
         subgroups.isEmpty
             ? Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Text(
-                "${member.name} is not part of any subgroup",
+                "${member.name} is not part of any subgroups.",
                 style: DivvyTheme.bodyGrey,
               ),
             )
             : SizedBox(),
         ...subgroups.map((subgroup) {
-          return _subgroupTile(subgroup, context);
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+            child: SubgroupTile(subgroup: subgroup, spacing: spacing),
+          );
         }),
       ],
     );
   }
 
-  Widget _subgroupTile(Subgroup subgroup, BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (ctx) => SubgroupScreen(currSubgroup: subgroup),
+  /// Shows a Cupertino action menu that allows user to take action
+  /// on another user
+  void _showActionMenu(BuildContext context, Member member) async {
+    final delete = await showCupertinoModalPopup<bool>(
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            title: const Text('User Actions'),
+            actions: <CupertinoActionSheetAction>[
+              CupertinoActionSheetAction(
+                /// This parameter indicates the action would perform
+                /// a destructive action such as delete or exit and turns
+                /// the action's text color to red.
+                isDestructiveAction: true,
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: const Text('Remove from house'),
+              ),
+            ],
           ),
-        );
-      },
-      child: Card(
-        color: DivvyTheme.background,
-        child: ListTile(
-          leading: CircleAvatar(backgroundColor: subgroup.profilePicture),
-          title: Text(subgroup.name),
-          trailing: Icon(CupertinoIcons.right_chevron),
-        ),
-      ),
     );
+    if (delete != null && delete && context.mounted) {
+      final confirm = await confirmDeleteDialog(
+        context,
+        'Remove ${member.name} from house?',
+        action: 'Remove',
+      );
+      if (confirm != null && confirm) {
+        if (!context.mounted) return;
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).leaveHouse(member.id);
+      }
+    }
   }
 
-  Widget _statsTile(Member member, int memberRank) {
-    return Card(
-      color: DivvyTheme.background,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Column(
+  /// Displays statistics about this user
+  Widget _statsTile(Member member, int memberRank, double spacing) {
+    return Container(
+      decoration: DivvyTheme.standardBox,
+      padding: EdgeInsets.symmetric(
+        vertical: spacing * 0.75,
+        horizontal: spacing,
+      ),
+      child: Row(
+        children: [
+          Flexible(
+            flex: 3,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -241,15 +262,19 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 Text("Chores done on time"),
               ],
             ),
-            Column(
+          ),
+          Spacer(flex: 1),
+          Flexible(
+            flex: 2,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("#$memberRank", style: DivvyTheme.largeHeaderBlack),
                 Text("In your house"),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

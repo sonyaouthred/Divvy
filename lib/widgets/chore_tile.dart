@@ -4,6 +4,7 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/chore_instance_screen.dart';
+import 'package:divvy/screens/chore_superclass_screen.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,21 +26,25 @@ class ChoreTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
+
     // Get super chore for information
     if (superChore == null) {
       if (choreInst == null) return Placeholder();
       superChore = Provider.of<DivvyProvider>(
         context,
         listen: false,
-      ).getSuperChore(choreInst!.choreID);
+      ).getSuperChore(choreInst!.superID);
     }
     // Build chore tile
     return InkWell(
-
       onTap:
           () =>
               choreInst != null
-                  ? _openChoreInstancePage(context, choreInst!.id, choreInst!.choreID)
+                  ? _openChoreInstancePage(
+                    context,
+                    choreInst!.id,
+                    choreInst!.superID,
+                  )
                   : _openSuperChorePage(context, superChore!),
       child:
           compact
@@ -128,7 +133,9 @@ class ChoreTile extends StatelessWidget {
                         ),
                         if (choreInst != null)
                           Text(
-                            isOverdue
+                            choreInst!.isDone
+                                ? 'Complete!'
+                                : isOverdue
                                 ? 'Was due ${getNameOfWeekday(choreInst!.dueDate.weekday)}, '
                                     '${DateFormat.yMMMMd('en_US').format(choreInst!.dueDate)} at '
                                     '${getFormattedTime(choreInst!.dueDate)}'
@@ -166,13 +173,29 @@ class ChoreTile extends StatelessWidget {
     );
   }
 
-  void _openChoreInstancePage(BuildContext context, ChoreInstID instanceID, ChoreID choreId) {
+  /// Opens the chore instance page
+  void _openChoreInstancePage(
+    BuildContext context,
+    ChoreInstID instanceID,
+    ChoreID choreId,
+  ) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => ChoreInstanceScreen(choreInstanceId: instanceID, choreID: choreId))
+      MaterialPageRoute(
+        builder:
+            (ctx) => ChoreInstanceScreen(
+              choreInstanceId: instanceID,
+              choreID: choreId,
+            ),
+      ),
     );
   }
 
+  /// Opens the super chore page
   void _openSuperChorePage(BuildContext context, Chore superChore) {
-    print('Opening super chore ${superChore.id}');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => ChoreSuperclassScreen(choreID: superChore.id),
+      ),
+    );
   }
 }

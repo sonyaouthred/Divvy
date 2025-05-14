@@ -81,13 +81,14 @@ Future<bool?> confirmDeleteDialog(
   BuildContext context,
   String title, {
   String action = 'Delete',
+  String message = 'Are you sure?',
 }) async {
   final res = await showCupertinoDialog<bool>(
     context: context,
     builder:
         (BuildContext context) => CupertinoAlertDialog(
           title: Text(title),
-          content: Text('Are you sure?'),
+          content: Text(message),
           actions: <CupertinoDialogAction>[
             CupertinoDialogAction(
               isDefaultAction: true,

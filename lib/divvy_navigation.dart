@@ -64,7 +64,7 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
               height: 50,
               width: 50,
               padding: EdgeInsets.only(right: 20),
-              child: Icon(Icons.notifications),
+              child: Icon(Icons.notifications, color: DivvyTheme.darkGreen),
             ),
           ),
         ],

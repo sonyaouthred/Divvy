@@ -1,4 +1,6 @@
 import 'package:divvy/models/member.dart';
+import 'package:divvy/screens/join_house.dart';
+import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +9,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 /// Displays a settings screen where the user can modify account
@@ -19,9 +22,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  /// Current user. Null if user is signed out/deleted
-  late final User? _user;
-
   // Current user's data
   late Member _currUser;
 
@@ -40,7 +40,7 @@ class _SettingsState extends State<Settings> {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
     _currUser = providerRef.currentUser;
-    _user = FirebaseAuth.instance.currentUser;
+    // _user = FirebaseAuth.instance.currentUser;
   }
 
   @override
@@ -63,6 +63,7 @@ class _SettingsState extends State<Settings> {
                   SizedBox(height: spacing),
                   // Greet user
                   _introPhrase(name: _currUser.name),
+                  SizedBox(height: spacing),
                   // Display various settings
                   // Account settings
                   _infoSections(
@@ -182,7 +183,7 @@ class _SettingsState extends State<Settings> {
 
   /// Displays greeting to user
   Widget _introPhrase({required String name}) {
-    return Text('Hi, $name!', style: DivvyTheme.bodyBlack);
+    return Text('Hi, $name!', style: DivvyTheme.largeHeaderBlack);
   }
 
   /// Displays account information sections
@@ -229,7 +230,7 @@ class _SettingsState extends State<Settings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(entry[0], style: DivvyTheme.bodyGrey),
+                      Text(entry[0], style: DivvyTheme.bodyBlack),
                       if (!appearanceSwitch)
                         Icon(
                           CupertinoIcons.chevron_right,
@@ -311,6 +312,7 @@ class _SettingsState extends State<Settings> {
 
   /// Change the house's name
   void _changeName(BuildContext context) async {
+    // get new name
     final newName = await openInputDialog(
       context,
       title: 'Change Name',
@@ -318,8 +320,11 @@ class _SettingsState extends State<Settings> {
     );
     // Process name
     if (newName != null) {
-      // TODO(bhoop2b): update provider
-      print('Changing name to: $newName');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).updateUserName(newName);
     }
   }
 
@@ -331,35 +336,32 @@ class _SettingsState extends State<Settings> {
       title: 'Re-enter password',
       hideText: true,
     );
-    // // Ensure user is not logged out (makes compiler happy)
-    // if (_user == null) return;
-    // // Get user's username & password
-    // try {
-    //   if (_user.email != null) {
-    //     // Now check what provider the user is signed in with.
-    //     if (_isEmailUser() && password != null) {
-    //       // Reauthenticate user with email and password
-    //       final credential = EmailAuthProvider.credential(
-    //         email: _user.email!,
-    //         password: password,
-    //       );
-    //       await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
-    //         credential,
-    //       );
-    //     }
-    //     // Non-email/pwd clients are already reauthenticated
-    //     if (!context.mounted) return;
-    //     await provider.clear();
-    //     final error = await provider.deleteAccount();
-    //     if (error != null && context.mounted) {
-    //       showErrorMessage(context, 'Account Deletion Error', error);
-    //     }
-    //     if (!context.mounted) return;
-    //     Navigator.pop(context);
-    //   }
-    // } catch (e) {
-    //   showErrorMessage(context, 'Invalid password', 'Please try again!');
-    // }
+    final user = FirebaseAuth.instance.currentUser;
+    // Ensure user is not logged out (makes compiler happy)
+    if (user == null) return;
+    // Get user's username & password
+    try {
+      if (user.email != null) {
+        // Now check what provider the user is signed in with.
+        if (password != null) {
+          // Reauthenticate user with email and password
+          final credential = EmailAuthProvider.credential(
+            email: user.email!,
+            password: password,
+          );
+          await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
+            credential,
+          );
+          print('account OK to be deleted');
+        }
+        // Non-email/pwd clients are already reauthenticated
+        // TODO: need to remove user from rotations/subgroups in provider!
+        if (!context.mounted) return;
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      showErrorMessage(context, 'Invalid password', 'Please try again!');
+    }
   }
 
   /// Allow user to leave a house
@@ -371,9 +373,19 @@ class _SettingsState extends State<Settings> {
       action: 'Leave',
     );
     if (leave != null && leave) {
-      print('Leaving house...');
-    } else {
-      print('not leaving house!');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).leaveHouse(_currUser.id);
+      // Push join hosue screen
+      Navigator.of(context).pushReplacement(
+        PageTransition(
+          type: PageTransitionType.fade,
+          childBuilder: (context) => JoinHouse(),
+          duration: Duration(milliseconds: 100),
+        ),
+      );
     }
   }
 
@@ -383,5 +395,13 @@ class _SettingsState extends State<Settings> {
       _isLoggingOut = true;
     });
     FirebaseAuth.instance.signOut();
+    // push login screen
+    Navigator.of(context).pushReplacement(
+      PageTransition(
+        type: PageTransitionType.fade,
+        child: Login(),
+        duration: Duration(milliseconds: 100),
+      ),
+    );
   }
 }

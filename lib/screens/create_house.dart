@@ -1,10 +1,13 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/join_house.dart';
+import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 /// Allows user to join a house using a unique six-digit code.
 class CreateHouse extends StatefulWidget {
@@ -61,6 +64,23 @@ class _CreateHouseState extends State<CreateHouse> {
                           'Join a house!',
                           style: DivvyTheme.bodyBlack.copyWith(
                             decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // or logout
+                  Center(
+                    child: InkWell(
+                      onTap: () => _logout(context),
+                      child: SizedBox(
+                        height: 50,
+                        child: Text(
+                          'Log out',
+                          style: DivvyTheme.bodyBlack.copyWith(
+                            decoration: TextDecoration.underline,
+                            color: DivvyTheme.darkRed,
+                            decorationColor: DivvyTheme.darkRed,
                           ),
                         ),
                       ),
@@ -141,7 +161,10 @@ class _CreateHouseState extends State<CreateHouse> {
     }
     // TODO: obviously, replace with db call
     // Update user's db with the code
-    print('Creating house ${_nameController.text}');
+    Provider.of<DivvyProvider>(
+      context,
+      listen: false,
+    ).createHouse(_nameController.text);
     // Push user to home page
     Navigator.of(context).pushReplacement(
       PageTransition(
@@ -158,6 +181,18 @@ class _CreateHouseState extends State<CreateHouse> {
       PageTransition(
         type: PageTransitionType.fade,
         child: JoinHouse(),
+        duration: Duration(milliseconds: 100),
+      ),
+    );
+  }
+
+  // log the user out
+  void _logout(BuildContext context) async {
+    FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+      PageTransition(
+        type: PageTransitionType.fade,
+        child: Login(),
         duration: Duration(milliseconds: 100),
       ),
     );

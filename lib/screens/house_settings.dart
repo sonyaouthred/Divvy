@@ -1,11 +1,13 @@
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/chores.dart';
+import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/subgroup_add.dart';
 import 'package:divvy/util/dialogs.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 const double _kItemExtent = 32.0;
@@ -49,7 +51,7 @@ class _HouseSettingsState extends State<HouseSettings> {
                       text: 'House Info',
                       buttons: [
                         ['Change Name', _changeHouseName],
-                        ['Delete House', _openChoresScreen],
+                        ['Delete House', _deleteHouse],
                       ],
                       flex: 2,
                       spacing: spacing,
@@ -59,7 +61,7 @@ class _HouseSettingsState extends State<HouseSettings> {
                       icon: Icon(CupertinoIcons.person_fill),
                       text: 'Members',
                       buttons: [
-                        ['Add a member', _addMember],
+                        ['House join code', _showJoinCode],
                         ['Remove a member', _removeUser],
                       ],
                       flex: 2,
@@ -128,7 +130,7 @@ class _HouseSettingsState extends State<HouseSettings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(entry[0], style: DivvyTheme.bodyGrey),
+                      Text(entry[0], style: DivvyTheme.bodyBlack),
 
                       Icon(
                         CupertinoIcons.chevron_right,
@@ -149,8 +151,6 @@ class _HouseSettingsState extends State<HouseSettings> {
   ///////////////////////////// Util /////////////////////////////
 
   void _createSubgroup(BuildContext context) {
-    // TODO: navigate to subgroup screen
-    print('Adding subgroup...');
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => SubgroupAdd()));
@@ -172,7 +172,11 @@ class _HouseSettingsState extends State<HouseSettings> {
         'Delete subgroup ${_selectedSubgroup!.name}?',
       );
       if (delete != null && delete) {
-        print('Deleting subgroup ${_selectedSubgroup!.name}');
+        if (!context.mounted) return;
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).deleteSubgroup(_selectedSubgroup!.id);
       } else {
         print('cancelled delete');
       }
@@ -230,18 +234,27 @@ class _HouseSettingsState extends State<HouseSettings> {
     );
   }
 
-  /// Removes user, prompts for email
-  void _addMember(BuildContext context) async {
-    final email = await openInputDialog(
-      context,
-      title: 'Enter member\'s email',
-      prompt: 'Enter email...',
+  /// Shows the join code for the user's house
+  void _showJoinCode(BuildContext context) async {
+    final joinCode =
+        Provider.of<DivvyProvider>(context, listen: false).houseJoinCode;
+    await showCupertinoDialog(
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoAlertDialog(
+            title: Text('House Join Code:'),
+            content: Text(joinCode),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Ok'),
+              ),
+            ],
+          ),
     );
-    // Process emil
-    if (email != null) {
-      // TODO(bhoop2b): update provider
-      print('Adding user: $email');
-    }
   }
 
   /// Removes user, prompts for email
@@ -273,8 +286,8 @@ class _HouseSettingsState extends State<HouseSettings> {
           'Delete ${member.name} ($email)?',
         );
         if (delete != null && delete) {
-          // TODO(bhoop2b): update provider
-          print('Removing user: $email');
+          if (!context.mounted) return;
+          Provider.of<DivvyProvider>(context, listen: false).leaveHouse(email);
         } else {
           print('cancelled delete');
         }
@@ -293,15 +306,61 @@ class _HouseSettingsState extends State<HouseSettings> {
     );
     // Process name
     if (newName != null) {
-      // TODO(bhoop2b): update provider
-      print('Changing house name to: $newName');
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).updateHouseName(newName);
     }
   }
 
-  /// Opens the chores screen
-  void _openChoresScreen(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => Chores()));
+  /// Deletes the house
+  /// Reauthenticates and then updates provider
+  void _deleteHouse(BuildContext context) async {
+    try {
+      final password = await openInputDialog(
+        context,
+        title: 'Re-enter password',
+        hideText: true,
+      );
+      // get current user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      if (user.email != null) {
+        // Now check what provider the user is signed in with.
+        if (password != null) {
+          // Reauthenticate user with email and password
+          final credential = EmailAuthProvider.credential(
+            email: user.email!,
+            password: password,
+          );
+          await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
+            credential,
+          );
+          if (!context.mounted) return;
+          // confirm user wants to delete hosue
+          final delete = await confirmDeleteDialog(
+            context,
+            'Delete house?',
+            action: 'Delete',
+          );
+          if (delete != null && delete && context.mounted) {
+            // delete house!!
+            Provider.of<DivvyProvider>(context, listen: false).deleteHouse();
+            // Push user to join house page
+            Navigator.of(context).pushReplacement(
+              PageTransition(
+                type: PageTransitionType.fade,
+                child: JoinHouse(),
+                duration: Duration(milliseconds: 100),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      showErrorMessage(context, 'Error deleting house', 'Please try again!');
+    }
   }
 }

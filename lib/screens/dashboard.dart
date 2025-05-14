@@ -9,6 +9,9 @@ import 'package:provider/provider.dart';
 
 // import 'package:divvy/models/divvy_theme.dart';
 // Commented out for testing
+
+/// Displays the current user's dashboard with their upcoming chores,
+/// house leaderboard, etc.
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
@@ -30,7 +33,11 @@ class _DashboardState extends State<Dashboard> {
     // get tasks due today
     _todayChores = providerRef.getTodayChores(_currUser.id);
     // get tasks in next week
-    _thisWeekChores = providerRef.getUpcomingChores(_currUser.id);
+    _thisWeekChores =
+        providerRef
+            .getUpcomingChores(_currUser.id)
+            .where((chore) => !chore.isDone)
+            .toList();
     // get overdue chores
     _overdueChores = providerRef.getOverdueChores(_currUser.id);
   }
@@ -44,7 +51,11 @@ class _DashboardState extends State<Dashboard> {
         // get tasks due today
         _todayChores = provider.getTodayChores(_currUser.id);
         // get tasks in next week
-        _thisWeekChores = provider.getUpcomingChores(_currUser.id);
+        _thisWeekChores =
+            provider
+                .getUpcomingChores(_currUser.id)
+                .where((chore) => !chore.isDone)
+                .toList();
         // get overdue chores
         _overdueChores = provider.getOverdueChores(_currUser.id);
         return SizedBox.expand(
@@ -63,7 +74,12 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   // display any overdue chores
                   _displayRecentChores(spacing),
-                  Text('Your upcoming tasks:', style: DivvyTheme.bodyBoldBlack),
+                  // Display header for upcoming chores, if it applies
+                  if (_thisWeekChores.isNotEmpty)
+                    Text(
+                      'Your upcoming tasks:',
+                      style: DivvyTheme.bodyBoldBlack,
+                    ),
                   SizedBox(height: spacing / 2),
                   // Only display today's chores if overdue chores exist
                   _displayCompactTodayChores(spacing),
@@ -101,10 +117,17 @@ class _DashboardState extends State<Dashboard> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: spacing / 4),
       child: Column(
-        children:
-            _todayChores
-                .map((chore) => ChoreTile(choreInst: chore, compact: true))
-                .toList(),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Upcoming chores:', style: DivvyTheme.bodyBoldBlack),
+          SizedBox(height: spacing / 2),
+          ..._todayChores.map(
+            (chore) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+              child: ChoreTile(choreInst: chore, compact: true),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -114,6 +137,7 @@ class _DashboardState extends State<Dashboard> {
     if (_overdueChores.isEmpty) {
       // Return view of today's chores
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: spacing / 4),
           // # chores due today
@@ -128,7 +152,14 @@ class _DashboardState extends State<Dashboard> {
             child: Column(
               children:
                   _todayChores
-                      .map((chore) => ChoreTile(choreInst: chore))
+                      .map(
+                        (chore) => Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: spacing / 2,
+                          ),
+                          child: ChoreTile(choreInst: chore),
+                        ),
+                      )
                       .toList(),
             ),
           ),
@@ -143,7 +174,7 @@ class _DashboardState extends State<Dashboard> {
         SizedBox(height: spacing / 4),
         // # overdue chores
         Text(
-          'You have ${_overdueChores.length} overdue chore${_todayChores.length == 1 ? '' : 's'}!',
+          'You have ${_overdueChores.length} overdue chore${_overdueChores.length == 1 ? '' : 's'}!',
           style: DivvyTheme.bodyBlack.copyWith(color: DivvyTheme.darkRed),
         ),
         SizedBox(height: spacing / 2),
@@ -151,7 +182,12 @@ class _DashboardState extends State<Dashboard> {
         Column(
           children:
               _overdueChores
-                  .map((chore) => ChoreTile(choreInst: chore))
+                  .map(
+                    (chore) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                      child: ChoreTile(choreInst: chore),
+                    ),
+                  )
                   .toList(),
         ),
         SizedBox(height: spacing / 2),

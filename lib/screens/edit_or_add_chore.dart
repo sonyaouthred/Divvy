@@ -156,12 +156,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     Chore chore = Chore(
       id: newChoreID,
       name: _textController.text,
-      frequency: frequency,
+      frequency: ChoreFrequency(pattern: frequency, daysOfWeek: chosenDaysOfWeek),
       emoji: emojis[emojiIndex],
       description: "",
       assignees: chosenMemberIDs,
-      dayOfWeek: chosenDaysOfWeek,
-      instances: newChoreInstances.map((choreInst) => choreInst.id).toList(),
     );
 
     provider.addChore(chore);
