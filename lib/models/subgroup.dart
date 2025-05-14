@@ -46,26 +46,22 @@ class Subgroup {
 
   /// From a json map, returns a new Subgroup object
   /// with relevant fields filled out.
-  factory Subgroup.fromJson(Map<String, dynamic> json) {
-    return Subgroup(
-      name: json['name'],
-      id: json['id'],
-      chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
-      members: (json['members'] as List<dynamic>).cast<MemberID>(),
-      profilePicture: getColorFromName(json['profilePicture']),
-    );
-  }
+  factory Subgroup.fromJson(Map<String, dynamic> json) => Subgroup(
+    name: json['name'],
+    id: json['id'],
+    chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
+    members: (json['members'] as List<dynamic>).cast<MemberID>(),
+    profilePicture: getColorFromName(json['profilePicture']),
+  );
 
   /// Returns subgroup object as json
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'id': _id,
-      'chores': chores,
-      'members': members,
-      'profilePicture': getNameFromColor(profilePicture),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'id': _id,
+    'chores': chores,
+    'members': members,
+    'profilePicture': getNameFromColor(profilePicture),
+  };
 
   //// Getters
   String get id => _id;

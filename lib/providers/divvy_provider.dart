@@ -16,23 +16,38 @@ import 'package:http/http.dart';
 /// Interfaces with the database to ensure data is live and
 /// updated.
 class DivvyProvider extends ChangeNotifier {
+  // true if data has loaded from the server
   late bool dataLoaded;
+  // the ID of the house currently being shown
   late final HouseID _houseID;
+  // The member of the house that is currently signed in
   late final Member _currentUser;
+  // the currently displayed house
   late final House _house;
+  // List of members that belong to the hosue
   late final List<Member> _memberList;
+  // Same as above list, but mapped to by ID for quick lookup.
   late final Map<MemberID, Member> _memberMap;
-  late final Map<SubgroupID, Subgroup> _subgroups;
+  // List of all subgroups in the house
   late final List<Subgroup> _subgroupList;
+  // Same as above list, but mapped to by ID for quick lookup.
+  late final Map<SubgroupID, Subgroup> _subgroups;
+  // list of all chores for the house
   late final List<Chore> _chores;
+  // Same as above list, but mapped to by ID for quick lookup.
   late final Map<ChoreID, Chore> _choreMap;
+  // All chore instances, mapped to by their super chore IDs.
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
 
+  /// Instantiate a new provider
   DivvyProvider(HouseID houseID) {
     _houseID = houseID;
     dataLoaded = false;
+    // fetch server data
     initialize();
   }
+
+  ////////////////////////////// Initialization //////////////////////////////
 
   // Initialize all the fields from the server
   void initialize() async {
@@ -74,7 +89,7 @@ class DivvyProvider extends ChangeNotifier {
     for (SubgroupID id in data.keys) {
       // put subgroup object in map
       final subgroup = Subgroup.fromJson(data[id]);
-      subs[id] = subgroup;
+      subs[subgroup.id] = subgroup;
       subList.add(subgroup);
     }
     _subgroups = subs;
@@ -132,7 +147,7 @@ class DivvyProvider extends ChangeNotifier {
     for (ChoreID id in data.keys) {
       // put subgroup object in map
       final chore = Chore.fromJson(data[id]);
-      choreMap[id] = chore;
+      choreMap[chore.id] = chore;
       choreList.add(chore);
     }
     _chores = choreList;
@@ -250,10 +265,8 @@ class DivvyProvider extends ChangeNotifier {
     ChoreID choreID,
     ChoreInstID choreInstanceID,
   ) {
-    print(choreID);
-    print(_choreInstances[choreID]!.map((choreInst) => choreInst.id).toList());
     return _choreInstances[choreID]!.firstWhere(
-      (ChoreInst instance) => instance.id == choreInstanceID
+      (ChoreInst instance) => instance.id == choreInstanceID,
     );
   }
 
@@ -355,8 +368,8 @@ class DivvyProvider extends ChangeNotifier {
               (inst) =>
                   inst.assignee == member &&
                   // Check if the due date is before now
-                  !inst.dueDate.isBefore(DateTime.now())
-                  // check that due date is not today
+                  !inst.dueDate.isBefore(DateTime.now()),
+              // check that due date is not today
             )
             .toList(),
       );

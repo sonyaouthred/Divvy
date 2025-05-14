@@ -22,7 +22,6 @@ class Dashboard extends StatelessWidget {
     final spacing = width * 0.05;
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
-        print(provider.dataLoaded);
         if (!provider.dataLoaded) {
           return Center(child: CupertinoActivityIndicator());
         }
@@ -54,11 +53,6 @@ class Dashboard extends StatelessWidget {
                   // display any overdue chores
                   _displayRecentChores(spacing, overdueChores, todayChores),
                   // Display header for upcoming chores, if it applies
-                  if (thisWeekChores.isNotEmpty)
-                    Text(
-                      'Your upcoming tasks:',
-                      style: DivvyTheme.bodyBoldBlack,
-                    ),
                   SizedBox(height: spacing / 2),
                   // Only display today's chores if overdue chores exist
                   _displayCompactTodayChores(

@@ -44,14 +44,12 @@ class House {
   );
 
   /// Converts the house object to a firestore-compatible map
-  Map<String, dynamic> toJson() {
-    return {
-      'name': _name,
-      'id': _id,
-      'imageID': _imageID,
-      'joinCode': _joinCode,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': _name,
+    'id': _id,
+    'imageID': _imageID,
+    'joinCode': _joinCode,
+  };
 
   HouseID get id => _id;
   String get imageID => _imageID;

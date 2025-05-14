@@ -53,34 +53,28 @@ class Chore {
 
   /// From a json map, returns a new Subgroup object
   /// with relevant fields filled out.
-  factory Chore.fromJson(Map<String, dynamic> json) {
-    return Chore(
-      name: json['name'],
-      id: json['id'],
-      assignees: (json['assignees'] as List<dynamic>).cast<MemberID>(),
-      description: json['description'],
-      emoji: json['emoji'],
-      frequency: ChoreFrequency.fromJson(
-        pattern: json['frequencyPattern'],
-        daysOfWeek: (json['frequencyDays'] as List<dynamic>).cast<int>(),
-      ),
-    );
-
-  
-  }
+  factory Chore.fromJson(Map<String, dynamic> json) => Chore(
+    name: json['name'],
+    id: json['id'],
+    assignees: (json['assignees'] as List<dynamic>).cast<MemberID>(),
+    description: json['description'],
+    emoji: json['emoji'],
+    frequency: ChoreFrequency.fromJson(
+      pattern: json['frequencyPattern'],
+      daysOfWeek: (json['frequencyDays'] as List<dynamic>).cast<int>(),
+    ),
+  );
 
   /// Returns a json version of the chore object
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'id': _id,
-      'assignees': _assignees,
-      'description': description,
-      'emoji': emoji,
-      'frequencyPattern': _frequency.pattern.name,
-      'frequencyDays': _frequency.daysOfWeek,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'id': _id,
+    'assignees': _assignees,
+    'description': description,
+    'emoji': emoji,
+    'frequencyPattern': _frequency.pattern.name,
+    'frequencyDays': _frequency.daysOfWeek,
+  };
 
   /// Getters
 

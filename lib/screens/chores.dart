@@ -4,13 +4,11 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/chore_superclass_screen.dart';
 import 'package:divvy/screens/edit_or_add_chore.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 
 /// Displays all the chores for this house in subgroup
 /// and general categories. only subgroups the current user
@@ -40,15 +38,20 @@ class Chores extends StatelessWidget {
                   InkWell(
                     onTap: () {
                       Navigator.of(context).push(
-                              MaterialPageRoute(builder: (ctx) => EditOrAddChore(choreID: null))
-                            );
+                        MaterialPageRoute(
+                          builder: (ctx) => EditOrAddChore(choreID: null),
+                        ),
+                      );
                     },
                     child: Card(
                       color: DivvyTheme.background,
                       elevation: 2,
                       child: ListTile(
                         leading: Icon(CupertinoIcons.add),
-                        title: Text("Add Chore", style: DivvyTheme.bodyBoldBlack),
+                        title: Text(
+                          "Add Chore",
+                          style: DivvyTheme.bodyBoldBlack,
+                        ),
                       ),
                     ),
                   ),

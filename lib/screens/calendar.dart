@@ -14,8 +14,7 @@ typedef Week = List<DateTime>;
 
 // TODO: aware of bug when selecting March 10, 2025
 
-// import 'package:divvy/models/divvy_theme.dart';
-// Commented out for testing
+/// Displays an interactive calendar that lets the user view a schedule of chores
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
 

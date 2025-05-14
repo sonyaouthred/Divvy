@@ -36,44 +36,38 @@ class Member {
     required String uid,
     required Email email,
     required String name,
-  }) {
-    return Member(
-      chores: [],
-      name: name,
-      id: uid,
-      email: email,
-      profilePicture: Colors.black,
-      onTimePct: 0,
-      subgroups: [],
-    );
-  }
+  }) => Member(
+    chores: [],
+    name: name,
+    id: uid,
+    email: email,
+    profilePicture: Colors.black,
+    onTimePct: 0,
+    subgroups: [],
+  );
 
   /// From a json map, returns a new User object
   /// with relevant fields filled out.
-  factory Member.fromJson(Map<String, dynamic> json) {
-    return Member(
-      name: json['name'],
-      id: json['id'],
-      chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
-      profilePicture: getColorFromName(json['profilePicture']),
-      onTimePct: int.parse(json['onTimePct'] as String),
-      email: json['email'],
-      subgroups: (json['subgroups'] as List<dynamic>).cast<SubgroupID>(),
-    );
-  }
+  factory Member.fromJson(Map<String, dynamic> json) => Member(
+    name: json['name'],
+    id: json['id'],
+    chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
+    profilePicture: getColorFromName(json['profilePicture']),
+    onTimePct: int.parse(json['onTimePct'] as String),
+    email: json['email'],
+    subgroups: (json['subgroups'] as List<dynamic>).cast<SubgroupID>(),
+  );
 
   /// Returns member object as json
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'id': _id,
-      'chores': chores,
-      'profilePicture': getNameFromColor(profilePicture),
-      'onTimePct': onTimePct,
-      'email': email,
-      'subgroups': subgroups,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'id': _id,
+    'chores': chores,
+    'profilePicture': getNameFromColor(profilePicture),
+    'onTimePct': onTimePct,
+    'email': email,
+    'subgroups': subgroups,
+  };
 
   //// Getters
   String get id => _id;
