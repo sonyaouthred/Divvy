@@ -24,7 +24,11 @@ class DivvyProvider extends ChangeNotifier {
   late final List<Chore> _chores;
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
 
-  DivvyProvider({required MemberID currentUserID}) {
+  DivvyProvider() {
+    print('init');
+  }
+
+  void initialize({required HouseID houseID}) {
     final data = Data();
 
     // get house info
@@ -61,8 +65,10 @@ class DivvyProvider extends ChangeNotifier {
     }
     _choreInstances = choreinsts;
 
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
     // Initialize current user
-    _currentUser = _members.firstWhere((user) => user.id == currentUserID);
+    _currentUser = _members.firstWhere((user) => user.id == uid);
   }
 
   ////////////////////////////// Server Functions //////////////////////////////

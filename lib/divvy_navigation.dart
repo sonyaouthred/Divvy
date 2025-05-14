@@ -1,8 +1,6 @@
 import 'package:divvy/models/divvy_theme.dart';
-import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:divvy/screens/settings.dart';
 import 'package:divvy/screens/calendar.dart';
 import 'package:divvy/screens/chores.dart';
@@ -27,17 +25,15 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
     Settings(),
   ];
   late final List<Widget> _titles;
-  late final String _houseName;
 
   @override
   void initState() {
     super.initState();
-    _houseName = Provider.of<DivvyProvider>(context, listen: false).houseName;
     _titles = <Widget>[
       Text('Calendar', style: DivvyTheme.screenTitle),
       Text('Chores', style: DivvyTheme.screenTitle),
       Text('Divvy', style: DivvyTheme.screenTitle),
-      Text(_houseName, style: DivvyTheme.screenTitle),
+      Text('House', style: DivvyTheme.screenTitle),
       Text('Settings', style: DivvyTheme.screenTitle),
     ];
   }

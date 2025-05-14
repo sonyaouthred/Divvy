@@ -23,7 +23,7 @@ class Data {
       'subgroups': ['gwoiut59432jmgkls', 'jti24tu9042jgssdfds'],
     },
     {
-      'id': '24889rhgksje',
+      'id': 'NImZXQblCXQ474vnT8nFeWgZJyg2',
       'name': 'Natasha',
       'dateJoined': Timestamp.fromDate(DateTime(2025, 5, 2, 12, 33, 52)),
       'profilePicture': 'darkGrey',
@@ -61,7 +61,7 @@ class Data {
       'description':
           'Clean the upstairs bathroom - counters, floors, toilet, and shower. Don\'t forget the sink!',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [4],
+      'frequencyDays': ['4'],
       'emoji': '🛁',
       'assignees': ['gj343udjkbvjso', '4392glkslkriep'],
     },
@@ -71,10 +71,9 @@ class Data {
       'description':
           'Clean the downstairs bathroom - counters, floors, toilet, and shower. Don\'t forget the sink!',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [2, 5],
+      'frequencyDays': ['2', '5'],
       'emoji': '🚽',
-
-      'assignees': ['24889rhgksje'],
+      'assignees': ['NImZXQblCXQ474vnT8nFeWgZJyg2'],
     },
     {
       'id': '4o3u560rihgklfse',
@@ -82,20 +81,24 @@ class Data {
       'description':
           'Wipe down the kitchen counters, take out trash/recycling/compost.',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [1],
+      'frequencyDays': ['1'],
       'emoji': '🧑‍🍳',
-      'assignees': ['24889rhgksje', 'gj343udjkbvjso', '4392glkslkriep'],
+      'assignees': [
+        'NImZXQblCXQ474vnT8nFeWgZJyg2',
+        'gj343udjkbvjso',
+        '4392glkslkriep',
+      ],
     },
     {
       'id': 't43iojy4io9ngh',
       'name': 'Battle cleanup',
       'description': 'General cleanup duties after saving the world',
       'frequencyPattern': Frequency.weekly.name,
-      'frequencyDays': [3, 7],
+      'frequencyDays': ['3', '7'],
       'emoji': '🦸',
       'assignees': [
         'e4930493jgjg3032',
-        '24889rhgksje',
+        'NImZXQblCXQ474vnT8nFeWgZJyg2',
         'gj343udjkbvjso',
         '4392glkslkriep',
       ],
@@ -124,14 +127,14 @@ class Data {
       'choreID': 'tji35932jglkmsklgewr',
       'dueDate': Timestamp.fromDate(DateTime(2025, 5, 5, 23, 59, 59)),
       'isDone': false,
-      'assignee': '24889rhgksje',
+      'assignee': 'NImZXQblCXQ474vnT8nFeWgZJyg2',
     },
     {
       'id': 't4ewoj092u3gvnfgsew',
       'choreID': 'tji35932jglkmsklgewr',
       'dueDate': Timestamp.fromDate(DateTime(2025, 5, 8, 23, 59, 59)),
       'isDone': false,
-      'assignee': '24889rhgksje',
+      'assignee': 'NImZXQblCXQ474vnT8nFeWgZJyg2',
     },
     // kitchen
     {
@@ -139,7 +142,7 @@ class Data {
       'choreID': '4o3u560rihgklfse',
       'dueDate': Timestamp.fromDate(DateTime(2025, 5, 4, 23, 59, 59)),
       'isDone': false,
-      'assignee': '24889rhgksje',
+      'assignee': 'NImZXQblCXQ474vnT8nFeWgZJyg2',
     },
     {
       'id': 'eit2ieognklsdmbh',
@@ -175,7 +178,7 @@ class Data {
       'choreID': 't43iojy4io9ngh',
       'dueDate': Timestamp.fromDate(DateTime(2025, 5, 13, 23, 59, 59)),
       'isDone': false,
-      'assignee': '24889rhgksje',
+      'assignee': 'NImZXQblCXQ474vnT8nFeWgZJyg2',
     },
     {
       'id': 't4h23oingmfsngioewt',
@@ -198,7 +201,11 @@ class Data {
       'id': 'jti24tu9042jgssdfds',
       'name': 'Avengers',
       'profilePicture': 'lightGreen',
-      'members': ['gj343udjkbvjso', '4392glkslkriep', '24889rhgksje'],
+      'members': [
+        'gj343udjkbvjso',
+        '4392glkslkriep',
+        'NImZXQblCXQ474vnT8nFeWgZJyg2',
+      ],
       'chores': ['4o3u560rihgklfse'],
     },
   ];

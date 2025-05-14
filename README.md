@@ -11,6 +11,7 @@ We have two repos one for backend and this on for frontend in order to run the a
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [Build and Run](#build-and-run)
+* [Setting up the Backend](#setting-up-the-backend)
 * [Testing](#testing)
 * [Code Structure](#code-structure)
 
@@ -50,7 +51,7 @@ flutter pub get
 ```
 flutter run
 ```
-2. Choose device you wish to run app on, (i.e. physical device connected, emulator, webpage, or desktop app)
+2. Choose device you wish to run app on, (i.e. physical device connected, emulator, webpage, or desktop app). For the beta release, we recommend using Chrome.
 - If running via button in VSC you will be prompted up top
 - If through the command line you will be prompted similar to this:
 ```
@@ -65,6 +66,11 @@ Please choose one (or "q" to quit):
 ```
 That lists all connected device you can choose from.
 Note the app is design for phone size screen so when running on chrome or other webpages please shrink down size of window otherwise could be some formatting issues.
+
+## Setting up the Backend
+1.  **Please see the backend repository for instructions on setting up the backend:** https://github.com/Arkanous/DivvyBackend
+2.  This will enable you to make requests from the database via the Flask server.
+3.  Note that with the current release, the Flask server and the frontend need to be running on the same machine. This will change. For now, make sure the Flask server is running on the same machine as the Flutter app.
 
 ## Testing 
 1. Running via command line 
