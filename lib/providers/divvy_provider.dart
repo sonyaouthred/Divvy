@@ -178,6 +178,18 @@ class DivvyProvider extends ChangeNotifier {
   List<Chore> get chores => List.from(_chores);
   Member get currentUser => _currentUser;
 
+  void addChore(Chore chore) {
+    _chores.add(chore);
+    notifyListeners();
+  }
+
+  void addChoreInstances(Chore chore, List<ChoreInst> choreInstances) {
+    _choreInstances[chore.id] = choreInstances;
+    print(chore.id);
+    print(_choreInstances[chore.id]!.map((choreInst) => choreInst.id).toList());
+    notifyListeners();
+  }
+
   /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
     Chore? chore = getSuperChore(id);
@@ -238,8 +250,10 @@ class DivvyProvider extends ChangeNotifier {
     ChoreID choreID,
     ChoreInstID choreInstanceID,
   ) {
+    print(choreID);
+    print(_choreInstances[choreID]!.map((choreInst) => choreInst.id).toList());
     return _choreInstances[choreID]!.firstWhere(
-      (ChoreInst instance) => instance.id == choreInstanceID,
+      (ChoreInst instance) => instance.id == choreInstanceID
     );
   }
 
@@ -327,6 +341,30 @@ class DivvyProvider extends ChangeNotifier {
     return res;
   }
 
+  List<ChoreInst> getUpcomingChoresLessStrict(MemberID member) {
+    final List<ChoreInst> res = [];
+    final List<Chore> chores = getMemberChores(member);
+    for (Chore chore in chores) {
+      final instances = _choreInstances[chore.id];
+      // should never be triggered
+      if (instances == null) break;
+      // Add all instances assigned to this user.
+      res.addAll(
+        instances
+            .where(
+              (inst) =>
+                  inst.assignee == member &&
+                  // Check if the due date is before now
+                  !inst.dueDate.isBefore(DateTime.now())
+                  // check that due date is not today
+            )
+            .toList(),
+      );
+    }
+    res.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
+    return res;
+  }
+
   /// Returns list of all chore instances due today for a given member
   /// List is sorted by time
   List<ChoreInst> getTodayChores(MemberID member) {
@@ -382,8 +420,9 @@ class DivvyProvider extends ChangeNotifier {
   /// Retuns list of all chore instances overdue for a given super chore
   /// List is sorted by date
   List<ChoreInst> getOverdueChoresByID(Chore chore) {
-    final List<ChoreInst>? res = _choreInstances[chore.id];
+    List<ChoreInst>? res = _choreInstances[chore.id];
     if (res == null) return [];
+    res = [..._choreInstances[chore.id]!];
     res.removeWhere(
       (chore) => chore.dueDate.isAfter(DateTime.now()) || chore.isDone,
     );
@@ -593,29 +632,29 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Adds a created chore superclass object to the database.
   /// auto generates instances for the next 90 days
-  void addChore(Chore chore) {
-    _chores.add(chore);
-    final assignees = chore.assignees;
-    // get list of dates we should make instances for
-    final dateList = getDateList(chore.frequency, DateTime.now());
-    final List<ChoreInst> instList = [];
-    for (int i = 0; i < dateList.length; i++) {
-      // get date
-      final date = dateList[i];
-      // get assignee
-      final assignee = assignees[i % assignees.length];
-      // create chore instance
-      final choreInst = ChoreInst.fromNew(
-        superCID: chore.id,
-        due: date,
-        assignee: assignee,
-      );
-      instList.add(choreInst);
-    }
-    // update stored map
-    _choreInstances[chore.id] = instList;
-    // TODO: update db!!!!
-    print('adding chore object to db');
-    notifyListeners();
-  }
+  // void addChore(Chore chore) {
+  //   _chores.add(chore);
+  //   final assignees = chore.assignees;
+  //   // get list of dates we should make instances for
+  //   final dateList = getDateList(chore.frequency, DateTime.now());
+  //   final List<ChoreInst> instList = [];
+  //   for (int i = 0; i < dateList.length; i++) {
+  //     // get date
+  //     final date = dateList[i];
+  //     // get assignee
+  //     final assignee = assignees[i % assignees.length];
+  //     // create chore instance
+  //     final choreInst = ChoreInst.fromNew(
+  //       superCID: chore.id,
+  //       due: date,
+  //       assignee: assignee,
+  //     );
+  //     instList.add(choreInst);
+  //   }
+  //   // update stored map
+  //   _choreInstances[chore.id] = instList;
+  //   // TODO: update db!!!!
+  //   print('adding chore object to db');
+  //   notifyListeners();
+  // }
 }

@@ -35,13 +35,17 @@ class ChoreSuperclassScreen extends StatelessWidget {
         for (Member member in choreAssignees) {
           upcomingChores.addAll(
             provider
-                .getUpcomingChores(member.id)
-                .where((chore) => chore.superID == choreID),
+                .getUpcomingChoresLessStrict(member.id)
+                .where((chore) => chore.superID == this.choreID),
           );
         }
 
+
+        upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
+
         // Get the list of overdue chores for this super class
         List<ChoreInst> overdueChores = provider.getOverdueChoresByID(chore);
+
 
         // Sort the upcoming chores by due date
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);

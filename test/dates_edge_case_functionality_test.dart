@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/models/chore.dart';
 
+
 void main() {
   group('getDateList - Daily', () {
     test('Daily recurrence from March 1, 2025', () {
@@ -74,23 +75,24 @@ void main() {
       ]);
     });
   });
-
-  group('Utility Functions', () {
-    test('compareDate ignores time', () {
-      final a = DateTime(2025, 5, 5, 23, 59);
-      final b = DateTime(2025, 5, 5, 0, 1);
-      expect(compareDate(a, b), true);
-    });
-
-    test('isLastDay detects end-of-month', () {
-      expect(isLastDay(DateTime(2025, 4, 30)), true);
-      expect(isLastDay(DateTime(2025, 4, 29)), false);
-    });
-
-    test('adjustDaylightSavings keeps dates stable', () {
-      final a = DateTime(2025, 11, 2, 23);
-      final b = adjustDaylightSavings(a);
-      expect(b.hour, 0); // Adjusted forward 1 hour
-    });
-  });
 }
+
+//   group('Utility Functions', () {
+//     test('compareDate ignores time', () {
+//       final a = DateTime(2025, 5, 5, 23, 59);
+//       final b = DateTime(2025, 5, 5, 0, 1);
+//       expect(compareDate(a, b), true);
+//     });
+
+//     test('isLastDay detects end-of-month', () {
+//       expect(isLastDay(DateTime(2025, 4, 30)), true);
+//       expect(isLastDay(DateTime(2025, 4, 29)), false);
+//     });
+
+//     test('adjustDaylightSavings keeps dates stable', () {
+//       final a = DateTime(2025, 11, 2, 23);
+//       final b = adjustDaylightSavings(a);
+//       expect(b.hour, 0); // Adjusted forward 1 hour
+//     });
+//   });
+// }

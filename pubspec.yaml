@@ -7,6 +7,7 @@ environment:
   sdk: ^3.8.0-265.0.dev
 
 dependencies:
+  uuid: ^4.2.2
   cloud_firestore: ^5.6.7
   cupertino_icons: ^1.0.8
   firebase_auth: ^5.5.3
@@ -21,7 +22,6 @@ dependencies:
   nanoid: ^1.0.0
   page_transition: ^2.2.1
   provider: ^6.1.5
-  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:

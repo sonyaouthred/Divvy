@@ -33,10 +33,15 @@ class ChoreInstanceScreen extends StatelessWidget {
         // Get the super chore for this instance
         Chore? parentChore = provider.getSuperChore(choreID);
 
+
         // If chore no longer exists, show chore not found screen
         if (parentChore == null) return _choreNotFoundScreen(width, spacing);
+        print("yo");
+        print(parentChore.frequency.daysOfWeek.runtimeType);
 
         // Get the updated instance (potentially with new info) from provider
+        print(choreID);
+        print(choreInstanceId);
         ChoreInst choreInstance = provider.getChoreInstanceFromID(
           choreID,
           choreInstanceId,
@@ -250,6 +255,7 @@ class ChoreInstanceScreen extends StatelessWidget {
     children: [
       Text("Frequency:", style: DivvyTheme.bodyBoldBlack),
       SizedBox(height: spacing / 4),
+      // Text("${superChore.frequency.daysOfWeek[0].toString()}")
       Text(getFrequencySentence(superChore), style: DivvyTheme.bodyBlack),
     ],
   );

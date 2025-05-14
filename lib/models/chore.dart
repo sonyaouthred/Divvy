@@ -62,9 +62,11 @@ class Chore {
       emoji: json['emoji'],
       frequency: ChoreFrequency.fromJson(
         pattern: json['frequencyPattern'],
-        daysOfWeek: json['frequencyDays'],
+        daysOfWeek: (json['frequencyDays'] as List<dynamic>).cast<int>(),
       ),
     );
+
+  
   }
 
   /// Returns a json version of the chore object
