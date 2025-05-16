@@ -281,7 +281,7 @@ class _CalendarState extends State<Calendar> {
               SizedBox(height: spacing / 2),
               // Display weekday letter
               Text(
-                _getLetterForWeekday(date.weekday),
+                getLetterForWeekday(date.weekday),
                 style:
                     isSelected
                         ? DivvyTheme.smallBoldMedWhite
@@ -348,20 +348,6 @@ class _CalendarState extends State<Calendar> {
       ],
     );
   }
-
-  //////////////////////// Util Functions ////////////////////////
-
-  /// Returns a one-letter string for the current weekday
-  String _getLetterForWeekday(int weekday) => switch (weekday) {
-    1 => 'M',
-    2 => 'T',
-    3 => 'W',
-    4 => 'Th',
-    5 => 'F',
-    6 => 'S',
-    7 => 'S',
-    int() => '?',
-  };
 }
 
 enum DateSelection { week, day }

@@ -3,6 +3,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/chore_instance_screen.dart';
+import 'package:divvy/screens/edit_or_add_chore.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
@@ -36,16 +37,14 @@ class ChoreSuperclassScreen extends StatelessWidget {
           upcomingChores.addAll(
             provider
                 .getUpcomingChoresLessStrict(member.id)
-                .where((chore) => chore.superID == this.choreID),
+                .where((chore) => chore.superID == choreID),
           );
         }
-
 
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
 
         // Get the list of overdue chores for this super class
         List<ChoreInst> overdueChores = provider.getOverdueChoresByID(chore);
-
 
         // Sort the upcoming chores by due date
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
@@ -81,7 +80,7 @@ class ChoreSuperclassScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: spacing),
-                    _choreEditableTile(chore, context, spacing),
+                    _choreNameTile(chore, context, spacing),
                     SizedBox(height: spacing / 2),
                     _customDivider(spacing),
                     _frequencyWidget(chore, spacing),
@@ -122,9 +121,12 @@ class ChoreSuperclassScreen extends StatelessWidget {
             title: const Text('Chore Actions'),
             actions: <CupertinoActionSheetAction>[
               CupertinoActionSheetAction(
-                /// This parameter indicates the action would perform
-                /// a destructive action such as delete or exit and turns
-                /// the action's text color to red.
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: const Text('Edit Chore'),
+              ),
+              CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 onPressed: () {
                   Navigator.of(context).pop(true);
@@ -145,6 +147,11 @@ class ChoreSuperclassScreen extends StatelessWidget {
         // leave screen
         Navigator.of(context).pop();
       }
+    } else if (delete != null && !delete && context.mounted) {
+      // user wants to edit chore
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (ctx) => EditOrAddChore(choreID: choreID)),
+      );
     }
   }
 
@@ -288,36 +295,16 @@ class ChoreSuperclassScreen extends StatelessWidget {
     ],
   );
 
-  /// Displays the title of the chore and allows user to edit
-  Widget _choreEditableTile(
-    Chore chore,
-    BuildContext context,
-    double spacing,
-  ) => Container(
-    decoration: DivvyTheme.standardBox,
-    padding: EdgeInsets.symmetric(vertical: spacing / 2),
-    child: ListTile(
-      leading: Text(chore.emoji, style: TextStyle(fontSize: 40)),
-      title: Text(chore.name, style: DivvyTheme.bodyBlack),
-      trailing: IconButton(
-        onPressed: () async {
-          // prompt for new name and assign if valid
-          final newName = await openInputDialog(
-            context,
-            title: 'Edit Chore Name',
-            initText: chore.name,
-          );
-          if (newName != null && context.mounted) {
-            Provider.of<DivvyProvider>(
-              context,
-              listen: false,
-            ).changeName(choreID, newName);
-          }
-        },
-        icon: Icon(CupertinoIcons.pencil),
-      ),
-    ),
-  );
+  /// Displays the title of the chore
+  Widget _choreNameTile(Chore chore, BuildContext context, double spacing) =>
+      Container(
+        decoration: DivvyTheme.standardBox,
+        padding: EdgeInsets.symmetric(vertical: spacing / 2),
+        child: ListTile(
+          leading: Text(chore.emoji, style: TextStyle(fontSize: 40)),
+          title: Text(chore.name, style: DivvyTheme.largeBodyBlack),
+        ),
+      );
 
   ////////////////////////////// Util //////////////////////////////
 

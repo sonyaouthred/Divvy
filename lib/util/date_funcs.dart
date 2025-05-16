@@ -317,3 +317,15 @@ String getRepetition(int numDays) => switch (numDays) {
   7 => 'Seven times a week',
   int() => 'Error',
 };
+
+/// Returns a one-letter string for the current weekday
+String getLetterForWeekday(int weekday) => switch (weekday) {
+  1 => 'M',
+  2 => 'T',
+  3 => 'W',
+  4 => 'Th',
+  5 => 'F',
+  6 => 'S',
+  7 => 'S',
+  int() => '?',
+};

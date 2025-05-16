@@ -22,6 +22,8 @@ dependencies:
   nanoid: ^1.0.0
   page_transition: ^2.2.1
   provider: ^6.1.5
+  unicode_emojis: ^0.4.0
+  all_emojis: ^0.1.0
 
 dev_dependencies:
   flutter_test:

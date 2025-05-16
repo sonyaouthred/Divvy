@@ -43,9 +43,8 @@ class Chores extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Card(
-                      color: DivvyTheme.background,
-                      elevation: 2,
+                    child: Container(
+                      decoration: DivvyTheme.standardBox,
                       child: ListTile(
                         leading: Icon(CupertinoIcons.add),
                         title: Text(

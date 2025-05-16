@@ -38,9 +38,14 @@ class Chore {
     required List<MemberID> assignees,
     required String emoji,
     required String description,
+    required DateTime startDate,
   }) {
     final id = uuid.v4();
-    final choreFreq = ChoreFrequency(pattern: pattern, daysOfWeek: daysOfWeek);
+    final choreFreq = ChoreFrequency(
+      pattern: pattern,
+      daysOfWeek: daysOfWeek,
+      startDate: startDate,
+    );
     return Chore(
       name: name,
       frequency: choreFreq,
@@ -62,6 +67,7 @@ class Chore {
     frequency: ChoreFrequency.fromJson(
       pattern: json['frequencyPattern'],
       daysOfWeek: (json['frequencyDays'] as List<dynamic>).cast<int>(),
+      startDate: HttpDate.parse(json['startDate']),
     ),
   );
 
@@ -180,19 +186,26 @@ class ChoreFrequency {
   final Frequency pattern;
   // 1 = monday, ... 7 = sunday
   final List<int> daysOfWeek;
+  final DateTime startDate;
 
-  ChoreFrequency({required this.pattern, required this.daysOfWeek});
+  ChoreFrequency({
+    required this.pattern,
+    required this.daysOfWeek,
+    required this.startDate,
+  });
 
   /// Returns a chore frequency object from JSON (dynamic) values.
   factory ChoreFrequency.fromJson({
     required dynamic pattern,
     required dynamic daysOfWeek,
+    required dynamic startDate,
   }) {
     return ChoreFrequency(
       pattern: Frequency.values.firstWhere(
         (f) => f.name == (pattern as String),
       ),
       daysOfWeek: (daysOfWeek as List<dynamic>).cast<int>().toList(),
+      startDate: startDate,
     );
   }
 }

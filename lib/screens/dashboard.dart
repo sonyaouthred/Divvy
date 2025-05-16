@@ -95,6 +95,7 @@ class Dashboard extends StatelessWidget {
     List<ChoreInst> today,
   ) {
     if (overdue.isEmpty) return Container();
+    if (today.isEmpty) return Container();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: spacing / 4),
       child: Column(

@@ -1,13 +1,17 @@
+import 'package:all_emojis/all_emojis.dart';
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
+import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/util/date_funcs.dart';
+import 'package:divvy/util/dialogs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
+/// Allows the user to add a chore & save it to their house
 class EditOrAddChore extends StatefulWidget {
   final ChoreID? choreID;
 
@@ -18,172 +22,73 @@ class EditOrAddChore extends StatefulWidget {
 }
 
 class _EditOrAddChoreState extends State<EditOrAddChore> {
-  late TextEditingController _textController;
+  // track chore's name
+  late TextEditingController _nameController;
+  late TextEditingController _emojiController;
+  // track list of members
   late List<Member> members;
+  // track list of subgroups
+  late List<Subgroup> subgroups;
+  // the super chore object (null if adding)
+  late Chore? chore;
+  // the group the user is selecting by
+  AssigneeSelection assigneeSel = AssigneeSelection.subgroup;
 
-  final List<String> weekDays = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  // List of weekdays to choose from
+  final List<int> weekDays = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+  ]; // List of weekdays to choose from
 
-  int emojiIndex = 0;
+  List<Member> chosenMembers = [];
+  Subgroup? chosenSubgroup;
 
-  final List<String> emojis = ['🛁', '🚽', '🧑‍🍳', '🦸'];
-
-  List<bool> chosenMembers = [];
-
-  Frequency frequency = Frequency.daily;
-
-  List<bool> chosenDates = [];
-
-  DateTime startMonthDate = DateTime.now();
-  DateTime startDailyDate = DateTime.now();
-
-
-  final uuid = Uuid();
+  // The selected frequency of the chore
+  Frequency frequency = Frequency.weekly;
+  // The list of chosen dates
+  List<int> chosenDates = [];
+  // Start dates
+  DateTime startDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    members = Provider.of<DivvyProvider>(context, listen: false).members;
-
-    for (int i = 0; i < members.length; i++) {
-      chosenMembers.add(false);
-    }
-
-    for (int i = 0; i < 7; i++) {
-      if (i == 0) {
-        chosenDates.add(true);
-      } else {
-        chosenDates.add(false);
-      }
-    }
-
-    _textController = TextEditingController();
+    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
+    members = providerRef.members;
+    subgroups = providerRef.subgroups;
+    // get the actual chore object from the provider (if possible)
+    chore =
+        widget.choreID == null
+            ? null
+            : providerRef.getSuperChore(widget.choreID!);
+    // If user is editing, set the initial chore name to the actual name
+    _nameController = TextEditingController(text: chore?.name ?? '');
+    _emojiController = TextEditingController(text: chore?.emoji ?? '');
   }
 
   @override
   void dispose() {
-    _textController.dispose();
+    // dispose of text editing controllers
+    _nameController.dispose();
+    _emojiController.dispose();
     super.dispose();
-  }
-
-  void addChoreAndInstances(DivvyProvider provider) {
-    if (_textController.text.isEmpty) return;
-
-    ChoreID newChoreID = uuid.v4();
-
-    List<MemberID> chosenMemberIDs = [];
-
-    for (int i = 0; i < chosenMembers.length; i++) {
-      if (chosenMembers[i]) {
-        chosenMemberIDs.add(members[i].id);
-      }
-    }
-
-    if (chosenMemberIDs.isEmpty) return;
-
-    List<int> chosenDaysOfWeek = [];
-    List<ChoreInst> newChoreInstances = [];
-
-    if (frequency == Frequency.weekly) {
-      DateTime currentDate = DateTime.now().copyWith(hour: 23, minute: 59);
-      int assigneeNum = 0;
-
-      for (int i = 0; i < chosenDates.length; i++) {
-        if (chosenDates[i]) {
-          chosenDaysOfWeek.add(i + 1);
-
-          while (currentDate.weekday != i + 1) {
-            currentDate = currentDate.add(Duration(days: 1));
-          }
-
-          newChoreInstances.add(
-            ChoreInst(
-              choreID: newChoreID,
-              id: uuid.v4(),
-              dueDate: currentDate,
-              isDone: false,
-              assignee: chosenMemberIDs[assigneeNum % chosenMemberIDs.length],
-            ),
-          );
-
-          assigneeNum += 1;
-        }
-      }
-
-      if (chosenDaysOfWeek.isEmpty) return;
-    } else if (frequency == Frequency.daily) {
-      DateTime currentDate = startDailyDate.copyWith(hour: 23, minute: 59);
-      int assigneeNum = 0;
-
-      for (int i = 1; i < 8; i++) {
-        chosenDaysOfWeek.add(i);
-        while (currentDate.weekday != i) {
-          currentDate = currentDate.add(Duration(days: 1));
-        }
-
-        newChoreInstances.add(
-          ChoreInst(
-            choreID: newChoreID,
-            id: uuid.v4(),
-            dueDate: currentDate,
-            isDone: false,
-            assignee: chosenMemberIDs[assigneeNum % chosenMemberIDs.length],
-          ),
-        );
-
-        assigneeNum += 1;
-      }
-    } else {
-      chosenDaysOfWeek.add(startMonthDate.weekday);
-      newChoreInstances.add(
-        ChoreInst(
-          choreID: newChoreID,
-          id: uuid.v4(),
-          dueDate: startMonthDate.copyWith(hour: 23, minute: 59),
-          isDone: false,
-          assignee: chosenMemberIDs[0],
-        ),
-      );
-    }
-
-    Chore chore = Chore(
-      id: newChoreID,
-      name: _textController.text,
-      frequency: ChoreFrequency(pattern: frequency, daysOfWeek: chosenDaysOfWeek),
-      emoji: emojis[emojiIndex],
-      description: "",
-      assignees: chosenMemberIDs,
-    );
-
-    provider.addChore(chore);
-    provider.addChoreInstances(chore, newChoreInstances);
-
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     final spacing = width * 0.05;
 
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
-        Chore? chore =
-            widget.choreID == null
-                ? null
-                : provider.getSuperChore(widget.choreID!);
-
-        if (chore != null) {
-          _textController.text = chore.name;
-        }
-
+        // Refresh chore from provider
+        chore = chore == null ? null : provider.getSuperChore(widget.choreID!);
         return Scaffold(
           backgroundColor: DivvyTheme.background,
           appBar: AppBar(
@@ -194,14 +99,6 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
             centerTitle: true,
             scrolledUnderElevation: 0,
             backgroundColor: DivvyTheme.background,
-            actions: [
-              CupertinoButton(
-                child: Text("Save", style: DivvyTheme.bodyGreen),
-                onPressed: () {
-                  addChoreAndInstances(provider);
-                },
-              ),
-            ],
           ),
           body: SizedBox.expand(
             child: SingleChildScrollView(
@@ -211,38 +108,17 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CupertinoTextField(
-                      placeholder: "Enter a name;",
-                      controller: _textController,
-                    ),
+                    SizedBox(height: spacing),
+                    _choreNameEditor(spacing),
+                    SizedBox(height: spacing),
                     _chooseEmojis(context),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 16),
-                      child: Text("Assignees:", style: DivvyTheme.bodyBoldGrey),
-                    ),
-                    _memberList(members, chosenMembers, context),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text("Frequency:", style: DivvyTheme.bodyBoldGrey),
-                      trailing: CupertinoButton(
-                        child: Text(
-                          _freqToText(frequency),
-                          style: DivvyTheme.bodyGreen,
-                        ),
-                        onPressed: () {
-                          _showCupertinoPickeForFreqs();
-                        },
-                      ),
-                    ),
-                    frequency == Frequency.monthly
-                        ? _chooseMonths(context)
-                        : SizedBox(),
-                    frequency == Frequency.daily
-                        ? _chooseDays(context)
-                        : SizedBox(),
-                    frequency == Frequency.weekly
-                        ? _chooseWeekdays(context, weekDays)
-                        : SizedBox(),
+                    SizedBox(height: spacing),
+                    _showAssigneeSelection(spacing),
+                    SizedBox(height: spacing),
+                    _showFrequencySelection(spacing, width, height),
+                    SizedBox(height: spacing * 2),
+                    _saveButton(width, provider),
+                    SizedBox(height: spacing * 2),
                   ],
                 ),
               ),
@@ -253,88 +129,140 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     );
   }
 
-  Widget _chooseEmojis(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text("Choose Icon", style: DivvyTheme.bodyBoldGrey),
-      trailing: CupertinoButton(
-        child: Text(emojis[emojiIndex], style: TextStyle(fontSize: 20)),
-        onPressed: () {
-          _showCupertinoPickeForEmojis(context);
+  /// Allow user to save the chore they've created
+  Widget _saveButton(double width, DivvyProvider provider) {
+    return Center(
+      child: InkWell(
+        onTap: () {
+          // Add the chore and chore instances
+          addChoreAndInstances(provider);
         },
+        child: Container(
+          alignment: Alignment.center,
+          height: 50,
+          width: width / 3,
+          decoration: DivvyTheme.medGreenBox,
+          child: Text("Save", style: DivvyTheme.largeBoldMedWhite),
+        ),
       ),
     );
   }
 
-  void _showCupertinoPickeForEmojis(context) {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 250,
-          color: CupertinoColors.systemBackground.resolveFrom(context),
-          child: CupertinoPicker(
-            itemExtent: 32.0,
-            onSelectedItemChanged: (int index) {
-              setState(() {
-                emojiIndex = index;
-              });
-            },
-            children: [...emojis.map((emoji) => Text(emoji, style: TextStyle(fontSize: 20),))],
-          ),
-        );
-      },
-    );
-  }
+  //////////////////////// Name editing ////////////////////////
 
-  Widget _chooseWeekdays(BuildContext context, List<String> daysOfWeek) {
+  /// Allow user to view chore name/edit.
+  Widget _choreNameEditor(double spacing) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 32, bottom: 16),
-          child: Text("Choose recurring days:", style: DivvyTheme.bodyBoldGrey),
-        ),
-        SizedBox(
-          height: 300,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: daysOfWeek.length,
-            itemBuilder: (context, idx) {
-              return Card(
-                color: DivvyTheme.background,
-                child: ListTile(
-                  title: Text(daysOfWeek[idx]),
-                  trailing: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        chosenDates[idx] = !chosenDates[idx];
-                      });
-                    },
-                    icon: Icon(
-                      chosenDates[idx]
-                          ? CupertinoIcons.check_mark_circled_solid
-                          : CupertinoIcons.circle,
-                      color: DivvyTheme.lightGreen,
-                    ),
-                  ),
-                ),
-              );
-            },
+        Text('Chore Name:', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        Container(
+          height: 50,
+          decoration: DivvyTheme.standardBox,
+          padding: EdgeInsets.symmetric(horizontal: 15),
+          child: TextFormField(
+            controller: _nameController,
+            decoration: InputDecoration(border: InputBorder.none),
           ),
         ),
       ],
     );
   }
 
-  Widget _chooseDays(BuildContext context) {
+  /// Allow user to choose the emoji they want.
+  Widget _chooseEmojis(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          flex: 1,
+          child: Text("Emoji Icon:", style: DivvyTheme.bodyBoldGrey),
+        ),
+        Spacer(flex: 1),
+        Flexible(
+          flex: 1,
+          child: Container(
+            height: 50,
+            decoration: DivvyTheme.standardBox,
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: TextFormField(
+              controller: _emojiController,
+              decoration: InputDecoration(border: InputBorder.none),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  //////////////////////// Date Selection ////////////////////////
+
+  /// Displays row of selectable dates for the inputted week
+  Widget _weekDayDisplay(double width, double spacing, double height) {
+    return Padding(
+      padding: EdgeInsets.only(top: spacing),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:
+            weekDays.map((date) {
+              return _dateTile(date, width / 10, spacing, height);
+            }).toList(),
+      ),
+    );
+  }
+
+  /// Displays a tile for the selected date.
+  Widget _dateTile(int weekDay, double width, double spacing, double height) {
+    // True if current date is selected
+    bool isSelected = chosenDates.contains(weekDay);
+    return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      onTap:
+          () => setState(() {
+            // add or remove current date
+            if (chosenDates.contains(weekDay)) {
+              chosenDates.remove(weekDay);
+            } else {
+              chosenDates.add(weekDay);
+            }
+          }),
+      child: IntrinsicHeight(
+        child: Container(
+          decoration: DivvyTheme.oval(
+            isSelected ? DivvyTheme.mediumGreen : DivvyTheme.white,
+          ),
+          width: width,
+          padding: EdgeInsets.symmetric(vertical: spacing / 2),
+          child: Column(
+            children: [
+              SizedBox(height: spacing / 2),
+              // Display weekday letter
+              Text(
+                getLetterForWeekday(weekDay),
+                style:
+                    isSelected
+                        ? DivvyTheme.largeBoldMedWhite
+                        : DivvyTheme.largeBoldMedGreen,
+              ),
+              SizedBox(height: spacing / 2),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Allow user to choose a start date for repetition.
+  Widget _chooseStartDate(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text("Choose Start Date:", style: DivvyTheme.bodyBoldGrey),
       trailing: CupertinoButton(
         child: Text(
-          DateFormat('MM/dd/yyyy').format(startDailyDate),
-          style: DivvyTheme.bodyGreen,
+          DateFormat('MM/dd/yyyy').format(startDate),
+          style: DivvyTheme.smallBoldMedGreen,
         ),
         onPressed: () {
           _showDatePickerDays(context);
@@ -343,6 +271,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     );
   }
 
+  /// Allow user to select a date to start repetition on
   void _showDatePickerDays(BuildContext context) {
     showCupertinoModalPopup(
       context: context,
@@ -352,12 +281,12 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
             color: CupertinoColors.systemBackground.resolveFrom(context),
             child: CupertinoDatePicker(
               mode: CupertinoDatePickerMode.date,
-              initialDateTime: startDailyDate,
+              initialDateTime: startDate,
               maximumDate: DateTime(2100),
-              minimumDate: startDailyDate,
+              minimumDate: startDate,
               onDateTimeChanged: (DateTime newDate) {
                 setState(() {
-                  startDailyDate = newDate;
+                  startDate = newDate;
                 });
               },
             ),
@@ -365,114 +294,329 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     );
   }
 
-  Widget _chooseMonths(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text("Choose Start Date:", style: DivvyTheme.bodyBoldGrey),
-      trailing: CupertinoButton(
-        child: Text(
-          DateFormat('MM/dd/yyyy').format(startMonthDate),
-          style: DivvyTheme.bodyGreen,
+  /// Show the user's current frequency selection & allow them to change it
+  Widget _showFrequencySelection(double spacing, double width, double height) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Frequency:", style: DivvyTheme.bodyBoldGrey),
+            _frequencySelector(spacing),
+          ],
         ),
-        onPressed: () {
-          _showDatePickerMonth(context);
-        },
+        SizedBox(height: spacing),
+        // Show date/weekday selection
+        if (frequency == Frequency.monthly || frequency == Frequency.daily)
+          _chooseStartDate(context),
+        if (frequency == Frequency.weekly)
+          _weekDayDisplay(width, spacing, height),
+      ],
+    );
+  }
+
+  /// Display a box the user uses to select a frequency pattern
+  Widget _frequencySelector(double spacing) {
+    return IntrinsicWidth(
+      child: Container(
+        height: 45,
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.symmetric(horizontal: spacing),
+        decoration: DivvyTheme.standardBox,
+        child: DropdownButtonFormField(
+          value: frequency,
+          borderRadius: BorderRadius.circular(15),
+          elevation: 3,
+          decoration: const InputDecoration(border: InputBorder.none),
+          dropdownColor: DivvyTheme.background,
+          iconEnabledColor: DivvyTheme.mediumGreen,
+          items:
+              Frequency.values
+                  .map<DropdownMenuItem<Frequency>>(
+                    (Frequency sel) => DropdownMenuItem<Frequency>(
+                      value: sel,
+                      child: Text(
+                        sel.name,
+                        style: DivvyTheme.smallBoldMedGreen,
+                      ),
+                    ),
+                  )
+                  .toList(),
+          onChanged: (Frequency? value) async {
+            if (value != null) {
+              setState(() {
+                frequency = value;
+              });
+            }
+          },
+        ),
       ),
     );
   }
 
-  void _showDatePickerMonth(BuildContext context) {
-    showCupertinoModalPopup(
-      context: context,
-      builder:
-          (BuildContext context) => Container(
-            height: 250,
-            color: CupertinoColors.systemBackground.resolveFrom(context),
-            child: CupertinoDatePicker(
-              mode: CupertinoDatePickerMode.date,
-              initialDateTime: startMonthDate,
-              maximumDate: DateTime(2100),
-              minimumDate: startMonthDate,
-              onDateTimeChanged: (DateTime newDate) {
-                setState(() {
-                  startMonthDate = newDate;
-                });
-              },
-            ),
+  //////////////////////// Assignees ////////////////////////
+
+  // Allows user to select members or groups or whole house
+  Widget _showAssigneeSelection(double spacing) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: spacing / 3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Choose assignees by:", style: DivvyTheme.bodyBoldGrey),
+              SizedBox(width: spacing / 2),
+              _assigneeSelector(spacing),
+            ],
           ),
+          if (assigneeSel != AssigneeSelection.house) SizedBox(height: spacing),
+          if (assigneeSel == AssigneeSelection.member)
+            _memberList(context, spacing),
+          if (assigneeSel == AssigneeSelection.subgroup)
+            _subgroupList(context, spacing),
+        ],
+      ),
     );
   }
 
-  void _showCupertinoPickeForFreqs() {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 250,
-          color: CupertinoColors.systemBackground.resolveFrom(context),
-          child: CupertinoPicker(
-            itemExtent: 32.0,
-            onSelectedItemChanged: (int index) {
+  /// Display a box the user uses to select a date range
+  Widget _assigneeSelector(double spacing) {
+    return IntrinsicWidth(
+      child: Container(
+        height: 45,
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.symmetric(horizontal: spacing),
+        decoration: DivvyTheme.standardBox,
+        child: DropdownButtonFormField(
+          value: assigneeSel,
+          borderRadius: BorderRadius.circular(15),
+          elevation: 3,
+          decoration: const InputDecoration(border: InputBorder.none),
+          dropdownColor: DivvyTheme.background,
+          iconEnabledColor: DivvyTheme.mediumGreen,
+          items:
+              AssigneeSelection.values
+                  .map<DropdownMenuItem<AssigneeSelection>>(
+                    (AssigneeSelection sel) =>
+                        DropdownMenuItem<AssigneeSelection>(
+                          value: sel,
+                          child: Text(
+                            sel.name,
+                            style: DivvyTheme.smallBoldMedGreen,
+                          ),
+                        ),
+                  )
+                  .toList(),
+          onChanged: (AssigneeSelection? value) async {
+            if (value != null) {
               setState(() {
-                if (index == 0) {
-                  frequency = Frequency.daily;
-                } else if (index == 1) {
-                  frequency = Frequency.weekly;
-                } else {
-                  frequency = Frequency.monthly;
-                }
+                assigneeSel = value;
               });
-            },
-            children: [Text("Daily"), Text("Weekly"), Text("Monthly")],
-          ),
-        );
-      },
+            }
+          },
+        ),
+      ),
     );
   }
 
-  Widget _memberList(
-    List<Member> members,
-    List<bool> chosenMembers,
-    BuildContext context,
-  ) {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: members.length,
-      itemBuilder: (context, idx) {
-        return Card(
-          color: DivvyTheme.background,
-          child: CupertinoListTile(
-            leading: CircleAvatar(
-              radius: 15,
-              backgroundColor: members[idx].profilePicture,
-            ),
-            title: Text(members[idx].name, style: DivvyTheme.bodyGrey),
-            trailing: IconButton(
-              onPressed: () {
-                setState(() {
-                  chosenMembers[idx] = !chosenMembers[idx];
-                });
-              },
-              icon: Icon(
-                chosenMembers[idx]
-                    ? CupertinoIcons.check_mark_circled_solid
-                    : CupertinoIcons.circle,
-                color: DivvyTheme.lightGreen,
-              ),
-            ),
-          ),
-        );
-      },
+  /// Display the list of all subgroups and if they have been chosen.
+  Widget _subgroupList(BuildContext context, double spacing) {
+    return Column(
+      children:
+          subgroups
+              .map(
+                (s) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: spacing / 2),
+                  child: Container(
+                    decoration: DivvyTheme.standardBox,
+                    height: 50,
+                    padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          chosenSubgroup = s;
+                        });
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 15,
+                                backgroundColor: s.profilePicture,
+                              ),
+                              SizedBox(width: spacing / 2),
+                              Text(s.name, style: DivvyTheme.bodyBlack),
+                            ],
+                          ),
+                          Icon(
+                            chosenSubgroup != null && chosenSubgroup == s
+                                ? CupertinoIcons.check_mark_circled_solid
+                                : CupertinoIcons.circle,
+                            color: DivvyTheme.lightGreen,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
     );
   }
 
-  String _freqToText(Frequency freq) {
-    if (freq == Frequency.daily) {
-      return "Daily";
-    } else if (freq == Frequency.weekly) {
-      return "Weekly";
-    } else {
-      return "Monthly";
+  /// Display the list of all members and if they have been chosen.
+  Widget _memberList(BuildContext context, double spacing) {
+    return Column(
+      children:
+          members
+              .map(
+                (m) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: spacing / 2),
+                  child: Container(
+                    decoration: DivvyTheme.standardBox,
+                    height: 50,
+                    padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (chosenMembers.contains(m)) {
+                            chosenMembers.remove(m);
+                          } else {
+                            chosenMembers.add(m);
+                          }
+                        });
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 15,
+                                backgroundColor: m.profilePicture,
+                              ),
+                              SizedBox(width: spacing / 2),
+                              Text(m.name, style: DivvyTheme.bodyBlack),
+                            ],
+                          ),
+                          Icon(
+                            chosenMembers.contains(m)
+                                ? CupertinoIcons.check_mark_circled_solid
+                                : CupertinoIcons.circle,
+                            color: DivvyTheme.lightGreen,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+    );
+  }
+
+  //////////////////////// Saving ////////////////////////
+
+  /// Add a new super chore and all instances to the database (via provider)
+  void addChoreAndInstances(DivvyProvider provider) {
+    // if no name has been entered, show error dialog
+    if (_nameController.text.isEmpty) {
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please enter a name for your chore!',
+      );
+      return;
+    } else if (assigneeSel == AssigneeSelection.member &&
+        chosenMembers.isEmpty) {
+      // Make sure at least one member has been chosen
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please choose at least one member.',
+      );
+      return;
+    } else if (assigneeSel == AssigneeSelection.subgroup &&
+        chosenSubgroup == null) {
+      // Make sure at least one member has been chosen
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please choose at least one subgroup.',
+      );
+      return;
+    } else if (frequency == Frequency.weekly && chosenDates.isEmpty) {
+      // No weekdays have been chosen
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please choose at least one weekday to repeat on.',
+      );
+      return;
+    } else if (isEmoji(_emojiController.text)) {
+      // Emoji is invalid
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please choose a single emoji to represent the chore.',
+      );
+      return;
     }
+
+    // Get all member IDs
+    List<MemberID> chosenMemberIDs = switch (assigneeSel) {
+      // all house members should be added
+      AssigneeSelection.house => members.map((m) => m.id).toList(),
+      AssigneeSelection.member => chosenMembers.map((m) => m.id).toList(),
+      AssigneeSelection.subgroup => chosenSubgroup!.members,
+    };
+
+    // Now add chore!!
+    Chore newChore = Chore.fromNew(
+      name: _nameController.text,
+      pattern: frequency,
+      daysOfWeek: chosenDates,
+      emoji: _emojiController.text,
+      description: "",
+      assignees: chosenMemberIDs,
+      startDate: startDate,
+    );
+
+    // Provider will handle adding new chore instances
+    provider.addChore(newChore);
+
+    Navigator.of(context).pop();
   }
 }
+
+//////////////////////// Misc Util ////////////////////////
+
+enum AssigneeSelection { member, subgroup, house }
+
+extension AssigneeSelectionInfo on AssigneeSelection {
+  String get name => switch (this) {
+    AssigneeSelection.member => 'Member',
+    AssigneeSelection.subgroup => 'Subgroup',
+    AssigneeSelection.house => 'Whole house',
+  };
+}
+
+/// Returns true if inputted string is a single emoji
+bool isEmoji(String text) {
+  if (text.isEmpty) return false;
+  if (text.length > 2) return false;
+  final matches = emojiRegex.allMatches(text);
+  final foundEmojis = matches.map((m) => m.group(0)).toList();
+  return foundEmojis.isNotEmpty;
+}
+
+/// Gets an appropriate string for a frequency
+String getFrequencyName(Frequency freq) => switch (freq) {
+  Frequency.daily => 'Daily',
+  Frequency.weekly => 'Weekly',
+  Frequency.monthly => 'Monthly',
+};

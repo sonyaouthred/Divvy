@@ -180,12 +180,20 @@ class DivvyTheme {
     color: DivvyTheme.white,
     borderRadius: BorderRadius.circular(10),
     boxShadow: [
-      BoxShadow(color: DivvyTheme.shadow, blurRadius: 3, spreadRadius: 0),
+      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 3, spreadRadius: 0),
     ],
   );
 
   static BoxDecoration greenBox = BoxDecoration(
     color: DivvyTheme.darkGreen,
+    borderRadius: BorderRadius.circular(15),
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
+    ],
+  );
+
+  static BoxDecoration medGreenBox = BoxDecoration(
+    color: DivvyTheme.mediumGreen,
     borderRadius: BorderRadius.circular(15),
     boxShadow: [
       BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
