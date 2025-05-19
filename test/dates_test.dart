@@ -84,7 +84,7 @@ void main() {
         ),
       );
 
-      expect(dates, [
+      expect(dates.take(13).toList(), [
         DateTime(2025, 2, 22),
         DateTime(2025, 3, 1),
         DateTime(2025, 3, 8),
@@ -111,7 +111,7 @@ void main() {
         ),
       );
 
-      expect(dates, [
+      expect(dates.take(26).toList(), [
         DateTime(2025, 2, 22),
         DateTime(2025, 2, 24),
         DateTime(2025, 3, 1),
@@ -150,11 +150,11 @@ void main() {
           startDate: startDate,
         ),
       );
-      expect(dates.length, 91);
+      expect(dates.length, 366);
       // Expect "biggest" day to be start + 90 days
       expect(
         dates.reduce((a, b) => a.isAfter(b) ? a : b),
-        startDate.add(const Duration(days: 90)),
+        startDate.add(const Duration(days: 365)),
       );
       // Expect "smallest" day to be start date
       expect(dates.reduce((a, b) => a.isBefore(b) ? a : b), startDate);
@@ -174,6 +174,15 @@ void main() {
         DateTime(2025, 1, 1),
         DateTime(2025, 2, 1),
         DateTime(2025, 3, 1),
+        DateTime(2025, 4, 1),
+        DateTime(2025, 5, 1),
+        DateTime(2025, 6, 1),
+        DateTime(2025, 7, 1),
+        DateTime(2025, 8, 1),
+        DateTime(2025, 9, 1),
+        DateTime(2025, 10, 1),
+        DateTime(2025, 11, 1),
+        DateTime(2025, 12, 1),
       ]);
     });
     test('Monthly recurring dates, different number of days', () {
@@ -189,6 +198,15 @@ void main() {
         DateTime(2025, 4, 10),
         DateTime(2025, 5, 10),
         DateTime(2025, 6, 10),
+        DateTime(2025, 7, 10),
+        DateTime(2025, 8, 10),
+        DateTime(2025, 9, 10),
+        DateTime(2025, 10, 10),
+        DateTime(2025, 11, 10),
+        DateTime(2025, 12, 10),
+        DateTime(2026, 1, 10),
+        DateTime(2026, 2, 10),
+        DateTime(2026, 3, 10),
       ]);
     });
   });

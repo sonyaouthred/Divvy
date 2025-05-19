@@ -13,9 +13,9 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 92);
+      expect(dates.length, 366);
       expect(dates.first, start);
-      expect(dates.last, start.add(const Duration(days: 90)));
+      expect(dates.last, start.add(const Duration(days: 365)));
     });
 
     test('Daily recurrence handles DST spring forward', () {
@@ -27,7 +27,7 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 92);
+      expect(dates.length, 367);
     });
   });
 
@@ -63,15 +63,19 @@ void main() {
   });
 
   group('getDateList - Monthly', () {
-    // test('Monthly recurrence starting on last day of Feb in leap year', () {
-    //   final start = DateTime(2024, 2, 29);
-    //   final dates = getDateList(
-    //     ChoreFrequency(pattern: Frequency.monthly, daysOfWeek: []),
-    //     start,
-    //   );
-    //   expect(dates.first, start);
-    //   expect(dates[1], DateTime(2024, 3, 31)); // Should handle "last day" logic
-    // });
+    test('Monthly recurrence starting on last day of Feb in leap year', () {
+      final start = DateTime(2024, 2, 29);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.monthly,
+          daysOfWeek: [],
+          startDate: start,
+        ),
+      );
+      expect(dates.first, start);
+      print(dates);
+      expect(dates[1], DateTime(2024, 3, 31)); // Should handle "last day" logic
+    });
 
     test('Monthly recurrence starts mid-month', () {
       final start = DateTime(2025, 6, 15);
@@ -89,24 +93,23 @@ void main() {
       ]);
     });
   });
+
+  group('Utility Functions', () {
+    test('compareDate ignores time', () {
+      final a = DateTime(2025, 5, 5, 23, 59);
+      final b = DateTime(2025, 5, 5, 0, 1);
+      expect(compareDate(a, b), true);
+    });
+
+    test('isLastDay detects end-of-month', () {
+      expect(isLastDay(DateTime(2025, 4, 30)), true);
+      expect(isLastDay(DateTime(2025, 4, 29)), false);
+    });
+
+    test('adjustDaylightSavings keeps dates stable', () {
+      final a = DateTime(2025, 11, 2, 23);
+      final b = adjustDaylightSavings(a);
+      expect(b.hour, 0); // Adjusted forward 1 hour
+    });
+  });
 }
-
-//   group('Utility Functions', () {
-//     test('compareDate ignores time', () {
-//       final a = DateTime(2025, 5, 5, 23, 59);
-//       final b = DateTime(2025, 5, 5, 0, 1);
-//       expect(compareDate(a, b), true);
-//     });
-
-//     test('isLastDay detects end-of-month', () {
-//       expect(isLastDay(DateTime(2025, 4, 30)), true);
-//       expect(isLastDay(DateTime(2025, 4, 29)), false);
-//     });
-
-//     test('adjustDaylightSavings keeps dates stable', () {
-//       final a = DateTime(2025, 11, 2, 23);
-//       final b = adjustDaylightSavings(a);
-//       expect(b.hour, 0); // Adjusted forward 1 hour
-//     });
-//   });
-// }

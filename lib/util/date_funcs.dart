@@ -27,7 +27,7 @@ String getFormattedDate(DateTime dueDate) {
 /// Parameters:
 ///  - frequency: How often the expense should recur (Daily, Weekly, Monthly)
 /// Returns: List of DateTime objects representing all occurrence dates. Only generates
-/// for a 90-day period
+/// for a 365-day period
 /// Expected behavior:
 ///   - monthly: repeat once monthly on the same date for 3 months
 ///   - daily: repeat every day for 90 days + start date
@@ -41,26 +41,32 @@ List<DateTime> getDateList(ChoreFrequency frequency) {
           frequency.daysOfWeek.where((d) => d > 7 || d < 0).isNotEmpty)) {
     return [];
   }
-  DateTime endDate = startDate.add(const Duration(days: 90));
+  DateTime endDate = startDate.add(const Duration(days: 365));
   switch (frequency.pattern) {
     case Frequency.monthly:
       // End date should be adjusted to only be three months after.
-      endDate = Jiffy.parseFromDateTime(startDate).add(months: 3).dateTime;
+      endDate = Jiffy.parseFromDateTime(startDate).add(years: 1).dateTime;
       // For a montly chore, ignore days of week
       // Check if the user has requested the last day of a given month
       bool wantLastDay = isLastDay(startDate);
       DateTime curr = startDate;
-      // Add a month to the current date
-      curr = Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
-      curr = adjustDaylightSavings(curr);
-
       dates.add(startDate);
+      // Add a month to the current date
+      DateTime nextMonth =
+          Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
+      int day = nextMonth.day;
+      curr = adjustDaylightSavings(curr);
+      if (wantLastDay) {
+        // gets the last day of the current month if the user wants the last
+        // date of the month
+        day = DateTime(nextMonth.year, nextMonth.month + 1, 0).day;
+      }
+      curr = DateTime(nextMonth.year, nextMonth.month, day);
 
       while (curr.isBefore(endDate)) {
         dates.add(curr);
-        DateTime nextMonth =
-            Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
-        int day = nextMonth.day;
+        nextMonth = Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
+        day = nextMonth.day;
         if (wantLastDay) {
           // gets the last day of the current month if the user wants the last
           // date of the month
