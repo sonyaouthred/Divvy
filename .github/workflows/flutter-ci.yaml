@@ -51,7 +51,9 @@ jobs:
           cd ..
           zip -r app.ipa Payload
 
+
   build_androidApk:
+    if: startsWith(github.ref, 'refs/tags/v')
     name: Build Flutter App (Android)
     needs: [flutter_test]
     runs-on: ubuntu-latest
