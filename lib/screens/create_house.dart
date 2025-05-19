@@ -1,4 +1,4 @@
-import 'package:divvy/divvy_navigation.dart';
+import 'package:divvy/main.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/user.dart';
@@ -171,15 +171,13 @@ class _CreateHouseState extends State<CreateHouse> {
       uid: FirebaseAuth.instance.currentUser!.uid,
       joinCode: joinCode,
     );
-    postToServer(data: newHouse.toJson(), serverFunc: 'add-house');
-    _currUser.houseID = newHouse.id;
-    postToServer(data: _currUser.toJson(), serverFunc: 'upsert-user');
+    await createHouse(_currUser, newHouse);
     // Push user to home page
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       PageTransition(
         type: PageTransitionType.fade,
-        child: DivvyNavigation(),
+        child: HouseApp(user: _currUser),
         duration: Duration(milliseconds: 100),
       ),
     );

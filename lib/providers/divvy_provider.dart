@@ -72,7 +72,7 @@ class DivvyProvider extends ChangeNotifier {
   // load house data from server
   Future<void> _loadHouseData() async {
     final data = await getDataFromServer(serverFunc: 'get-house-$_houseID');
-    final house = House.fromJson(data);
+    final house = House.fromJson(data!);
     _house = house;
     notifyListeners();
   }
@@ -84,7 +84,7 @@ class DivvyProvider extends ChangeNotifier {
     );
     // data is a map of subgroupIDs to subgroups
     final Map<SubgroupID, Subgroup> subs = {};
-    for (SubgroupID id in data.keys) {
+    for (SubgroupID id in data!.keys) {
       // put subgroup object in map
       final subgroup = Subgroup.fromJson(data[id]);
       subs[subgroup.id] = subgroup;
@@ -101,7 +101,7 @@ class DivvyProvider extends ChangeNotifier {
       );
       final List<Member> mems = [];
       final Map<MemberID, Member> memMap = {};
-      for (MemberID memID in data.keys) {
+      for (MemberID memID in data!.keys) {
         // parse member
         final member = Member.fromJson(data[memID]);
         mems.add(member);
@@ -121,7 +121,7 @@ class DivvyProvider extends ChangeNotifier {
       serverFunc: 'get-house-$_houseID-chore-instances',
     );
     final Map<ChoreID, List<ChoreInst>> choreInstMap = {};
-    for (ChoreID id in data.keys) {
+    for (ChoreID id in data!.keys) {
       // put subgroup object in map
       final choreInst = ChoreInst.fromJson(data[id]);
       choreInstMap[choreInst.superID] == null
@@ -139,7 +139,7 @@ class DivvyProvider extends ChangeNotifier {
     );
     // data is a map of subgroupIDs to subgroups
     final Map<ChoreID, Chore> choreMap = {};
-    for (ChoreID id in data.keys) {
+    for (ChoreID id in data!.keys) {
       // put subgroup object in map
       final chore = Chore.fromJson(data[id]);
       choreMap[chore.id] = chore;

@@ -61,10 +61,7 @@ class AuthWrapper extends StatelessWidget {
               final isInHouse = divvyUser!.houseID != '';
               if (isInHouse) {
                 // Return regular house app
-                return ChangeNotifierProvider(
-                  create: (_) => DivvyProvider(divvyUser),
-                  child: MaterialApp(home: DivvyNavigation()),
-                );
+                return HouseApp(user: divvyUser);
               } else {
                 // Return join house screen if user is not in house
                 return MaterialApp(home: JoinHouse(currUser: divvyUser));
@@ -91,5 +88,18 @@ class AuthWrapper extends StatelessWidget {
     } catch (e) {
       return null;
     }
+  }
+}
+
+/// Wraps the navigation app in a provider.
+class HouseApp extends StatelessWidget {
+  final DivvyUser user;
+  const HouseApp({super.key, required this.user});
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => DivvyProvider(user),
+      child: MaterialApp(home: DivvyNavigation()),
+    );
   }
 }

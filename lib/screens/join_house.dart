@@ -1,7 +1,5 @@
-import 'package:divvy/divvy_navigation.dart';
+import 'package:divvy/main.dart';
 import 'package:divvy/models/divvy_theme.dart';
-import 'package:divvy/models/house.dart';
-// import 'package:divvy/models/member.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/screens/create_house.dart';
 import 'package:divvy/screens/login.dart';
@@ -172,20 +170,23 @@ class _JoinHouseState extends State<JoinHouse> {
         setState(() {
           _joining = true;
         });
-        // TODO: obviously, replace with valid house ID
-        final houseID = 'gjkldsjfdklsjfsdfdsa';
-        // Update user's db with the code
-        print('Adding user to house ${_codeController.text}');
-        // update db with house code
-        _currUser.houseID = _codeController.text;
-        postToServer(data: _currUser.toJson(), serverFunc: 'upsert-user');
-        // Now need to update house data
-        _updateHouseDataWithMember(houseID);
+        // Try to add user to house
+        final success = await addUserToHouse(_currUser, _codeController.text);
+        if (!context.mounted) return;
+        if (!success) {
+          // handle errors in adding user
+          showErrorMessage(
+            context,
+            'Error',
+            'Could not join house. Check that you have the correct add code.',
+          );
+        }
         // Push user to home page
+        if (!context.mounted) return;
         Navigator.of(context).pushReplacement(
           PageTransition(
             type: PageTransitionType.fade,
-            child: DivvyNavigation(),
+            child: HouseApp(user: _currUser),
             duration: Duration(milliseconds: 100),
           ),
         );
@@ -196,17 +197,6 @@ class _JoinHouseState extends State<JoinHouse> {
     } catch (e) {
       print(e);
     }
-  }
-
-  /// Adds a new user as a member to a house.
-  void _updateHouseDataWithMember(HouseID houseID) async {
-    // final firebaseAuthUser = FirebaseAuth.instance.currentUser!;
-    // final member = Member.fromNew(
-    //   uid: firebaseAuthUser.uid,
-    //   email: _currUser.email,
-    //   name: firebaseAuthUser.displayName ?? 'No name',
-    // );
-    // TODO: now add member to house docs
   }
 
   /// Open create house page
