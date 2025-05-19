@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 /// Shows a generic error dialog.
 /// Displays the inputted title and error message.

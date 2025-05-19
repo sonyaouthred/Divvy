@@ -1,7 +1,7 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/house.dart';
-import 'package:divvy/models/member.dart';
+// import 'package:divvy/models/member.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/screens/create_house.dart';
 import 'package:divvy/screens/login.dart';
@@ -200,12 +200,12 @@ class _JoinHouseState extends State<JoinHouse> {
 
   /// Adds a new user as a member to a house.
   void _updateHouseDataWithMember(HouseID houseID) async {
-    final firebaseAuthUser = FirebaseAuth.instance.currentUser!;
-    final member = Member.fromNew(
-      uid: firebaseAuthUser.uid,
-      email: _currUser.email,
-      name: firebaseAuthUser.displayName ?? 'No name',
-    );
+    // final firebaseAuthUser = FirebaseAuth.instance.currentUser!;
+    // final member = Member.fromNew(
+    //   uid: firebaseAuthUser.uid,
+    //   email: _currUser.email,
+    //   name: firebaseAuthUser.displayName ?? 'No name',
+    // );
     // TODO: now add member to house docs
   }
 
