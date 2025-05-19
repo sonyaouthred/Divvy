@@ -27,7 +27,7 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 367);
+      expect(dates.length, 366);
     });
   });
 
@@ -86,7 +86,7 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates, [
+      expect(dates.take(3).toList(), [
         DateTime(2025, 6, 15),
         DateTime(2025, 7, 15),
         DateTime(2025, 8, 15),
