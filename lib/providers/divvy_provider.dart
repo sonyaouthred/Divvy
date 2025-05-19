@@ -6,6 +6,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nanoid/async.dart';
 import 'dart:convert';
@@ -28,14 +29,10 @@ class DivvyProvider extends ChangeNotifier {
   late final List<Member> _memberList;
   // Same as above list, but mapped to by ID for quick lookup.
   late final Map<MemberID, Member> _memberMap;
-  // List of all subgroups in the house
-  late final List<Subgroup> _subgroupList;
-  // Same as above list, but mapped to by ID for quick lookup.
+  // List of all house subgroups, but mapped to by ID for quick lookup.
   late final Map<SubgroupID, Subgroup> _subgroups;
-  // list of all chores for the house
-  late final List<Chore> _chores;
-  // Same as above list, but mapped to by ID for quick lookup.
-  late final Map<ChoreID, Chore> _choreMap;
+  // list of all chores for the house, mapped to by ID for quick lookup.
+  late final Map<ChoreID, Chore> _chores;
   // All chore instances, mapped to by their super chore IDs.
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
 
@@ -85,15 +82,12 @@ class DivvyProvider extends ChangeNotifier {
     );
     // data is a map of subgroupIDs to subgroups
     final Map<SubgroupID, Subgroup> subs = {};
-    final List<Subgroup> subList = [];
     for (SubgroupID id in data.keys) {
       // put subgroup object in map
       final subgroup = Subgroup.fromJson(data[id]);
       subs[subgroup.id] = subgroup;
-      subList.add(subgroup);
     }
     _subgroups = subs;
-    _subgroupList = subList;
     notifyListeners();
   }
 
@@ -143,15 +137,12 @@ class DivvyProvider extends ChangeNotifier {
     );
     // data is a map of subgroupIDs to subgroups
     final Map<ChoreID, Chore> choreMap = {};
-    final List<Chore> choreList = [];
     for (ChoreID id in data.keys) {
       // put subgroup object in map
       final chore = Chore.fromJson(data[id]);
       choreMap[chore.id] = chore;
-      choreList.add(chore);
     }
-    _chores = choreList;
-    _choreMap = choreMap;
+    _chores = choreMap;
     notifyListeners();
   }
 
@@ -189,21 +180,9 @@ class DivvyProvider extends ChangeNotifier {
   String get houseID => _house.id;
   String get houseJoinCode => _house.joinCode;
   List<Member> get members => List.from(_memberList);
-  List<Subgroup> get subgroups => List.from(_subgroupList);
-  List<Chore> get chores => List.from(_chores);
+  List<Subgroup> get subgroups => List.from(_subgroups.values);
+  List<Chore> get chores => List.from(_chores.values);
   Member get currentUser => _currentUser;
-
-  void addChore(Chore chore) {
-    _chores.add(chore);
-    notifyListeners();
-  }
-
-  void addChoreInstances(Chore chore, List<ChoreInst> choreInstances) {
-    _choreInstances[chore.id] = choreInstances;
-    print(chore.id);
-    print(_choreInstances[chore.id]!.map((choreInst) => choreInst.id).toList());
-    notifyListeners();
-  }
 
   /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
@@ -223,7 +202,7 @@ class DivvyProvider extends ChangeNotifier {
     if (subgroup == null) return [];
     // subgroup exists!
     return subgroup.chores
-        .map((choreId) => _choreMap[choreId])
+        .map((choreId) => _chores[choreId])
         // filter out nulls
         .whereType<Chore>()
         .toList();
@@ -272,7 +251,7 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Returns a super chore with the passed id
   Chore? getSuperChore(ChoreID id) {
-    return _chores.where((chore) => chore.id == id).firstOrNull;
+    return _chores[id];
   }
 
   /// Returns a list of all members that are assigned to
@@ -302,7 +281,7 @@ class DivvyProvider extends ChangeNotifier {
   /// Returns all chore superclasses assigned to the passed member
   List<Chore> getMemberChores(MemberID member) {
     final List<Chore> chores = [];
-    for (Chore chore in _chores) {
+    for (Chore chore in _chores.values) {
       if (chore.assignees.contains(member)) chores.add(chore);
     }
     return chores;
@@ -485,7 +464,63 @@ class DivvyProvider extends ChangeNotifier {
     return res;
   }
 
+  /// Returns the subgroup if inputted list is a subgroup.
+  /// Otherwise, returns null.
+  Subgroup? isSubgroup(List<MemberID> members) {
+    for (Subgroup sub in _subgroups.values) {
+      if (listEquals(members, sub.members)) {
+        return sub;
+      }
+    }
+    return null;
+  }
+
   ////////////////////////////// Setters //////////////////////////////
+
+  /// Adds a chore to this house under the correct group.
+  /// Creates chore instances
+  void addChore(Chore chore) {
+    _chores[chore.id] = chore;
+    Subgroup? sub = isSubgroup(chore.assignees);
+    if (sub != null) {
+      // chore should belong to this subgroup!!
+      sub.chores.add(chore.id);
+      // TODO: update db
+    }
+    // now create instances!
+    final dates = getDateList(chore.frequency);
+
+    _choreInstances[chore.id] = [];
+    dates.asMap().forEach((index, date) {
+      final assignee = chore.assignees[index % chore.assignees.length];
+      print(assignee);
+      // create chore instance
+      ChoreInst choreInst = ChoreInst.fromNew(
+        superCID: chore.id,
+        due: date,
+        assignee: assignee,
+      );
+      addChoreInstance(choreInst);
+    });
+    notifyListeners();
+  }
+
+  /// Adds a given chore instance to the database
+  void addChoreInstance(ChoreInst choreInstance) {
+    if (_choreInstances[choreInstance.superID] == null) return;
+    _choreInstances[choreInstance.superID]!.add(choreInstance);
+    // TODO: update db
+    notifyListeners();
+  }
+
+  /// Updates a super chore. because frequency/members
+  /// cannot be changed after a chore is created, don't have to
+  /// regenerate instance list.
+  void updateChore(Chore updatedChore) {
+    _chores[updatedChore.id] = updatedChore;
+    // TODO: update db
+    notifyListeners();
+  }
 
   /// Changes the name of a super chore
   void changeName(ChoreID choreID, String name) {
@@ -569,6 +604,13 @@ class DivvyProvider extends ChangeNotifier {
     List<Chore> chores,
     Color color,
   ) {
+    // don't add if a subgroup already exists with these memebrs
+    for (Subgroup sub in _subgroups.values) {
+      if (listEquals(sub.members, members)) {
+        return;
+      }
+    }
+    // new subgroup!!
     final newSub = Subgroup.fromNew(
       name: name,
       members: members.map((mem) => mem.id).toList(),
@@ -601,8 +643,7 @@ class DivvyProvider extends ChangeNotifier {
       // deletes all subgroups & their chores
       deleteSubgroup(id);
     }
-    final chores = List.from(_chores);
-    for (Chore chore in chores) {
+    for (Chore chore in _chores.values) {
       // deletes all supers & instances
       deleteSuperclassChore(chore.id);
     }
@@ -637,37 +678,9 @@ class DivvyProvider extends ChangeNotifier {
     // delete all chore instances
     _choreInstances[choreID] = [];
     // TODO: update db to delete all chore instance docs
-    _chores.removeWhere((chore) => chore.id == choreID);
+    _chores.remove(choreID);
     // TODO: update db to delete chore doc
     print('Deleting $choreID chore');
     notifyListeners();
   }
-
-  /// Adds a created chore superclass object to the database.
-  /// auto generates instances for the next 90 days
-  // void addChore(Chore chore) {
-  //   _chores.add(chore);
-  //   final assignees = chore.assignees;
-  //   // get list of dates we should make instances for
-  //   final dateList = getDateList(chore.frequency, DateTime.now());
-  //   final List<ChoreInst> instList = [];
-  //   for (int i = 0; i < dateList.length; i++) {
-  //     // get date
-  //     final date = dateList[i];
-  //     // get assignee
-  //     final assignee = assignees[i % assignees.length];
-  //     // create chore instance
-  //     final choreInst = ChoreInst.fromNew(
-  //       superCID: chore.id,
-  //       due: date,
-  //       assignee: assignee,
-  //     );
-  //     instList.add(choreInst);
-  //   }
-  //   // update stored map
-  //   _choreInstances[chore.id] = instList;
-  //   // TODO: update db!!!!
-  //   print('adding chore object to db');
-  //   notifyListeners();
-  // }
 }

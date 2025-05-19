@@ -2,14 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/models/chore.dart';
 
-
 void main() {
   group('getDateList - Daily', () {
     test('Daily recurrence from March 1, 2025', () {
       final start = DateTime(2025, 3, 1);
       final dates = getDateList(
-        ChoreFrequency(pattern: Frequency.daily, daysOfWeek: []),
-        start,
+        ChoreFrequency(
+          pattern: Frequency.daily,
+          daysOfWeek: [],
+          startDate: start,
+        ),
       );
       expect(dates.length, 92);
       expect(dates.first, start);
@@ -19,8 +21,11 @@ void main() {
     test('Daily recurrence handles DST spring forward', () {
       final start = DateTime(2025, 3, 9); // Day before US DST change
       final dates = getDateList(
-        ChoreFrequency(pattern: Frequency.daily, daysOfWeek: []),
-        start,
+        ChoreFrequency(
+          pattern: Frequency.daily,
+          daysOfWeek: [],
+          startDate: start,
+        ),
       );
       expect(dates.length, 92);
     });
@@ -31,8 +36,11 @@ void main() {
       final start = DateTime(2025, 4, 1); // Tuesday
       final days = [2, 6];
       final dates = getDateList(
-        ChoreFrequency(pattern: Frequency.weekly, daysOfWeek: days),
-        start,
+        ChoreFrequency(
+          pattern: Frequency.weekly,
+          daysOfWeek: days,
+          startDate: start,
+        ),
       );
       expect(
         dates.any((d) => d.weekday == 3),
@@ -44,8 +52,11 @@ void main() {
     test('Weekly recurrence skips invalid weekdays', () {
       final start = DateTime(2025, 4, 1);
       final dates = getDateList(
-        ChoreFrequency(pattern: Frequency.weekly, daysOfWeek: []),
-        start,
+        ChoreFrequency(
+          pattern: Frequency.weekly,
+          daysOfWeek: [],
+          startDate: start,
+        ),
       );
       expect(dates.length, 0); // No days specified
     });
@@ -65,8 +76,11 @@ void main() {
     test('Monthly recurrence starts mid-month', () {
       final start = DateTime(2025, 6, 15);
       final dates = getDateList(
-        ChoreFrequency(pattern: Frequency.monthly, daysOfWeek: []),
-        start,
+        ChoreFrequency(
+          pattern: Frequency.monthly,
+          daysOfWeek: [],
+          startDate: start,
+        ),
       );
       expect(dates, [
         DateTime(2025, 6, 15),

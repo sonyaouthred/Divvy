@@ -56,6 +56,23 @@ class Chore {
     );
   }
 
+  /// Update fields within chore, preserving the old ID.
+  factory Chore.update({
+    required Chore old,
+    String? name,
+    String? emoji,
+    String? description,
+  }) {
+    return Chore(
+      assignees: old.assignees,
+      frequency: old.frequency,
+      name: name ?? old.name,
+      id: old.id,
+      emoji: emoji ?? old.emoji,
+      description: description ?? old.description,
+    );
+  }
+
   /// From a json map, returns a new Subgroup object
   /// with relevant fields filled out.
   factory Chore.fromJson(Map<String, dynamic> json) => Chore(

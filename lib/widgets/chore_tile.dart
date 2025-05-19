@@ -20,7 +20,14 @@ class ChoreTile extends StatelessWidget {
   final ChoreInst? choreInst;
   Chore? superChore;
   final bool compact;
-  ChoreTile({super.key, this.choreInst, this.superChore, this.compact = false});
+  final bool showFullDate;
+  ChoreTile({
+    super.key,
+    this.choreInst,
+    this.superChore,
+    this.compact = false,
+    this.showFullDate = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -137,8 +144,10 @@ class ChoreTile extends StatelessWidget {
                                 ? 'Complete!'
                                 : isOverdue
                                 ? 'Was due ${getNameOfWeekday(choreInst!.dueDate.weekday)}, '
-                                    '${DateFormat.yMMMMd('en_US').format(choreInst!.dueDate)} at '
+                                    '${getFormattedDate(choreInst!.dueDate)} at '
                                     '${getFormattedTime(choreInst!.dueDate)}'
+                                : showFullDate
+                                ? 'Due on ${getFormattedDate(choreInst!.dueDate)} at ${getFormattedTime(choreInst!.dueDate)}'
                                 : 'Due at ${getFormattedTime(choreInst!.dueDate)}',
                             style: DivvyTheme.detailGrey.copyWith(
                               color:

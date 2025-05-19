@@ -32,8 +32,9 @@ String getFormattedDate(DateTime dueDate) {
 ///   - monthly: repeat once monthly on the same date for 3 months
 ///   - daily: repeat every day for 90 days + start date
 ///   - weekly: repeat weekly on the [daysOfWeek] weekdays for a 90 day period
-List<DateTime> getDateList(ChoreFrequency frequency, DateTime startDate) {
+List<DateTime> getDateList(ChoreFrequency frequency) {
   final List<DateTime> dates = [];
+  final startDate = frequency.startDate;
   // check for invalid input
   if (frequency.pattern == Frequency.weekly &&
       (frequency.daysOfWeek.isEmpty ||

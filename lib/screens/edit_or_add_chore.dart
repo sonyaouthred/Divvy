@@ -36,13 +36,13 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
 
   // List of weekdays to choose from
   final List<int> weekDays = [
+    7,
     1,
     2,
     3,
     4,
     5,
     6,
-    7,
   ]; // List of weekdays to choose from
 
   List<Member> chosenMembers = [];
@@ -69,6 +69,19 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // If user is editing, set the initial chore name to the actual name
     _nameController = TextEditingController(text: chore?.name ?? '');
     _emojiController = TextEditingController(text: chore?.emoji ?? '');
+    chosenSubgroup = subgroups.first;
+    if (chore != null) {
+      // update relevant initial values, if necessary
+      final sub = providerRef.isSubgroup(chore!.assignees);
+      if (sub != null) chosenSubgroup = sub;
+      frequency = chore!.frequency.pattern;
+      switch (frequency) {
+        case Frequency.daily || Frequency.monthly:
+          startDate = chore!.frequency.startDate;
+        case Frequency.weekly:
+          chosenDates = chore!.frequency.daysOfWeek;
+      }
+    }
   }
 
   @override
@@ -112,6 +125,14 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     _choreNameEditor(spacing),
                     SizedBox(height: spacing),
                     _chooseEmojis(context),
+                    if (chore != null) SizedBox(height: spacing),
+                    if (chore != null)
+                      Center(
+                        child: Text(
+                          'Assignees and frequency cannot be changed after creation.',
+                          style: DivvyTheme.bodyGrey,
+                        ),
+                      ),
                     SizedBox(height: spacing),
                     _showAssigneeSelection(spacing),
                     SizedBox(height: spacing),
@@ -221,6 +242,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
       splashColor: Colors.transparent,
       onTap:
           () => setState(() {
+            if (chore != null) return;
             // add or remove current date
             if (chosenDates.contains(weekDay)) {
               chosenDates.remove(weekDay);
@@ -237,7 +259,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           padding: EdgeInsets.symmetric(vertical: spacing / 2),
           child: Column(
             children: [
-              SizedBox(height: spacing / 2),
+              SizedBox(height: spacing * 0.3),
               // Display weekday letter
               Text(
                 getLetterForWeekday(weekDay),
@@ -246,7 +268,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                         ? DivvyTheme.largeBoldMedWhite
                         : DivvyTheme.largeBoldMedGreen,
               ),
-              SizedBox(height: spacing / 2),
+              SizedBox(height: spacing * 0.3),
             ],
           ),
         ),
@@ -265,7 +287,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           style: DivvyTheme.smallBoldMedGreen,
         ),
         onPressed: () {
-          _showDatePickerDays(context);
+          chore != null ? () : _showDatePickerDays(context);
         },
       ),
     );
@@ -342,13 +364,16 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     ),
                   )
                   .toList(),
-          onChanged: (Frequency? value) async {
-            if (value != null) {
-              setState(() {
-                frequency = value;
-              });
-            }
-          },
+          onChanged:
+              (chore != null)
+                  ? null
+                  : (Frequency? value) async {
+                    if (value != null) {
+                      setState(() {
+                        frequency = value;
+                      });
+                    }
+                  },
         ),
       ),
     );
@@ -409,13 +434,16 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                         ),
                   )
                   .toList(),
-          onChanged: (AssigneeSelection? value) async {
-            if (value != null) {
-              setState(() {
-                assigneeSel = value;
-              });
-            }
-          },
+          onChanged:
+              (chore != null)
+                  ? null
+                  : (AssigneeSelection? value) async {
+                    if (value != null) {
+                      setState(() {
+                        assigneeSel = value;
+                      });
+                    }
+                  },
         ),
       ),
     );
@@ -435,9 +463,11 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
                     child: InkWell(
                       onTap: () {
-                        setState(() {
-                          chosenSubgroup = s;
-                        });
+                        chore != null
+                            ? ()
+                            : setState(() {
+                              chosenSubgroup = s;
+                            });
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -482,13 +512,16 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
                     child: InkWell(
                       onTap: () {
-                        setState(() {
-                          if (chosenMembers.contains(m)) {
-                            chosenMembers.remove(m);
-                          } else {
-                            chosenMembers.add(m);
-                          }
-                        });
+                        // disable mods if user is editing a chore instance
+                        chore != null
+                            ? ()
+                            : setState(() {
+                              if (chosenMembers.contains(m)) {
+                                chosenMembers.remove(m);
+                              } else {
+                                chosenMembers.add(m);
+                              }
+                            });
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -557,7 +590,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         'Please choose at least one weekday to repeat on.',
       );
       return;
-    } else if (isEmoji(_emojiController.text)) {
+    } else if (!isEmoji(_emojiController.text)) {
       // Emoji is invalid
       showErrorMessage(
         context,
@@ -574,20 +607,38 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
       AssigneeSelection.member => chosenMembers.map((m) => m.id).toList(),
       AssigneeSelection.subgroup => chosenSubgroup!.members,
     };
+    if (chore == null) {
+      // Add new chore!
+      Chore newChore = Chore.fromNew(
+        name: _nameController.text,
+        pattern: frequency,
+        daysOfWeek: chosenDates,
+        emoji: _emojiController.text,
+        description: "",
+        assignees: chosenMemberIDs,
+        // default start at midnight
+        startDate: DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day,
+          11,
+          59,
+          59,
+        ),
+      );
 
-    // Now add chore!!
-    Chore newChore = Chore.fromNew(
-      name: _nameController.text,
-      pattern: frequency,
-      daysOfWeek: chosenDates,
-      emoji: _emojiController.text,
-      description: "",
-      assignees: chosenMemberIDs,
-      startDate: startDate,
-    );
-
-    // Provider will handle adding new chore instances
-    provider.addChore(newChore);
+      // Provider will handle adding new chore instances
+      provider.addChore(newChore);
+    } else {
+      // update existing chore
+      Chore updatedChore = Chore.update(
+        old: chore!,
+        name: _nameController.text,
+        emoji: _emojiController.text,
+        description: "",
+      );
+      provider.updateChore(updatedChore);
+    }
 
     Navigator.of(context).pop();
   }
@@ -605,13 +656,10 @@ extension AssigneeSelectionInfo on AssigneeSelection {
   };
 }
 
-/// Returns true if inputted string is a single emoji
+/// Returns true if inputted string is an emoji
 bool isEmoji(String text) {
   if (text.isEmpty) return false;
-  if (text.length > 2) return false;
-  final matches = emojiRegex.allMatches(text);
-  final foundEmojis = matches.map((m) => m.group(0)).toList();
-  return foundEmojis.isNotEmpty;
+  return allEmojis[text] != null;
 }
 
 /// Gets an appropriate string for a frequency
