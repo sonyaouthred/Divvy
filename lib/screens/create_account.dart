@@ -1,8 +1,10 @@
 import 'package:divvy/firebase/auth_service.dart';
 import 'package:divvy/main.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/user.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/screens/login.dart';
+import 'package:divvy/util/server_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -378,22 +380,14 @@ class _CreateAccountState extends State<CreateAccount> {
   /// auth account has been set up.
   void _createUserDB(BuildContext context) async {
     try {
-      // // Create the user with email and password
-      // final User user = FirebaseAuth.instance.currentUser!;
+      final User user = FirebaseAuth.instance.currentUser!;
 
-      // // Reference to the Firestore Users collection
-      // final usersRef = FirebaseFirestore.instance.collection('Users');
-
-      // // Create a new document with the user's UID as the document ID
-      // await usersRef.doc(user.email).set({
-      //   'uid': user.uid,
-      //   'name': _name.text,
-      //   'org': 'University of Washington',
-      //   'createdAt': FieldValue.serverTimestamp(),
-      // });
-
-      // // Set user's fields
-      // await user.updateDisplayName(_name.text);
+      /// add user doc to database
+      final DivvyUser newUser = DivvyUser.fromNew(
+        uid: user.uid,
+        email: user.email!,
+      );
+      postToServer(data: newUser.toJson(), serverFunc: 'upsert-user');
 
       // Sign in!!
       await FirebaseAuth.instance.signInWithEmailAndPassword(

@@ -41,7 +41,7 @@ class _CalendarState extends State<Calendar> {
   void initState() {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
-    _currUser = providerRef.currentUser;
+    _currUser = providerRef.currMember;
     _chores = providerRef.getMemberChoreInstances(_currUser.id);
     final now = DateTime.now();
     // select today as the date!

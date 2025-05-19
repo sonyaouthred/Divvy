@@ -6,9 +6,9 @@ class DivvyUser {
   // User's uid. Same as their FirebaseAuth ID
   final String id;
   // User's email
-  final Email email;
+  Email email;
   // User's house id that they belong to
-  final HouseID houseID;
+  HouseID houseID;
 
   DivvyUser({required this.id, required this.email, required this.houseID});
 
@@ -21,7 +21,7 @@ class DivvyUser {
       DivvyUser(email: data['email'], id: data['id'], houseID: data['houseID']);
 
   /// Returns a json object for the current user
-  Map<String, dynamic> toFirestore() => {
+  Map<String, dynamic> toJson() => {
     'email': email,
     'id': id,
     'houseID': houseID,

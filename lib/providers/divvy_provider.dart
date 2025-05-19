@@ -4,25 +4,26 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
+import 'package:divvy/models/user.dart';
 import 'package:divvy/util/date_funcs.dart';
+import 'package:divvy/util/server_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nanoid/async.dart';
-import 'dart:convert';
-import 'package:http/http.dart';
 
 /// Provides data about a given house and all subgroups,
 /// chores, and members to the Divvy app UI.
 /// Interfaces with the database to ensure data is live and
 /// updated.
 class DivvyProvider extends ChangeNotifier {
+  // The user's current user object, independent of house.
+  late final DivvyUser _user;
   // true if data has loaded from the server
   late bool dataLoaded;
   // the ID of the house currently being shown
   late final HouseID _houseID;
   // The member of the house that is currently signed in
-  late final Member _currentUser;
+  late final Member _currentMember;
   // the currently displayed house
   late final House _house;
   // List of members that belong to the hosue
@@ -37,8 +38,9 @@ class DivvyProvider extends ChangeNotifier {
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
 
   /// Instantiate a new provider
-  DivvyProvider(HouseID houseID) {
-    _houseID = houseID;
+  DivvyProvider(DivvyUser currUser) {
+    _user = currUser;
+    _houseID = currUser.houseID;
     dataLoaded = false;
     // fetch server data
     initialize();
@@ -61,7 +63,7 @@ class DivvyProvider extends ChangeNotifier {
 
     // Initialize current user
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    _currentUser = _memberMap[uid]!;
+    _currentMember = _memberMap[uid]!;
     // data is loaded!
     dataLoaded = true;
     notifyListeners();
@@ -146,34 +148,6 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  ////////////////////////////// Server Functions //////////////////////////////
-
-  /// Posts the inputted data to the server's serverFunc.
-  Future<void> postToServer({
-    required Map<String, dynamic> data,
-    required String serverFunc,
-  }) async {
-    final uri = 'http://127.0.0.1:5000/$serverFunc';
-    final headers = {'Content-Type': 'application/json'};
-    final response = await post(
-      Uri.parse(uri),
-      headers: headers,
-      body: json.encode(data),
-    );
-    json.decode(response.body);
-  }
-
-  /// Pulls data from the server's inputted serverFunc
-  /// will be a single json doc
-  Future<Map<String, dynamic>> getDataFromServer({
-    required String serverFunc,
-  }) async {
-    final uri = 'http://127.0.0.1:5000/$serverFunc';
-    final headers = {'Content-Type': 'application/json'};
-    final response = await get(Uri.parse(uri), headers: headers);
-    return json.decode(response.body);
-  }
-
   ////////////////////////////// Getters //////////////////////////////
 
   String get houseName => _house.name;
@@ -182,7 +156,8 @@ class DivvyProvider extends ChangeNotifier {
   List<Member> get members => List.from(_memberList);
   List<Subgroup> get subgroups => List.from(_subgroups.values);
   List<Chore> get chores => List.from(_chores.values);
-  Member get currentUser => _currentUser;
+  Member get currMember => _currentMember;
+  DivvyUser get currUser => _user;
 
   /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
@@ -548,7 +523,7 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Updates user name with inputed name
   void updateUserName(String name) {
-    _currentUser.name = name;
+    _currentMember.name = name;
     // TODO: update db's members collection
     notifyListeners();
   }
@@ -577,6 +552,8 @@ class DivvyProvider extends ChangeNotifier {
     }
 
     // TODO: update db with updated list of house members
+    _user.houseID = '';
+    postToServer(data: _user.toJson(), serverFunc: 'upsert-user');
     print('$id left the house');
     notifyListeners();
   }
@@ -649,26 +626,12 @@ class DivvyProvider extends ChangeNotifier {
     }
     final members = List.from(_memberList);
     for (Member mem in members) {
+      // This will also update each user's doc with
+      // an empty house ID
       leaveHouse(mem.id);
     }
     // TODO: db needs to delete house doc
     print('Deleting the house....');
-    notifyListeners();
-  }
-
-  /// Create a new house with the given name
-  void createHouse(String houseName) async {
-    final joinCode = await nanoid(10);
-    final newHouse = House.fromNew(
-      houseName: houseName,
-      uid: FirebaseAuth.instance.currentUser!.uid,
-      joinCode: joinCode,
-    );
-    print(
-      'Creating ${newHouse.name} house (id: ${newHouse.id}): join code ${newHouse.joinCode}}',
-    );
-    await postToServer(data: newHouse.toJson(), serverFunc: 'house');
-    // TODO: update user's user doc with id
     notifyListeners();
   }
 

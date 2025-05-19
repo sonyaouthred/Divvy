@@ -25,7 +25,7 @@ class Dashboard extends StatelessWidget {
         if (!provider.dataLoaded) {
           return Center(child: CupertinoActivityIndicator());
         }
-        Member currUser = provider.currentUser;
+        Member currUser = provider.currMember;
         // get tasks due today
         List<ChoreInst> todayChores = provider.getTodayChores(currUser.id);
         // get tasks in next week

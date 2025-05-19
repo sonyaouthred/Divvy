@@ -1,8 +1,12 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/house.dart';
+import 'package:divvy/models/member.dart';
+import 'package:divvy/models/user.dart';
 import 'package:divvy/screens/create_house.dart';
 import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
+import 'package:divvy/util/server_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +14,8 @@ import 'package:page_transition/page_transition.dart';
 
 /// Allows user to join a house using a unique six-digit code.
 class JoinHouse extends StatefulWidget {
-  const JoinHouse({super.key});
+  final DivvyUser currUser;
+  const JoinHouse({super.key, required this.currUser});
 
   @override
   State<JoinHouse> createState() => _JoinHouseState();
@@ -20,11 +25,13 @@ class _JoinHouseState extends State<JoinHouse> {
   late final String _email;
   late TextEditingController _codeController;
   bool _joining = false;
+  late final DivvyUser _currUser;
   @override
   void initState() {
     super.initState();
     _email = FirebaseAuth.instance.currentUser!.email ?? '';
     _codeController = TextEditingController();
+    _currUser = widget.currUser;
   }
 
   @override
@@ -156,27 +163,50 @@ class _JoinHouseState extends State<JoinHouse> {
   }
 
   /// Join a house and push the home screen
-  void _joinHouse(BuildContext context) {
-    // TODO: obviously, replace with db call
-    final inputValid = _codeController.text == 'lW611f30';
-    if (inputValid) {
-      setState(() {
-        _joining = true;
-      });
-      // Update user's db with the code
-      print('Adding user to house ${_codeController.text}');
-      // Push user to home page
-      Navigator.of(context).pushReplacement(
-        PageTransition(
-          type: PageTransitionType.fade,
-          child: DivvyNavigation(),
-          duration: Duration(milliseconds: 100),
-        ),
-      );
-    } else {
-      showErrorMessage(context, 'Invalid Code', 'This house doesn\'t exist.');
-      return;
+  void _joinHouse(BuildContext context) async {
+    try {
+      // TODO: obviously, replace with db call
+      final inputValid = _codeController.text == 'lW611f30';
+
+      if (inputValid) {
+        setState(() {
+          _joining = true;
+        });
+        // TODO: obviously, replace with valid house ID
+        final houseID = 'gjkldsjfdklsjfsdfdsa';
+        // Update user's db with the code
+        print('Adding user to house ${_codeController.text}');
+        // update db with house code
+        _currUser.houseID = _codeController.text;
+        postToServer(data: _currUser.toJson(), serverFunc: 'upsert-user');
+        // Now need to update house data
+        _updateHouseDataWithMember(houseID);
+        // Push user to home page
+        Navigator.of(context).pushReplacement(
+          PageTransition(
+            type: PageTransitionType.fade,
+            child: DivvyNavigation(),
+            duration: Duration(milliseconds: 100),
+          ),
+        );
+      } else {
+        showErrorMessage(context, 'Invalid Code', 'This house doesn\'t exist.');
+        return;
+      }
+    } catch (e) {
+      print(e);
     }
+  }
+
+  /// Adds a new user as a member to a house.
+  void _updateHouseDataWithMember(HouseID houseID) async {
+    final firebaseAuthUser = FirebaseAuth.instance.currentUser!;
+    final member = Member.fromNew(
+      uid: firebaseAuthUser.uid,
+      email: _currUser.email,
+      name: firebaseAuthUser.displayName ?? 'No name',
+    );
+    // TODO: now add member to house docs
   }
 
   /// Open create house page
@@ -184,7 +214,7 @@ class _JoinHouseState extends State<JoinHouse> {
     Navigator.of(context).pushReplacement(
       PageTransition(
         type: PageTransitionType.fade,
-        child: CreateHouse(),
+        child: CreateHouse(currUser: _currUser),
         duration: Duration(milliseconds: 100),
       ),
     );

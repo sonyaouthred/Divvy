@@ -346,12 +346,16 @@ class _HouseSettingsState extends State<HouseSettings> {
           );
           if (delete != null && delete && context.mounted) {
             // delete house!!
-            Provider.of<DivvyProvider>(context, listen: false).deleteHouse();
+            final providerRef = Provider.of<DivvyProvider>(
+              context,
+              listen: false,
+            );
+            providerRef.deleteHouse();
             // Push user to join house page
             Navigator.of(context).pushReplacement(
               PageTransition(
                 type: PageTransitionType.fade,
-                child: JoinHouse(),
+                child: JoinHouse(currUser: providerRef.currUser),
                 duration: Duration(milliseconds: 100),
               ),
             );

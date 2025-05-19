@@ -26,7 +26,7 @@ class Chores extends StatelessWidget {
         // Get list of subgroups that this
         // user is in.
         List<Subgroup> subgroups = provider.getSubgroupsForMember(
-          provider.currentUser.id,
+          provider.currMember.id,
         );
         return SizedBox.expand(
           child: SingleChildScrollView(

@@ -1,17 +1,20 @@
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/models/divvy_theme.dart';
-import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/models/house.dart';
+import 'package:divvy/models/user.dart';
 import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/dialogs.dart';
+import 'package:divvy/util/server_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nanoid/async.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:provider/provider.dart';
 
 /// Allows user to join a house using a unique six-digit code.
 class CreateHouse extends StatefulWidget {
-  const CreateHouse({super.key});
+  final DivvyUser currUser;
+  const CreateHouse({super.key, required this.currUser});
 
   @override
   State<CreateHouse> createState() => _CreateHouseState();
@@ -20,11 +23,13 @@ class CreateHouse extends StatefulWidget {
 class _CreateHouseState extends State<CreateHouse> {
   late final String _email;
   late TextEditingController _nameController;
+  late final DivvyUser _currUser;
   @override
   void initState() {
     super.initState();
     _email = FirebaseAuth.instance.currentUser!.email ?? '';
     _nameController = TextEditingController();
+    _currUser = widget.currUser;
   }
 
   @override
@@ -159,13 +164,18 @@ class _CreateHouseState extends State<CreateHouse> {
       );
       return;
     }
-    // TODO: obviously, replace with db call
-    // Update user's db with the code
-    Provider.of<DivvyProvider>(
-      context,
-      listen: false,
-    ).createHouse(_nameController.text);
+    // Update DB with new house object
+    final joinCode = await nanoid(10);
+    final newHouse = House.fromNew(
+      houseName: _nameController.text,
+      uid: FirebaseAuth.instance.currentUser!.uid,
+      joinCode: joinCode,
+    );
+    postToServer(data: newHouse.toJson(), serverFunc: 'add-house');
+    _currUser.houseID = newHouse.id;
+    postToServer(data: _currUser.toJson(), serverFunc: 'upsert-user');
     // Push user to home page
+    if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       PageTransition(
         type: PageTransitionType.fade,
@@ -180,7 +190,7 @@ class _CreateHouseState extends State<CreateHouse> {
     Navigator.of(context).pushReplacement(
       PageTransition(
         type: PageTransitionType.fade,
-        child: JoinHouse(),
+        child: JoinHouse(currUser: _currUser),
         duration: Duration(milliseconds: 100),
       ),
     );

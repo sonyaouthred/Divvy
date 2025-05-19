@@ -39,7 +39,7 @@ class _SettingsState extends State<Settings> {
   void initState() {
     super.initState();
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
-    _currUser = providerRef.currentUser;
+    _currUser = providerRef.currMember;
   }
 
   @override
@@ -57,7 +57,7 @@ class _SettingsState extends State<Settings> {
           child: Consumer<DivvyProvider>(
             builder: (context, provider, child) {
               // Live update data from consumer
-              _currUser = provider.currentUser;
+              _currUser = provider.currMember;
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -384,15 +384,13 @@ class _SettingsState extends State<Settings> {
     );
     if (leave != null && leave) {
       if (!context.mounted) return;
-      Provider.of<DivvyProvider>(
-        context,
-        listen: false,
-      ).leaveHouse(_currUser.id);
+      final provider = Provider.of<DivvyProvider>(context, listen: false);
+      provider.leaveHouse(_currUser.id);
       // Push join hosue screen
       Navigator.of(context).pushReplacement(
         PageTransition(
           type: PageTransitionType.fade,
-          childBuilder: (context) => JoinHouse(),
+          childBuilder: (context) => JoinHouse(currUser: provider.currUser),
           duration: Duration(milliseconds: 100),
         ),
       );
