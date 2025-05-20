@@ -469,13 +469,10 @@ class DivvyProvider extends ChangeNotifier {
   /// Toggles if the chore is completed or not
   Future<void> toggleChoreInstanceCompletedState({
     required ChoreID superChoreID,
-    required ChoreInstID choreInstId,
+    required ChoreInst choreInst,
   }) async {
-    ChoreInst choreInstance = _choreInstances[superChoreID]!.firstWhere(
-      (instance) => instance.id == choreInstId,
-    );
-    choreInstance.toggleDone();
-    await db.upsertChoreInst(choreInstance, houseID);
+    choreInst.toggleDone();
+    await db.upsertChoreInst(choreInst, houseID);
     notifyListeners();
   }
 
@@ -600,6 +597,7 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+<<<<<<< HEAD
   /// Adds a swap to the database
   Future<void> addSwap(Swap swap, ChoreInst chore) async {
     await db.upsertSwap(swap, houseID);
@@ -635,6 +633,12 @@ class DivvyProvider extends ChangeNotifier {
     // Update the chore instance with the swap id
     swap.status = Status.approved;
     await db.upsertSwap(swap, houseID);
+=======
+  Future<void> deleteChoreInst(ChoreID choreID, ChoreInstID id) async {
+    if (_choreInstances[choreID] == null) return;
+    _choreInstances[choreID]!.removeWhere((c) => c.id == id);
+    await db.deleteChoreInst(houseID: houseID, choreInstID: id);
+>>>>>>> 7f1004fd9aa35b275c4a66c1a55b427b89625513
     notifyListeners();
   }
 }

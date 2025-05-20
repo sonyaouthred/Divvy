@@ -6,6 +6,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
 
 ///////////////////////// Generic Server functions //////////////////////////
@@ -22,7 +23,9 @@ Future<bool> _postToServer({
     headers: headers,
     body: json.encode(data),
   );
+
   // print('$serverFunc, ${response.body}');
+
   json.decode(response.body);
   if (response.statusCode == 400) {
     // error occurred
@@ -40,6 +43,7 @@ Future<Map<String, dynamic>?> _getDataFromServer({
   final headers = {'Content-Type': 'application/json'};
   final response = await get(Uri.parse(uri), headers: headers);
   // print('$serverFunc, ${response.body}');
+
   if (response.statusCode == 400) {
     // error occurred
     print('couldn\'t $serverFunc');

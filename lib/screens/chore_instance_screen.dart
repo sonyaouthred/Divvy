@@ -32,9 +32,9 @@ class ChoreInstanceScreen extends StatelessWidget {
       builder: (context, provider, child) {
         // Get the super chore for this instance
         Chore? parentChore = provider.getSuperChore(choreID);
-
         // If chore no longer exists, show chore not found screen
         if (parentChore == null) return _choreNotFoundScreen(width, spacing);
+        print(parentChore.id);
 
         // Get the updated instance (potentially with new info) from provider
         ChoreInst choreInstance = provider.getChoreInstanceFromID(
@@ -267,7 +267,7 @@ class ChoreInstanceScreen extends StatelessWidget {
       // Toggle completion
       provider.toggleChoreInstanceCompletedState(
         superChoreID: choreInst.superID,
-        choreInstId: choreInst.id,
+        choreInst: choreInst,
       );
       // Pop screen if chore is now done
       if (isDone) Navigator.of(context).pop();
@@ -327,7 +327,11 @@ class ChoreInstanceScreen extends StatelessWidget {
       final confirm = await confirmDeleteDialog(context, 'Delete Chore');
       if (confirm != null && confirm) {
         if (!context.mounted) return;
-        print('Delete chore instance!!');
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).deleteChoreInst(choreID, choreInstanceId);
+        Navigator.of(context).pop();
       }
     }
   }

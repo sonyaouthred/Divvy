@@ -163,41 +163,34 @@ class _JoinHouseState extends State<JoinHouse> {
   /// Join a house and push the home screen
   void _joinHouse(BuildContext context) async {
     try {
-      // TODO: obviously, replace with db call
-      final inputValid = _codeController.text == 'lW611f30';
-
-      if (inputValid) {
-        setState(() {
-          _joining = true;
-        });
-        // Try to add user to house
-        final house = await addUserToHouse(
-          _currUser,
-          _codeController.text,
-          'name',
+      setState(() {
+        _joining = true;
+      });
+      final username = FirebaseAuth.instance.currentUser!.displayName;
+      // Try to add user to house
+      final house = await addUserToHouse(
+        _currUser,
+        _codeController.text,
+        username ?? 'No name',
+      );
+      if (!context.mounted) return;
+      if (house == null) {
+        // handle errors in adding user
+        showErrorMessage(
+          context,
+          'Error',
+          'Could not join house. Check that you have the correct join code.',
         );
-        if (!context.mounted) return;
-        if (house == null) {
-          // handle errors in adding user
-          showErrorMessage(
-            context,
-            'Error',
-            'Could not join house. Check that you have the correct add code.',
-          );
-        }
-        // Push user to home page
-        if (!context.mounted) return;
-        Navigator.of(context).pushReplacement(
-          PageTransition(
-            type: PageTransitionType.fade,
-            child: HouseApp(user: _currUser),
-            duration: Duration(milliseconds: 100),
-          ),
-        );
-      } else {
-        showErrorMessage(context, 'Invalid Code', 'This house doesn\'t exist.');
-        return;
       }
+      // Push user to home page
+      if (!context.mounted) return;
+      Navigator.of(context).pushReplacement(
+        PageTransition(
+          type: PageTransitionType.fade,
+          child: HouseApp(user: _currUser),
+          duration: Duration(milliseconds: 100),
+        ),
+      );
     } catch (e) {
       print(e);
     }
