@@ -53,7 +53,10 @@ class Member {
     id: json['id'],
     chores: (json['chores'] as List<dynamic>).cast<ChoreInstID>(),
     profilePicture: getColorFromName(json['profilePicture']),
-    onTimePct: int.parse(json['onTimePct'] as String),
+    onTimePct:
+        json['onTimePct'] is int
+            ? json['onTimePct']
+            : int.parse(json['onTimePct'].toString()),
     email: json['email'],
     subgroups: (json['subgroups'] as List<dynamic>).cast<SubgroupID>(),
   );

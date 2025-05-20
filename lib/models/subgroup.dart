@@ -11,10 +11,10 @@ class Subgroup {
   // ID of the user. Same as Firestore doc ID
   final SubgroupID _id;
   // Subgroup's name
-  final String name;
+  String name;
   // For now, color of subgroup's profile
   // To be changed when users can add profile pictures.
-  final Color profilePicture;
+  Color profilePicture;
   // List of member user IDs
   final List<MemberID> members;
   // List of specific chores
@@ -71,6 +71,11 @@ class Subgroup {
   /// remove a member from subgroup
   void removeMember(MemberID memID) {
     members.remove(memID);
+  }
+
+  /// remove a chore from subgroup
+  void removeChore(ChoreID choreID) {
+    chores.remove(choreID);
   }
 }
 

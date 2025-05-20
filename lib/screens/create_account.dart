@@ -1,7 +1,6 @@
 import 'package:divvy/firebase/auth_service.dart';
 import 'package:divvy/main.dart';
 import 'package:divvy/models/divvy_theme.dart';
-import 'package:divvy/models/user.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/screens/login.dart';
 import 'package:divvy/util/server_util.dart';
@@ -383,11 +382,7 @@ class _CreateAccountState extends State<CreateAccount> {
       final User user = FirebaseAuth.instance.currentUser!;
 
       /// add user doc to database
-      final DivvyUser newUser = DivvyUser.fromNew(
-        uid: user.uid,
-        email: user.email!,
-      );
-      postToServer(data: newUser.toJson(), serverFunc: 'upsert-user');
+      await createUser(user.uid, user.email!);
 
       // Sign in!!
       await FirebaseAuth.instance.signInWithEmailAndPassword(

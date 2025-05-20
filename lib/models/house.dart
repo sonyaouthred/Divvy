@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -9,19 +11,22 @@ class House {
   // image ID of the house's profile picture. Same as image ID in Cloud Storage
   final String _imageID;
   // user-assigned name of the house
-  String _name;
+  String name;
   // The unique join code for a house.
   final String _joinCode;
+  final DateTime _dateCreated;
 
   House({
     required HouseID id,
     required String imageID,
-    required String name,
+    required this.name,
     required String joinCode,
+    required DateTime dateCreated,
   }) : _id = id,
        _imageID = imageID,
-       _name = name,
-       _joinCode = joinCode;
+
+       _joinCode = joinCode,
+       _dateCreated = dateCreated;
 
   /// Creates a new house object
   factory House.fromNew({
@@ -31,7 +36,13 @@ class House {
   }) {
     // no initial members other than current user
     final houseID = uuid.v4();
-    return House(id: houseID, imageID: '', name: houseName, joinCode: joinCode);
+    return House(
+      id: houseID,
+      imageID: '',
+      name: houseName,
+      joinCode: joinCode,
+      dateCreated: DateTime.now(),
+    );
   }
 
   /// From a json map, returns a new House object
@@ -41,27 +52,21 @@ class House {
     id: json['id'],
     imageID: json['imageID'],
     joinCode: json['joinCode'],
+    dateCreated: HttpDate.parse(json['dateCreated']),
   );
 
   /// Converts the house object to a firestore-compatible map
   Map<String, dynamic> toJson() => {
-    'name': _name,
+    'name': name,
     'id': _id,
     'imageID': _imageID,
     'joinCode': _joinCode,
+    'dateCreated': HttpDate.format(_dateCreated),
   };
 
   HouseID get id => _id;
   String get imageID => _imageID;
-  String get name => _name;
   String get joinCode => _joinCode;
-
-  /// setters
-
-  /// Change the house's name
-  void changeName(String newName) {
-    _name = newName;
-  }
 }
 
 // Simplify definitions
