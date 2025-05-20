@@ -6,7 +6,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/util/date_funcs.dart';
-import 'package:divvy/util/server_util.dart';
+import 'package:divvy/util/server_util.dart' as db;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,8 +26,6 @@ class DivvyProvider extends ChangeNotifier {
   late final Member _currentMember;
   // the currently displayed house
   late final House _house;
-  // List of members that belong to the hosue
-  late final List<Member> _memberList;
   // Same as above list, but mapped to by ID for quick lookup.
   late final Map<MemberID, Member> _memberMap;
   // List of all house subgroups, but mapped to by ID for quick lookup.
@@ -71,80 +69,31 @@ class DivvyProvider extends ChangeNotifier {
 
   // load house data from server
   Future<void> _loadHouseData() async {
-    final data = await getDataFromServer(serverFunc: 'get-house-$_houseID');
-    final house = House.fromJson(data!);
-    _house = house;
+    _house = (await db.fetchHouse(_houseID))!;
     notifyListeners();
   }
 
   // load subgroup data from server
   Future<void> _loadSubgroupData() async {
-    final data = await getDataFromServer(
-      serverFunc: 'get-house-$_houseID-subgroups',
-    );
-    // data is a map of subgroupIDs to subgroups
-    final Map<SubgroupID, Subgroup> subs = {};
-    for (SubgroupID id in data!.keys) {
-      // put subgroup object in map
-      final subgroup = Subgroup.fromJson(data[id]);
-      subs[subgroup.id] = subgroup;
-    }
-    _subgroups = subs;
+    _subgroups = await db.fetchSubgroups(_houseID) ?? {};
     notifyListeners();
   }
 
-  // / Load member info from server
+  /// Load member info from server
   Future<void> _loadMemberInfo() async {
-    try {
-      final data = await getDataFromServer(
-        serverFunc: 'get-house-$_houseID-members',
-      );
-      final List<Member> mems = [];
-      final Map<MemberID, Member> memMap = {};
-      for (MemberID memID in data!.keys) {
-        // parse member
-        final member = Member.fromJson(data[memID]);
-        mems.add(member);
-        memMap[member.id] = member;
-      }
-      _memberList = mems;
-      _memberMap = memMap;
-      notifyListeners();
-    } catch (e) {
-      print(e);
-    }
+    _memberMap = await db.fetchMembers(_houseID) ?? {};
+    notifyListeners();
   }
 
   // load chore instance data from server
   Future<void> _getChoreInstanceData() async {
-    final data = await getDataFromServer(
-      serverFunc: 'get-house-$_houseID-chore-instances',
-    );
-    final Map<ChoreID, List<ChoreInst>> choreInstMap = {};
-    for (ChoreID id in data!.keys) {
-      // put subgroup object in map
-      final choreInst = ChoreInst.fromJson(data[id]);
-      choreInstMap[choreInst.superID] == null
-          ? choreInstMap[choreInst.superID] = [choreInst]
-          : choreInstMap[choreInst.superID]!.add(choreInst);
-    }
-    _choreInstances = choreInstMap;
+    _choreInstances = await db.fetchChoreInstances(_houseID) ?? {};
     notifyListeners();
   }
 
   // load chore data from server
   Future<void> _loadChoreData() async {
-    final data = await getDataFromServer(
-      serverFunc: 'get-house-$_houseID-chores',
-    );
-    // data is a map of subgroupIDs to subgroups
-    final Map<ChoreID, Chore> choreMap = {};
-    for (ChoreID id in data!.keys) {
-      // put subgroup object in map
-      final chore = Chore.fromJson(data[id]);
-      choreMap[chore.id] = chore;
-    }
-    _chores = choreMap;
+    _chores = await db.fetchChores(_houseID) ?? {};
     notifyListeners();
   }
 
@@ -153,7 +102,7 @@ class DivvyProvider extends ChangeNotifier {
   String get houseName => _house.name;
   String get houseID => _house.id;
   String get houseJoinCode => _house.joinCode;
-  List<Member> get members => List.from(_memberList);
+  List<Member> get members => List.from(_memberMap.values);
   List<Subgroup> get subgroups => List.from(_subgroups.values);
   List<Chore> get chores => List.from(_chores.values);
   Member get currMember => _currentMember;
@@ -399,14 +348,14 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Returns top [num] leaderboard entries
   List<Member> getLeaderboardSorted(int num) {
-    final List<Member> sorted = List.from(_memberList);
+    final List<Member> sorted = List.from(_memberMap.values);
     sorted.sort((a, b) => b.onTimePct.compareTo(a.onTimePct));
     return sorted.take(num).toList();
   }
 
   /// Get the rank of a member based on their on time percentage
   int getRank(MemberID memberID) {
-    final List<Member> sorted = List.from(_memberList);
+    final List<Member> sorted = List.from(_memberMap.values);
     sorted.sort((a, b) => b.onTimePct.compareTo(a.onTimePct));
     return sorted.indexWhere((member) {
           return member.id == memberID;
@@ -454,13 +403,14 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Adds a chore to this house under the correct group.
   /// Creates chore instances
-  void addChore(Chore chore) {
+  Future<void> addChore(Chore chore) async {
     _chores[chore.id] = chore;
+    await db.upsertChore(chore, houseID);
     Subgroup? sub = isSubgroup(chore.assignees);
     if (sub != null) {
       // chore should belong to this subgroup!!
       sub.chores.add(chore.id);
-      // TODO: update db
+      await db.upsertSubgroup(sub, houseID);
     }
     // now create instances!
     final dates = getDateList(chore.frequency);
@@ -481,55 +431,52 @@ class DivvyProvider extends ChangeNotifier {
   }
 
   /// Adds a given chore instance to the database
-  void addChoreInstance(ChoreInst choreInstance) {
+  Future<void> addChoreInstance(ChoreInst choreInstance) async {
     if (_choreInstances[choreInstance.superID] == null) return;
     _choreInstances[choreInstance.superID]!.add(choreInstance);
-    // TODO: update db
+    await db.upsertChoreInst(choreInstance, houseID);
     notifyListeners();
   }
 
   /// Updates a super chore. because frequency/members
   /// cannot be changed after a chore is created, don't have to
   /// regenerate instance list.
-  void updateChore(Chore updatedChore) {
+  Future<void> updateChore(Chore updatedChore) async {
     _chores[updatedChore.id] = updatedChore;
-    // TODO: update db
+    await db.upsertChore(updatedChore, houseID);
     notifyListeners();
   }
 
   /// Changes the name of a super chore
-  void changeName(ChoreID choreID, String name) {
+  Future<void> changeName(ChoreID choreID, String name) async {
     Chore? chore = getSuperChore(choreID);
     if (chore == null) return;
     chore.changeName(name);
-    // TODO: update DB
-    // postToServer();
-    // getFromServer();
-    notifyListeners();
+    await updateChore(chore);
   }
 
   /// Toggles if the chore is completed or not
-  void toggleChoreInstanceCompletedState({
+  Future<void> toggleChoreInstanceCompletedState({
     required ChoreID superChoreID,
     required ChoreInstID choreInstId,
-  }) {
+  }) async {
     ChoreInst choreInstance = _choreInstances[superChoreID]!.firstWhere(
       (instance) => instance.id == choreInstId,
     );
     choreInstance.toggleDone();
-    // TODO: update db
+    await db.upsertChoreInst(choreInstance, houseID);
     notifyListeners();
   }
 
   /// Updates user name with inputed name
-  void updateUserName(String name) {
+  Future<void> updateUserName(String name) async {
     _currentMember.name = name;
-    // TODO: update db's members collection
+    await db.upsertMember(_currentMember, houseID);
     notifyListeners();
   }
 
   /// Removes given user from the house
-  void leaveHouse(MemberID id) {
+  Future<void> leaveHouse(MemberID id) async {
     // remove user from all subgroups they may be in
     // delete subgroups that have nobody left
     for (Subgroup sub in getSubgroupsForMember(id)) {
@@ -551,15 +498,15 @@ class DivvyProvider extends ChangeNotifier {
       }
     }
 
-    // TODO: update db with updated list of house members
+    await db.deleteMember(houseID: houseID, memberID: id);
     _user.houseID = '';
-    postToServer(data: _user.toJson(), serverFunc: 'upsert-user');
+    await db.upsertUser(_user);
     print('$id left the house');
     notifyListeners();
   }
 
   /// Deletes a subgroup specified
-  void deleteSubgroup(SubgroupID subgroupID) {
+  Future<void> deleteSubgroup(SubgroupID subgroupID) async {
     // Delete any of their chores
     for (Chore c in getSubgroupChores(subgroupID)) {
       // delete super chore!
@@ -568,19 +515,18 @@ class DivvyProvider extends ChangeNotifier {
     }
     // Finally, remove the subgroup
     _subgroups.remove(subgroupID);
-    // TODO: update with subgroup data
+    await db.deleteSubgroup(houseID: houseID, subgroupID: subgroupID);
     print('$subgroupID has been deleted');
     notifyListeners();
   }
 
   /// Add a subgroup specified
-  // TODO: complete adding subgroups
-  void addSubgroup(
+  Future<void> addSubgroup(
     String name,
     List<Member> members,
     List<Chore> chores,
     Color color,
-  ) {
+  ) async {
     // don't add if a subgroup already exists with these memebrs
     for (Subgroup sub in _subgroups.values) {
       if (listEquals(sub.members, members)) {
@@ -598,51 +544,47 @@ class DivvyProvider extends ChangeNotifier {
       addChore(c);
     }
     _subgroups[newSub.id] = newSub;
-    // TODO: update db with new subgroup doc
-    print('$name subgroup added');
+    await db.upsertSubgroup(newSub, houseID);
     notifyListeners();
   }
 
   /// Updating house name
-  void updateHouseName(String newName) {
-    _house.changeName(newName);
-    // TODO: update DB
-    print('$newName is now house name');
+  Future<void> updateHouseName(String newName) async {
+    _house.name = newName;
+    await db.upsertHouse(_house);
     notifyListeners();
   }
 
-  /// Delete the entire house
-  // TODO: implement delete entire house
-  void deleteHouse() {
-    // delete all subgroups
-    final keys = List.from(_subgroups.keys);
-    for (SubgroupID id in keys) {
-      // deletes all subgroups & their chores
-      deleteSubgroup(id);
-    }
-    for (Chore chore in _chores.values) {
-      // deletes all supers & instances
-      deleteSuperclassChore(chore.id);
-    }
-    final members = List.from(_memberList);
+  /// Delete the entire house. All members have the doc removed
+  Future<void> deleteHouse() async {
+    final members = List.from(_memberMap.values);
     for (Member mem in members) {
-      // This will also update each user's doc with
-      // an empty house ID
-      leaveHouse(mem.id);
+      final otherUser = await db.fetchUser(mem.id);
+      if (otherUser != null) {
+        otherUser.houseID = '';
+        await db.upsertUser(otherUser);
+      }
     }
-    // TODO: db needs to delete house doc
-    print('Deleting the house....');
+    // delete house & all subcollections
+    await db.deleteHouse(_houseID);
     notifyListeners();
   }
 
   /// Delete chore (superclass)
-  // TODO: implement delete chore superclass
-  void deleteSuperclassChore(String choreID) {
-    // delete all chore instances
-    _choreInstances[choreID] = [];
-    // TODO: update db to delete all chore instance docs
+  Future<void> deleteSuperclassChore(String choreID) async {
+    final choreInsts = _choreInstances[choreID];
+    if (choreInsts != null) {
+      // Delete all chore instances
+      final List<Future> futures = [];
+      for (ChoreInst inst in choreInsts) {
+        futures.add(db.deleteChoreInst(houseID: houseID, choreInstID: inst.id));
+      }
+      // batch delete docs
+      await Future.wait(futures);
+      _choreInstances.remove(choreID);
+    }
     _chores.remove(choreID);
-    // TODO: update db to delete chore doc
+    await db.deleteChore(houseID: houseID, choreID: choreID);
     print('Deleting $choreID chore');
     notifyListeners();
   }

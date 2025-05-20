@@ -171,7 +171,7 @@ class _CreateHouseState extends State<CreateHouse> {
       uid: FirebaseAuth.instance.currentUser!.uid,
       joinCode: joinCode,
     );
-    await createHouse(_currUser, newHouse);
+    await createHouse(_currUser, newHouse, 'name');
     // Push user to home page
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(

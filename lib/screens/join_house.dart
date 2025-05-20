@@ -171,9 +171,13 @@ class _JoinHouseState extends State<JoinHouse> {
           _joining = true;
         });
         // Try to add user to house
-        final success = await addUserToHouse(_currUser, _codeController.text);
+        final house = await addUserToHouse(
+          _currUser,
+          _codeController.text,
+          'name',
+        );
         if (!context.mounted) return;
-        if (!success) {
+        if (house == null) {
           // handle errors in adding user
           showErrorMessage(
             context,

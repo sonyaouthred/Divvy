@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:divvy/models/member.dart';
 import 'package:uuid/uuid.dart';
 
@@ -97,6 +95,7 @@ class Chore {
     'emoji': emoji,
     'frequencyPattern': _frequency.pattern.name,
     'frequencyDays': _frequency.daysOfWeek,
+    'startDate': HttpDate.format(_frequency.startDate),
   };
 
   /// Getters
@@ -131,19 +130,18 @@ class ChoreInst {
   // True if done
   bool _isDone;
   // user chore is assigned to
-  final MemberID _assignee;
+  MemberID assignee;
 
   ChoreInst({
     required ChoreID choreID,
     required ChoreInstID id,
     required DateTime dueDate,
     required bool isDone,
-    required MemberID assignee,
+    required this.assignee,
   }) : _id = id,
        _dueDate = dueDate,
        _isDone = isDone,
-       _superID = choreID,
-       _assignee = assignee;
+       _superID = choreID;
 
   /// Returns a new chore instance object
   factory ChoreInst.fromNew({
@@ -178,9 +176,9 @@ class ChoreInst {
     return {
       'choreID': _superID,
       'id': _id,
-      'dueDate': Timestamp.fromDate(_dueDate),
+      'dueDate': HttpDate.format(_dueDate),
       'isDone': _isDone,
-      'assignee': _assignee,
+      'assignee': assignee,
     };
   }
 
@@ -190,7 +188,6 @@ class ChoreInst {
   ChoreInstID get id => _id;
   DateTime get dueDate => _dueDate;
   bool get isDone => _isDone;
-  MemberID get assignee => _assignee;
 
   // toggles if a chore is done or not
   void toggleDone() {
