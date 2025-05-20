@@ -4,6 +4,7 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/util/server_util.dart' as db;
@@ -34,6 +35,8 @@ class DivvyProvider extends ChangeNotifier {
   late final Map<ChoreID, Chore> _chores;
   // All chore instances, mapped to by their super chore IDs.
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
+  // list of all swaps for the house, mapped to by ID for quick lookup.
+  late final Map<SwapID, Swap> _swaps;
 
   /// Instantiate a new provider
   DivvyProvider(DivvyUser currUser) {
@@ -54,6 +57,7 @@ class DivvyProvider extends ChangeNotifier {
       _loadMemberInfo(),
       _loadChoreData(),
       _getChoreInstanceData(),
+      _loadSwaps(),
     ];
 
     // load data concurrently
@@ -97,6 +101,12 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // load chore data from server
+  Future<void> _loadSwaps() async {
+    _swaps = await db.fetchSwaps(_houseID) ?? {};
+    notifyListeners();
+  }
+
   ////////////////////////////// Getters //////////////////////////////
 
   String get houseName => _house.name;
@@ -107,6 +117,7 @@ class DivvyProvider extends ChangeNotifier {
   List<Chore> get chores => List.from(_chores.values);
   Member get currMember => _currentMember;
   DivvyUser get currUser => _user;
+  List<Swap> get swaps => List.from(_swaps.values);
 
   /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
@@ -586,6 +597,44 @@ class DivvyProvider extends ChangeNotifier {
     _chores.remove(choreID);
     await db.deleteChore(houseID: houseID, choreID: choreID);
     print('Deleting $choreID chore');
+    notifyListeners();
+  }
+
+  /// Adds a swap to the database
+  Future<void> addSwap(Swap swap, ChoreInst chore) async {
+    await db.upsertSwap(swap, houseID);
+    // Update the chore instance with the swap id
+    chore.swapID = swap.id;
+    await db.upsertChoreInst(chore, houseID);
+    notifyListeners();
+  }
+
+  /// Adds a swap to the database
+  Future<void> sendSwapInvite(Swap swap, Member member) async {
+    await db.upsertSwap(swap, houseID);
+    // Update the chore instance with the swap id
+    swap.status = Status.pending;
+    swap.to = member.id;
+    await db.upsertSwap(swap, houseID);
+    notifyListeners();
+  }
+
+  /// Adds a swap to the database
+  Future<void> rejectSwapInvite(Swap swap) async {
+    await db.upsertSwap(swap, houseID);
+    // Update the chore instance with the swap id
+    swap.status = Status.rejected;
+    swap.to = '';
+    await db.upsertSwap(swap, houseID);
+    notifyListeners();
+  }
+
+  /// Adds a swap to the database
+  Future<void> approveSwap(Swap swap) async {
+    await db.upsertSwap(swap, houseID);
+    // Update the chore instance with the swap id
+    swap.status = Status.approved;
+    await db.upsertSwap(swap, houseID);
     notifyListeners();
   }
 }

@@ -4,6 +4,7 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
 import 'package:http/http.dart';
 
@@ -21,7 +22,7 @@ Future<bool> _postToServer({
     headers: headers,
     body: json.encode(data),
   );
-  print('$serverFunc, ${response.body}');
+  // print('$serverFunc, ${response.body}');
   json.decode(response.body);
   if (response.statusCode == 400) {
     // error occurred
@@ -38,7 +39,7 @@ Future<Map<String, dynamic>?> _getDataFromServer({
   final uri = 'http://127.0.0.1:5000/$serverFunc';
   final headers = {'Content-Type': 'application/json'};
   final response = await get(Uri.parse(uri), headers: headers);
-  print('$serverFunc, ${response.body}');
+  // print('$serverFunc, ${response.body}');
   if (response.statusCode == 400) {
     // error occurred
     print('couldn\'t $serverFunc');
@@ -76,6 +77,19 @@ Future<Map<MemberID, Member>?> fetchMembers(HouseID houseID) async {
     memMap[member.id] = member;
   }
   return memMap;
+}
+
+/// Fetches swap data. If not found, returns null.
+Future<Map<SwapID, Swap>?> fetchSwaps(HouseID houseID) async {
+  final data = await _getDataFromServer(serverFunc: 'get-house-$houseID-swaps');
+  if (data == null) return null;
+  final Map<SwapID, Swap> swapMap = {};
+  for (SwapID swapID in data.keys) {
+    // parse member
+    final swap = Swap.fromJson(data[swapID]);
+    swapMap[swap.id] = swap;
+  }
+  return swapMap;
 }
 
 /// Fetches subgroup data. If not found, returns null or {}.
@@ -196,6 +210,19 @@ Future<void> deleteMember({
     data: {'id': memberID},
     serverFunc: 'delete-member-$houseID',
   );
+}
+
+/// Upserts a member doc. Updates DB. TESTED
+Future<void> upsertSwap(Swap swap, HouseID houseID) async {
+  await _postToServer(data: swap.toJson(), serverFunc: 'upsert-swap-$houseID');
+}
+
+/// Deletes a member doc. Updates DB. TESTED
+Future<void> deleteSwap({
+  required HouseID houseID,
+  required SwapID swapID,
+}) async {
+  await _postToServer(data: {'id': swapID}, serverFunc: 'delete-swap-$houseID');
 }
 
 /// Create a house & update the user's doc with the houseID. TESTED

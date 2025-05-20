@@ -2,6 +2,7 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/util/server_util.dart';
 import 'package:flutter/foundation.dart';
@@ -680,6 +681,74 @@ void main() {
       // Make sure all subgroups were deleted
       final deletedChores = await fetchChores(house.id);
       assert(deletedChores == null || deletedChores.isEmpty);
+    });
+  });
+
+  group('Swap tests', () {
+    test('Swap can be added & deleted', () async {
+      // Create three users
+      final member1ID = '9508239408304';
+      final member2ID = '0850948902432';
+      final member3ID = 'fji2u59349032jgf';
+      List<Future> futures = [
+        createUser(member1ID, 'member1@test.com'),
+        createUser(member2ID, 'member1@test.com'),
+        createUser(member3ID, 'member1@test.com'),
+      ];
+      await Future.wait(futures);
+      final founder = await fetchUser(member1ID);
+      final mem2 = await fetchUser(member2ID);
+      final mem3 = await fetchUser(member3ID);
+      assert(founder != null);
+      assert(mem2 != null);
+      assert(mem3 != null);
+
+      // add a house to the db
+      final house = House.fromNew(
+        houseName: 'Test house!!',
+        uid: founder!.id,
+        joinCode: '94320483090s',
+      );
+      await createHouse(founder, house, 'name');
+      House? receivedHouse = await fetchHouse(house.id);
+      assert(receivedHouse != null);
+      // add users to house
+      futures = [
+        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
+        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+      ];
+      await Future.wait(futures);
+
+      // add swap
+      final superChoreID = '4392058390241';
+      final choreInstID = '359804890234d032';
+      final swap = Swap.fromNew(
+        choreID: superChoreID,
+        choreInstID: choreInstID,
+        from: founder.id,
+      );
+      await upsertSwap(swap, house.id);
+
+      // Now make sure chore data was properly created
+      final dbSwaps = await fetchSwaps(house.id);
+      assert(dbSwaps != null);
+      expect(dbSwaps!.length, 1);
+      final receivedSwap = dbSwaps[swap.id];
+      assert(receivedSwap != null);
+      expect(receivedSwap!.choreID, '4392058390241');
+      expect(receivedSwap.from, founder.id);
+
+      // Clean up - delete data
+      futures = [
+        deleteUser(member1ID),
+        deleteUser(member2ID),
+        deleteUser(member3ID),
+        deleteHouse(house.id),
+      ];
+      await Future.wait(futures);
+      // Make sure all swaps were deleted
+      final deletedSwaps = await fetchSwaps(house.id);
+      assert(deletedSwaps == null || deletedSwaps.isEmpty);
     });
   });
 }
