@@ -458,13 +458,10 @@ class DivvyProvider extends ChangeNotifier {
   /// Toggles if the chore is completed or not
   Future<void> toggleChoreInstanceCompletedState({
     required ChoreID superChoreID,
-    required ChoreInstID choreInstId,
+    required ChoreInst choreInst,
   }) async {
-    ChoreInst choreInstance = _choreInstances[superChoreID]!.firstWhere(
-      (instance) => instance.id == choreInstId,
-    );
-    choreInstance.toggleDone();
-    await db.upsertChoreInst(choreInstance, houseID);
+    choreInst.toggleDone();
+    await db.upsertChoreInst(choreInst, houseID);
     notifyListeners();
   }
 
@@ -586,6 +583,13 @@ class DivvyProvider extends ChangeNotifier {
     _chores.remove(choreID);
     await db.deleteChore(houseID: houseID, choreID: choreID);
     print('Deleting $choreID chore');
+    notifyListeners();
+  }
+
+  Future<void> deleteChoreInst(ChoreID choreID, ChoreInstID id) async {
+    if (_choreInstances[choreID] == null) return;
+    _choreInstances[choreID]!.removeWhere((c) => c.id == id);
+    await db.deleteChoreInst(houseID: houseID, choreInstID: id);
     notifyListeners();
   }
 }

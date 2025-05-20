@@ -330,7 +330,7 @@ class _CreateAccountState extends State<CreateAccount> {
         if (!context.mounted) {
           return;
         }
-        // Success! create database.
+        // Success! create database & update username
         _createUserDB(context);
       } else if (result == 'The password provided is too weak.') {
         setState(() {
@@ -380,6 +380,8 @@ class _CreateAccountState extends State<CreateAccount> {
   void _createUserDB(BuildContext context) async {
     try {
       final User user = FirebaseAuth.instance.currentUser!;
+      await user.updateDisplayName(_name.text);
+      await user.reload();
 
       /// add user doc to database
       await createUser(user.uid, user.email!);
