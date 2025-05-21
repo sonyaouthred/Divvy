@@ -53,7 +53,6 @@ class Dashboard extends StatelessWidget {
                   ),
                   // display any overdue chores
                   _displayRecentChores(spacing, overdueChores, todayChores),
-                  // Display header for upcoming chores, if it applies
                   SizedBox(height: spacing / 2),
                   // Only display today's chores if overdue chores exist
                   _displayCompactTodayChores(
@@ -133,7 +132,7 @@ class Dashboard extends StatelessWidget {
             'You have ${today.length} chore${today.length == 1 ? '' : 's'} to do today.',
             style: DivvyTheme.bodyGrey,
           ),
-          SizedBox(height: spacing),
+          if (today.isNotEmpty) SizedBox(height: spacing),
           // Display the chore tiles for all chores due today
           Padding(
             padding: EdgeInsets.symmetric(horizontal: spacing / 4),

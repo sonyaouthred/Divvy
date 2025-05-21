@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, must_be_immutable
+// ignore_for_file:  must_be_immutable
 
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';

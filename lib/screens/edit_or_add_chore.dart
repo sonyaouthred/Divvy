@@ -14,8 +14,9 @@ import 'package:provider/provider.dart';
 /// Allows the user to add a chore & save it to their house
 class EditOrAddChore extends StatefulWidget {
   final ChoreID? choreID;
+  final Subgroup? subgroup;
 
-  const EditOrAddChore({super.key, required this.choreID});
+  const EditOrAddChore({super.key, required this.choreID, this.subgroup});
 
   @override
   State<EditOrAddChore> createState() => _EditOrAddChoreState();
@@ -69,7 +70,12 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // If user is editing, set the initial chore name to the actual name
     _nameController = TextEditingController(text: chore?.name ?? '');
     _emojiController = TextEditingController(text: chore?.emoji ?? '');
-    chosenSubgroup = subgroups.first;
+    Subgroup? initSubgroup = widget.subgroup;
+    if (initSubgroup != null) {
+      chosenSubgroup = initSubgroup;
+    } else {
+      chosenSubgroup = subgroups.first;
+    }
     if (chore != null) {
       // update relevant initial values, if necessary
       final sub = providerRef.isSubgroup(chore!.assignees);

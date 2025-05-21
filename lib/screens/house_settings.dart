@@ -177,8 +177,6 @@ class _HouseSettingsState extends State<HouseSettings> {
           context,
           listen: false,
         ).deleteSubgroup(_selectedSubgroup!.id);
-      } else {
-        print('cancelled delete');
       }
     }
   }
@@ -288,8 +286,6 @@ class _HouseSettingsState extends State<HouseSettings> {
         if (delete != null && delete) {
           if (!context.mounted) return;
           Provider.of<DivvyProvider>(context, listen: false).leaveHouse(email);
-        } else {
-          print('cancelled delete');
         }
       }
     }

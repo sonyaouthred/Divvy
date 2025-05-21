@@ -376,7 +376,6 @@ class _SettingsState extends State<Settings> {
           await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
             credential,
           );
-          print('account OK to be deleted');
         }
         // Non-email/pwd clients are already reauthenticated
         // TODO: need to remove user from rotations/subgroups in provider!

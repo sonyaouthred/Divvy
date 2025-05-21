@@ -73,7 +73,6 @@ void main() {
         ),
       );
       expect(dates.first, start);
-      print(dates);
       expect(dates[1], DateTime(2024, 3, 31)); // Should handle "last day" logic
     });
 

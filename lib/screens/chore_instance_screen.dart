@@ -34,7 +34,6 @@ class ChoreInstanceScreen extends StatelessWidget {
         Chore? parentChore = provider.getSuperChore(choreID);
         // If chore no longer exists, show chore not found screen
         if (parentChore == null) return _choreNotFoundScreen(width, spacing);
-        print(parentChore.id);
 
         // Get the updated instance (potentially with new info) from provider
         ChoreInst choreInstance = provider.getChoreInstanceFromID(

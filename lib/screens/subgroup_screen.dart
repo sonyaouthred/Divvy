@@ -3,6 +3,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/edit_or_add_chore.dart';
 import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:divvy/widgets/member_tile.dart';
@@ -148,6 +149,8 @@ class SubgroupScreen extends StatelessWidget {
 
   /// Shows a Cupertino action menu that allows user to delete subgroup
   void _showActionMenu(BuildContext context) async {
+    final width = MediaQuery.of(context).size.width;
+    final spacing = width * 0.05;
     final delete = await showCupertinoModalPopup<bool>(
       context: context,
       builder:
@@ -155,9 +158,23 @@ class SubgroupScreen extends StatelessWidget {
             title: const Text('Subgroup Actions'),
             actions: <CupertinoActionSheetAction>[
               CupertinoActionSheetAction(
-                /// This parameter indicates the action would perform
-                /// a destructive action such as delete or exit and turns
-                /// the action's text color to red.
+                onPressed: () async {
+                  // prompt for new color & change!!
+                  final newColor = await openColorDialog(
+                    context,
+                    currSubgroup.profilePicture,
+                    spacing,
+                  );
+                  if (!context.mounted) return;
+                  Provider.of<DivvyProvider>(
+                    context,
+                    listen: false,
+                  ).updateSubgroupColor(currSubgroup, newColor);
+                  Navigator.of(context).pop(false);
+                },
+                child: const Text('Change Color'),
+              ),
+              CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 onPressed: () {
                   Navigator.of(context).pop(true);
@@ -185,9 +202,14 @@ class SubgroupScreen extends StatelessWidget {
     }
   }
 
-  /// Add a chore!
+  /// Add a chore for this subgroup!!
   void _addChore(BuildContext context) {
-    //TODO: connect to add chore
-    print('Add chore');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => EditOrAddChore(choreID: null, subgroup: currSubgroup),
+      ),
+    );
   }
 }

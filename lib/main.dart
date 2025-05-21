@@ -54,24 +54,20 @@ class AuthWrapper extends StatelessWidget {
               if (divvyUser == null) {
                 // log user out
                 // this really should never be triggered
-                print('user is null');
                 FirebaseAuth.instance.signOut();
                 return MaterialApp(home: Login());
               }
               final isInHouse = divvyUser.houseID != '';
               if (isInHouse) {
-                print('user is in house');
                 // Return regular house app
                 return HouseApp(user: divvyUser);
               } else {
-                print('user is not in house');
                 // Return join house screen if user is not in house
                 return MaterialApp(home: JoinHouse(currUser: divvyUser));
               }
             },
           );
         } else {
-          print('user is not signed in');
           // User is not signed in, show Login screen
           return MaterialApp(home: Login());
         }

@@ -24,8 +24,6 @@ Future<bool> _postToServer({
     body: json.encode(data),
   );
 
-  // print('$serverFunc, ${response.body}');
-
   json.decode(response.body);
   if (response.statusCode == 400) {
     // error occurred
@@ -42,11 +40,9 @@ Future<Map<String, dynamic>?> _getDataFromServer({
   final uri = 'http://127.0.0.1:5000/$serverFunc';
   final headers = {'Content-Type': 'application/json'};
   final response = await get(Uri.parse(uri), headers: headers);
-  // print('$serverFunc, ${response.body}');
 
-  if (response.statusCode == 400) {
+  if (response.statusCode != 200) {
     // error occurred
-    print('couldn\'t $serverFunc');
     return null;
   }
   return json.decode(response.body);
@@ -236,7 +232,6 @@ Future<bool> createHouse(DivvyUser user, House house, String userName) async {
     email: user.email,
     name: userName,
   );
-  print('adding member...');
   await upsertMember(member, house.id);
   user.houseID = house.id;
   await upsertUser(user);

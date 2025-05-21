@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';

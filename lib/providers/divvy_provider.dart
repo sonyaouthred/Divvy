@@ -10,7 +10,6 @@ import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/util/server_util.dart' as db;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 /// Provides data about a given house and all subgroups,
 /// chores, and members to the Divvy app UI.
@@ -429,7 +428,6 @@ class DivvyProvider extends ChangeNotifier {
     _choreInstances[chore.id] = [];
     dates.asMap().forEach((index, date) {
       final assignee = chore.assignees[index % chore.assignees.length];
-      print(assignee);
       // create chore instance
       ChoreInst choreInst = ChoreInst.fromNew(
         superCID: chore.id,
@@ -490,6 +488,16 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates user name with inputed name
+  Future<void> updateSubgroupColor(
+    Subgroup subgroup,
+    ProfileColor newColor,
+  ) async {
+    subgroup.profilePicture = newColor;
+    await db.upsertSubgroup(subgroup, houseID);
+    notifyListeners();
+  }
+
   /// Removes given user from the house
   Future<void> leaveHouse(MemberID id) async {
     // remove user from all subgroups they may be in
@@ -516,7 +524,6 @@ class DivvyProvider extends ChangeNotifier {
     await db.deleteMember(houseID: houseID, memberID: id);
     _user.houseID = '';
     await db.upsertUser(_user);
-    print('$id left the house');
     notifyListeners();
   }
 
@@ -531,7 +538,6 @@ class DivvyProvider extends ChangeNotifier {
     // Finally, remove the subgroup
     _subgroups.remove(subgroupID);
     await db.deleteSubgroup(houseID: houseID, subgroupID: subgroupID);
-    print('$subgroupID has been deleted');
     notifyListeners();
   }
 
@@ -560,6 +566,13 @@ class DivvyProvider extends ChangeNotifier {
     }
     _subgroups[newSub.id] = newSub;
     await db.upsertSubgroup(newSub, houseID);
+    // Update each member's doc with the subgroup
+    List<Future> futures = [];
+    for (Member member in members) {
+      member.subgroups.add(newSub.id);
+      futures.add(db.upsertMember(member, houseID));
+    }
+    await Future.wait(futures);
     notifyListeners();
   }
 
@@ -600,7 +613,6 @@ class DivvyProvider extends ChangeNotifier {
     }
     _chores.remove(choreID);
     await db.deleteChore(houseID: houseID, choreID: choreID);
-    print('Deleting $choreID chore');
     notifyListeners();
   }
 

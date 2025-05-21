@@ -1,6 +1,5 @@
 // import 'package:divvy/models/divvy_theme.dart';
 // Commented out for testing
-// ignore_for_file: avoid_print
 
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';

@@ -397,7 +397,6 @@ class _CreateAccountState extends State<CreateAccount> {
         );
         return;
       }
-      print('added user doc');
 
       // Sign in!!
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -414,7 +413,6 @@ class _CreateAccountState extends State<CreateAccount> {
         (route) => false, // Clears the navigation stack
       );
     } catch (e) {
-      print('error');
       if (!context.mounted) return;
       showErrorMessage(context, 'Error', 'Error creating user: $e');
     }
