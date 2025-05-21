@@ -76,9 +76,15 @@ void main() {
     test('Weekly recurrence month edge w/ spring savings', () {
       final startDate = DateTime(2025, 2, 22);
       // Every saturday
-      final dates = getDateList(Frequency.weekly, [6], startDate);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.weekly,
+          daysOfWeek: [6],
+          startDate: startDate,
+        ),
+      );
 
-      expect(dates, [
+      expect(dates.take(13).toList(), [
         DateTime(2025, 2, 22),
         DateTime(2025, 3, 1),
         DateTime(2025, 3, 8),
@@ -97,9 +103,15 @@ void main() {
     test('Weekly recurrence with multiple days of week', () {
       final startDate = DateTime(2025, 2, 22);
       // Every saturday & monday
-      final dates = getDateList(Frequency.weekly, [1, 6], startDate);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.weekly,
+          daysOfWeek: [1, 6],
+          startDate: startDate,
+        ),
+      );
 
-      expect(dates, [
+      expect(dates.take(26).toList(), [
         DateTime(2025, 2, 22),
         DateTime(2025, 2, 24),
         DateTime(2025, 3, 1),
@@ -131,12 +143,18 @@ void main() {
 
     test('Daily recurrence daylight savings fall edge', () {
       final startDate = DateTime(2024, 11, 3);
-      final dates = getDateList(Frequency.daily, [], startDate);
-      expect(dates.length, 91);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.daily,
+          daysOfWeek: [],
+          startDate: startDate,
+        ),
+      );
+      expect(dates.length, 366);
       // Expect "biggest" day to be start + 90 days
       expect(
         dates.reduce((a, b) => a.isAfter(b) ? a : b),
-        startDate.add(const Duration(days: 90)),
+        startDate.add(const Duration(days: 365)),
       );
       // Expect "smallest" day to be start date
       expect(dates.reduce((a, b) => a.isBefore(b) ? a : b), startDate);
@@ -145,20 +163,50 @@ void main() {
     });
     test('Monthly recurring dates', () {
       final startDate = DateTime(2025, 1, 1);
-      final dates = getDateList(Frequency.monthly, [], startDate);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.monthly,
+          daysOfWeek: [],
+          startDate: startDate,
+        ),
+      );
       expect(dates, [
         DateTime(2025, 1, 1),
         DateTime(2025, 2, 1),
         DateTime(2025, 3, 1),
+        DateTime(2025, 4, 1),
+        DateTime(2025, 5, 1),
+        DateTime(2025, 6, 1),
+        DateTime(2025, 7, 1),
+        DateTime(2025, 8, 1),
+        DateTime(2025, 9, 1),
+        DateTime(2025, 10, 1),
+        DateTime(2025, 11, 1),
+        DateTime(2025, 12, 1),
       ]);
     });
     test('Monthly recurring dates, different number of days', () {
       final startDate = DateTime(2025, 4, 10);
-      final dates = getDateList(Frequency.monthly, [], startDate);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.monthly,
+          daysOfWeek: [],
+          startDate: startDate,
+        ),
+      );
       expect(dates, [
         DateTime(2025, 4, 10),
         DateTime(2025, 5, 10),
         DateTime(2025, 6, 10),
+        DateTime(2025, 7, 10),
+        DateTime(2025, 8, 10),
+        DateTime(2025, 9, 10),
+        DateTime(2025, 10, 10),
+        DateTime(2025, 11, 10),
+        DateTime(2025, 12, 10),
+        DateTime(2026, 1, 10),
+        DateTime(2026, 2, 10),
+        DateTime(2026, 3, 10),
       ]);
     });
 

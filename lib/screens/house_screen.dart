@@ -6,29 +6,18 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/house_chores.dart';
+import 'package:divvy/screens/house_settings.dart';
+import 'package:divvy/screens/subgroup_add.dart';
+import 'package:divvy/screens/user_info_screen.dart';
 import 'package:divvy/widgets/leaderboard.dart';
+import 'package:divvy/widgets/subgroup_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class House extends StatefulWidget {
+class House extends StatelessWidget {
   const House({super.key});
-
-  @override
-  State<House> createState() => _HouseState();
-}
-
-class _HouseState extends State<House> {
-  late List<Member> _members;
-  late List<Subgroup> _subgroups;
-
-  @override
-  void initState() {
-    super.initState();
-    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
-    _members = providerRef.members;
-    _subgroups = providerRef.subgroups;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +25,10 @@ class _HouseState extends State<House> {
     final spacing = width * 0.05;
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
-        // refresh data from provider
-        _members = provider.members;
-        _subgroups = provider.subgroups;
+        // List of members in the house
+        final List<Member> members = provider.members;
+        // list of subgroups in the house
+        final List<Subgroup> subgroups = provider.subgroups;
 
         return SizedBox.expand(
           child: SingleChildScrollView(
@@ -49,7 +39,7 @@ class _HouseState extends State<House> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Members list
-                  _displayMembers(spacing),
+                  _displayMembers(context, spacing, members),
                   SizedBox(height: spacing),
                   Leaderboard(title: 'Leaderboard'),
                   SizedBox(height: spacing),
@@ -58,13 +48,15 @@ class _HouseState extends State<House> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _boxButton(
-                        title: 'Add Roommate',
-                        icon: Icon(CupertinoIcons.person_add),
+                        context: context,
+                        title: 'Manage Chores',
+                        icon: Icon(CupertinoIcons.list_bullet),
                         spacing: spacing,
-                        callback: _addRoommate,
+                        callback: _manageChores,
                       ),
                       SizedBox(width: spacing),
                       _boxButton(
+                        context: context,
                         title: 'Settings',
                         icon: Icon(CupertinoIcons.settings),
                         spacing: spacing,
@@ -74,7 +66,7 @@ class _HouseState extends State<House> {
                   ),
                   SizedBox(height: spacing),
                   // Display subgroups
-                  _displaySubgroups(spacing),
+                  _displaySubgroups(context, spacing, subgroups),
                   SizedBox(height: spacing * 3),
                 ],
               ),
@@ -88,7 +80,11 @@ class _HouseState extends State<House> {
   ///////////////////////////// Widgets /////////////////////////////
 
   /// Displays all members as a horizontally scrolling list
-  Widget _displayMembers(double spacing) {
+  Widget _displayMembers(
+    BuildContext context,
+    double spacing,
+    List<Member> members,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -99,7 +95,7 @@ class _HouseState extends State<House> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children:
-                _members.map((member) {
+                members.map((member) {
                   return Padding(
                     padding: EdgeInsets.only(right: spacing),
                     child: InkWell(
@@ -128,6 +124,7 @@ class _HouseState extends State<House> {
 
   /// Button to perform action on tap.
   Widget _boxButton({
+    required BuildContext context,
     required String title,
     required Icon icon,
     required double spacing,
@@ -155,7 +152,11 @@ class _HouseState extends State<House> {
   }
 
   /// Displays list of subgroups and button to allow user to add a subgroup
-  Widget _displaySubgroups(double spacing) {
+  Widget _displaySubgroups(
+    BuildContext context,
+    double spacing,
+    List<Subgroup> subgroups,
+  ) {
     return Column(
       children: [
         // Title and add subgroup button
@@ -174,68 +175,10 @@ class _HouseState extends State<House> {
           ],
         ),
         // List of subgroups
-        ListView.builder(
-          itemCount: _subgroups.length,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (BuildContext context, int index) {
-            bool isLast = false;
-            if (index == _subgroups.length - 1) isLast = true;
-            // Render the member's profile picture and name
-            return _subgroupTile(
-              subgroup: _subgroups[index],
-              spacing: spacing,
-              isLast: isLast,
-            );
-          },
+        ...subgroups.map(
+          (sub) => SubgroupTile(subgroup: sub, spacing: spacing),
         ),
       ],
-    );
-  }
-
-  /// Displays the tile for a subgroup with their
-  /// image and name
-  Widget _subgroupTile({
-    required Subgroup subgroup,
-    required double spacing,
-    required bool isLast,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(right: spacing),
-      child: InkWell(
-        onTap: () => _openSubgroupPage(context, subgroup),
-        child: Column(
-          children: [
-            SizedBox(height: spacing / 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // User profile image
-                Row(
-                  children: [
-                    Container(
-                      decoration: DivvyTheme.profileCircle(
-                        subgroup.profilePicture,
-                      ),
-                      height: 25,
-                      width: 25,
-                    ),
-                    SizedBox(width: spacing / 2),
-                    Text(subgroup.name, style: DivvyTheme.bodyBlack),
-                  ],
-                ),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 15,
-                ),
-              ],
-            ),
-            SizedBox(height: spacing / 2),
-            if (!isLast) Divider(color: DivvyTheme.beige),
-          ],
-        ),
-      ),
     );
   }
 
@@ -243,31 +186,30 @@ class _HouseState extends State<House> {
 
   /// Will trigger the screen to add a subgroup
   void _addSubgroup(BuildContext context) {
-    print('Adding subgroup');
-    return;
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => SubgroupAdd()));
+    //return;
   }
 
   /// Will trigger the screen to add a roommate
-  void _addRoommate(BuildContext context) {
-    print('Adding roommate');
-    return;
+  void _manageChores(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (ctx) => HouseChores()));
   }
 
-  /// Will open the house settings screen
+  /// Opens the house settings screen
   void _openSettings(BuildContext context) {
-    print('Opening settings');
-    return;
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => HouseSettings()));
   }
 
   /// Will open the passed member's page
   void _openMemberPage(BuildContext context, Member member) {
-    print('Opening ${member.name}\'s page');
-    return;
-  }
-
-  /// Will open the subgroups screen
-  void _openSubgroupPage(BuildContext context, Subgroup subgroup) {
-    print('Opening ${subgroup.name}\'s page');
-    return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id)),
+    );
   }
 }

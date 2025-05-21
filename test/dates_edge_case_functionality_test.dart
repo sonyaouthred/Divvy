@@ -6,16 +6,28 @@ void main() {
   group('getDateList - Daily', () {
     test('Daily recurrence from March 1, 2025', () {
       final start = DateTime(2025, 3, 1);
-      final dates = getDateList(Frequency.daily, [], start);
-      expect(dates.length, 91);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.daily,
+          daysOfWeek: [],
+          startDate: start,
+        ),
+      );
+      expect(dates.length, 366);
       expect(dates.first, start);
-      expect(dates.last, start.add(const Duration(days: 90)));
+      expect(dates.last, start.add(const Duration(days: 365)));
     });
 
     test('Daily recurrence handles DST spring forward', () {
       final start = DateTime(2025, 3, 9); // Day before US DST change
-      final dates = getDateList(Frequency.daily, [], start);
-      expect(dates.length, 91);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.daily,
+          daysOfWeek: [],
+          startDate: start,
+        ),
+      );
+      expect(dates.length, 366);
     });
   });
 
@@ -23,14 +35,29 @@ void main() {
     test('Weekly recurrence on Tue and Sat from April 1, 2025', () {
       final start = DateTime(2025, 4, 1); // Tuesday
       final days = [2, 6];
-      final dates = getDateList(Frequency.weekly, days, start);
-      expect(dates.any((d) => d.weekday == 3), false); // Should not include Wednesday
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.weekly,
+          daysOfWeek: days,
+          startDate: start,
+        ),
+      );
+      expect(
+        dates.any((d) => d.weekday == 3),
+        false,
+      ); // Should not include Wednesday
       expect(dates.every((d) => days.contains(d.weekday)), true);
     });
 
     test('Weekly recurrence skips invalid weekdays', () {
       final start = DateTime(2025, 4, 1);
-      final dates = getDateList(Frequency.weekly, [], start);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.weekly,
+          daysOfWeek: [],
+          startDate: start,
+        ),
+      );
       expect(dates.length, 0); // No days specified
     });
   });
@@ -38,15 +65,28 @@ void main() {
   group('getDateList - Monthly', () {
     test('Monthly recurrence starting on last day of Feb in leap year', () {
       final start = DateTime(2024, 2, 29);
-      final dates = getDateList(Frequency.monthly, [], start);
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.monthly,
+          daysOfWeek: [],
+          startDate: start,
+        ),
+      );
       expect(dates.first, start);
+      print(dates);
       expect(dates[1], DateTime(2024, 3, 31)); // Should handle "last day" logic
     });
 
     test('Monthly recurrence starts mid-month', () {
       final start = DateTime(2025, 6, 15);
-      final dates = getDateList(Frequency.monthly, [], start);
-      expect(dates, [
+      final dates = getDateList(
+        ChoreFrequency(
+          pattern: Frequency.monthly,
+          daysOfWeek: [],
+          startDate: start,
+        ),
+      );
+      expect(dates.take(3).toList(), [
         DateTime(2025, 6, 15),
         DateTime(2025, 7, 15),
         DateTime(2025, 8, 15),

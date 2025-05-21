@@ -16,8 +16,10 @@ class DivvyTheme {
   static const Color darkGrey = Color(0xFF444444);
   static const Color darkBeige = Color(0xFFC1BDB4);
   static const Color brightRed = Color(0xFFFF0000);
+  static const Color lightRed = Color(0xFFEA8484);
   static const Color darkRed = Color(0xFFA70000);
   static const Color shadow = Color(0xFFEAEBED);
+  static const Color altBeige = Color.fromARGB(255, 225, 223, 216);
 
   // Text Themes
 
@@ -35,11 +37,41 @@ class DivvyTheme {
       color: darkGreen,
     ),
   );
+
+  static TextStyle largeHeaderRed = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 20,
+      color: darkRed,
+    ),
+  );
+
   static TextStyle largeHeaderBlack = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 20,
       color: black,
+    ),
+  );
+  static TextStyle largeBodyBlack = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 17,
+      color: black,
+    ),
+  );
+  static TextStyle largeHeaderGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 20,
+      color: darkGrey,
+    ),
+  );
+  static TextStyle bodyBoldGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 15,
+      color: darkGrey,
     ),
   );
   static TextStyle bodyBoldBlack = GoogleFonts.inter(
@@ -49,11 +81,25 @@ class DivvyTheme {
       color: black,
     ),
   );
+  static TextStyle bodyBoldRed = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 15,
+      color: darkRed,
+    ),
+  );
   static TextStyle bodyBlack = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.normal,
       fontSize: 15,
       color: black,
+    ),
+  );
+  static TextStyle bodyGreen = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 15,
+      color: darkGreen,
     ),
   );
   static TextStyle smallBodyBlack = GoogleFonts.inter(
@@ -94,9 +140,9 @@ class DivvyTheme {
   );
   static TextStyle smallBodyRed = GoogleFonts.inter(
     textStyle: const TextStyle(
-      fontWeight: FontWeight.normal,
-      fontSize: 13,
-      color: brightRed,
+      fontWeight: FontWeight.w700,
+      fontSize: 12,
+      color: darkRed,
     ),
   );
   static TextStyle largeBoldMedGreen = GoogleFonts.inter(
@@ -132,6 +178,39 @@ class DivvyTheme {
 
   static BoxDecoration standardBox = BoxDecoration(
     color: DivvyTheme.white,
+    borderRadius: BorderRadius.circular(10),
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 3, spreadRadius: 0),
+    ],
+  );
+
+  static BoxDecoration greenBox = BoxDecoration(
+    color: DivvyTheme.darkGreen,
+    borderRadius: BorderRadius.circular(15),
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
+    ],
+  );
+
+  static BoxDecoration medGreenBox = BoxDecoration(
+    color: DivvyTheme.mediumGreen,
+    borderRadius: BorderRadius.circular(15),
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
+    ],
+  );
+
+  static BoxDecoration completeBox(bool isDone) => BoxDecoration(
+    color: isDone ? DivvyTheme.mediumGreen : DivvyTheme.background,
+    borderRadius: BorderRadius.circular(30),
+    boxShadow: [
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
+    ],
+  );
+
+  static BoxDecoration box(Color color) => BoxDecoration(
+    color: DivvyTheme.white,
+    border: BoxBorder.all(color: color, width: 2),
     borderRadius: BorderRadius.circular(10),
     boxShadow: [
       BoxShadow(color: DivvyTheme.shadow, blurRadius: 3, spreadRadius: 0),

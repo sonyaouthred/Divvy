@@ -1,131 +1,106 @@
+import 'dart:convert';
+
+import 'package:divvy/divvy_navigation.dart';
+import 'package:divvy/firebase_options.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/user.dart';
 import 'package:divvy/providers/divvy_provider.dart';
-import 'package:divvy/screens/calendar.dart';
-import 'package:divvy/screens/chores.dart';
-import 'package:divvy/screens/dashboard.dart';
-import 'package:divvy/screens/house_screen.dart';
-import 'package:divvy/screens/settings.dart';
+import 'package:divvy/screens/join_house.dart';
+import 'package:divvy/screens/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the firebase app
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const AuthWrapper());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+/// Ensures that login is shown when the user is not signed in.
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      // Listen for auth state changes
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasData) {
+          final user = FirebaseAuth.instance.currentUser!;
+          return FutureBuilder<DivvyUser?>(
+            future: getUser(user.uid),
+            builder: (context, asyncSnapshot) {
+              if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                  color: DivvyTheme.background,
+                  child: Center(
+                    child: CupertinoActivityIndicator(color: Colors.black),
+                  ),
+                );
+              }
+              if (asyncSnapshot.hasError) {
+                return Center(child: Text('Error checking user house.'));
+              }
+              final DivvyUser? divvyUser = asyncSnapshot.data;
+              if (divvyUser == null) {
+                // log user out
+                // this really should never be triggered
+                FirebaseAuth.instance.signOut();
+                return MaterialApp(home: Login());
+              }
+              final isInHouse = divvyUser.houseID != '';
+              if (isInHouse) {
+                // Return regular house app
+                return HouseApp(user: divvyUser);
+              } else {
+                // Return join house screen if user is not in house
+                return MaterialApp(home: JoinHouse(currUser: divvyUser));
+              }
+            },
+          );
+        } else {
+          // User is not signed in, show Login screen
+          return MaterialApp(home: Login());
+        }
+      },
+    );
+  }
+
+  /// Returns user's db object or null if not a current user
+  Future<DivvyUser?> getUser(String uid) async {
+    try {
+      final uri = 'http://127.0.0.1:5000/get-user-$uid';
+      final headers = {'Content-Type': 'application/json'};
+      final response = await get(Uri.parse(uri), headers: headers);
+      final jsonData = json.decode(response.body);
+      final userData = DivvyUser.fromJson(jsonData);
+      return userData;
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
+/// Wraps the navigation app in a provider.
+class HouseApp extends StatelessWidget {
+  final DivvyUser user;
+  const HouseApp({super.key, required this.user});
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      // dummy current user is Tony Stark
-      create: (context) => DivvyProvider(currentUserID: '24889rhgksje'),
-      child: MaterialApp(
-        home: Theme(
-          data: ThemeData(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-          ),
-          child: BottomNavigationBarExample(),
-        ),
-      ),
-    );
-  }
-}
-
-class BottomNavigationBarExample extends StatefulWidget {
-  const BottomNavigationBarExample({super.key});
-
-  @override
-  State<BottomNavigationBarExample> createState() =>
-      _BottomNavigationBarExampleState();
-}
-
-class _BottomNavigationBarExampleState
-    extends State<BottomNavigationBarExample> {
-  int _selectedIndex = 2;
-  // static const TextStyle optionStyle = TextStyle(
-  //   fontSize: 30,
-  //   fontWeight: FontWeight.bold,
-  // );
-  // Commenting out for testing
-  static const List<Widget> _widgetOptions = <Widget>[
-    Calendar(),
-    Chores(),
-    Dashboard(),
-    House(),
-    Settings(),
-  ];
-  late final List<Widget> _titles;
-  late final String _houseName;
-
-  @override
-  void initState() {
-    super.initState();
-    _houseName = Provider.of<DivvyProvider>(context, listen: false).houseName;
-    _titles = <Widget>[
-      Text('Calendar', style: DivvyTheme.screenTitle),
-      Text('Chores', style: DivvyTheme.screenTitle),
-      Text('Divvy', style: DivvyTheme.screenTitle),
-      Text(_houseName, style: DivvyTheme.screenTitle),
-      Text('Settings', style: DivvyTheme.screenTitle),
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _titles[_selectedIndex],
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        backgroundColor: DivvyTheme.background,
-        actions: [
-          Container(
-            height: 50,
-            width: 50,
-            padding: EdgeInsets.only(right: 20),
-            child: Icon(Icons.notifications),
-          ),
-        ],
-      ),
-      body: Container(
-        color: DivvyTheme.background,
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: DivvyTheme.background,
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Calendar',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Chores'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_rounded),
-            label: 'House',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: DivvyTheme.mediumGreen,
-        unselectedItemColor: DivvyTheme.lightGrey,
-        onTap: _onItemTapped,
-      ),
+      create: (_) => DivvyProvider(user),
+      child: MaterialApp(home: DivvyNavigation()),
     );
   }
 }

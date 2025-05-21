@@ -3,6 +3,7 @@
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/user_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,27 +36,55 @@ class _LeaderboardState extends State<Leaderboard> {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         _sortedLeaderboard = provider.getLeaderboardSorted(3);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: DivvyTheme.bodyBoldBlack),
-            SizedBox(height: spacing * 0.75),
-            Container(
-              padding: EdgeInsets.all(spacing * 0.75),
-              decoration: DivvyTheme.standardBox,
-              child: Column(
-                // this can be optimized haha
-                children: [
-                  _leaderboardEntry(1, _sortedLeaderboard[0], spacing),
-                  SizedBox(height: spacing),
-                  _leaderboardEntry(2, _sortedLeaderboard[1], spacing),
-                  SizedBox(height: spacing),
-                  _leaderboardEntry(3, _sortedLeaderboard[2], spacing),
-                ],
+        if (_sortedLeaderboard.length == 3) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: DivvyTheme.bodyBoldBlack),
+              SizedBox(height: spacing * 0.75),
+              Container(
+                padding: EdgeInsets.all(spacing * 0.75),
+                decoration: DivvyTheme.standardBox,
+                child: Column(
+                  // this can be optimized haha
+                  children: [
+                    _leaderboardEntry(1, _sortedLeaderboard[0], spacing),
+                    SizedBox(height: spacing),
+                    _leaderboardEntry(2, _sortedLeaderboard[1], spacing),
+                    SizedBox(height: spacing),
+                    _leaderboardEntry(3, _sortedLeaderboard[2], spacing),
+                  ],
+                ),
               ),
-            ),
-          ],
-        );
+            ],
+          );
+        } else {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: DivvyTheme.bodyBoldBlack),
+              SizedBox(height: spacing * 0.75),
+              Container(
+                padding: EdgeInsets.all(spacing * 0.75),
+                decoration: DivvyTheme.standardBox,
+                child: Column(
+                  // this can be optimized haha
+                  children:
+                      _sortedLeaderboard
+                          .map(
+                            (entry) => Column(
+                              children: [
+                                _leaderboardEntry(1, entry, spacing),
+                                SizedBox(height: spacing),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                ),
+              ),
+            ],
+          );
+        }
       },
     );
   }
@@ -86,7 +115,8 @@ class _LeaderboardState extends State<Leaderboard> {
 
   /// Will open the passed member's page
   void _openMemberPage(BuildContext context, Member member) {
-    print('Opening ${member.name}\'s page');
-    return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id)),
+    );
   }
 }

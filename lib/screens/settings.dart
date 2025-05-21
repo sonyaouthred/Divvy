@@ -1,9 +1,16 @@
-import 'package:divvy/screens/chores.dart';
+import 'package:divvy/models/member.dart';
+import 'package:divvy/screens/join_house.dart';
+import 'package:divvy/screens/login.dart';
+import 'package:divvy/util/dialogs.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:divvy/providers/divvy_provider.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 /// Displays a settings screen where the user can modify account
 /// settings and leave house/other functions.
@@ -15,74 +22,91 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  // To be replace with process to get actual data
-  late String name;
+  // Current user's data
+  late Member _currUser;
+
+  // Current user's profile image
   File? imageFile;
+  // Used to allow user to pull their profile image
   final picker = ImagePicker();
 
   bool themeSwitch = true;
 
+  /// show loading indicator when user is logging out
+  bool _isLoggingOut = false;
+
   @override
   void initState() {
     super.initState();
-    // Initialize name
-    name = 'Temp';
+    final providerRef = Provider.of<DivvyProvider>(context, listen: false);
+    _currUser = providerRef.currMember;
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
+    if (FirebaseAuth.instance.currentUser == null) {
+      // Ensure no null fields are referenced
+      return Container();
+    }
     return SizedBox.expand(
       child: Container(
         padding: EdgeInsets.all(spacing),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Display user's profile image
-              _imageSelectionButton(width),
-              SizedBox(height: spacing),
-              // Greet user
-              _introPhrase(name: name),
-              // Display various settings
-              // Account settings
-              _infoSections(
-                icon: Icon(CupertinoIcons.person_crop_circle),
-                text: 'Account Info',
-                buttons: [
-                  ['Change Name', _openChoresScreen],
-                  ['Reset Password', _openChoresScreen],
-                  ['Delete Account', _openChoresScreen],
+          child: Consumer<DivvyProvider>(
+            builder: (context, provider, child) {
+              // Live update data from consumer
+              _currUser = provider.currMember;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Display user's profile image
+                  _imageSelectionButton(width),
+                  SizedBox(height: spacing),
+                  // Greet user
+                  _introPhrase(name: _currUser.name),
+                  SizedBox(height: spacing),
+                  // Display various settings
+                  // Account settings
+                  _infoSections(
+                    icon: Icon(CupertinoIcons.person_crop_circle),
+                    text: 'Account Info',
+                    buttons: [
+                      ['Change Name', _changeName],
+                      ['Delete Account', _deleteAccount],
+                    ],
+                    flex: 2,
+                    spacing: spacing,
+                  ),
+                  SizedBox(height: spacing / 2),
+                  // Social/house settings
+                  _infoSections(
+                    icon: Icon(Icons.house_outlined),
+                    text: 'House',
+                    buttons: [
+                      ['Leave House', _leaveHouse],
+                    ],
+                    flex: 2,
+                    spacing: spacing,
+                  ),
+                  SizedBox(height: spacing / 2),
+                  // App settings
+                  _infoSections(
+                    icon: Icon(Icons.settings_outlined),
+                    text: 'Settings',
+                    buttons: [
+                      ['Appearance', null],
+                    ],
+                    flex: 1,
+                    spacing: spacing,
+                  ),
+                  // Logout button
+                  _logoutButton(),
+                  SizedBox(height: spacing),
                 ],
-                flex: 2,
-                spacing: spacing,
-              ),
-              // Social/house settings
-              _infoSections(
-                icon: Icon(Icons.house_outlined),
-                text: 'House Info',
-                buttons: [
-                  ['Leave House', _openChoresScreen],
-                  ['Leave Subgroup', _openChoresScreen],
-                ],
-                flex: 2,
-                spacing: spacing,
-              ),
-              // App settings
-              _infoSections(
-                icon: Icon(Icons.settings_outlined),
-                text: 'Settings',
-                buttons: [
-                  ['Appearance', null],
-                ],
-                flex: 1,
-                spacing: spacing,
-              ),
-              // Logout button
-              _logoutButton(),
-              SizedBox(height: spacing),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -129,6 +153,7 @@ class _SettingsState extends State<Settings> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         image: DecorationImage(
+          // TODO: connect to provider once provider has actual images
           image:
               imageFile == null
                   ? Image.asset('assets/defaultImage.jpg').image
@@ -139,6 +164,7 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  // Todo: adapt into provider info and backend once an image
   /// Gets an image from the user's photo gallery
   Future getImage(ImageSource img) async {
     // pick image from gallary
@@ -160,7 +186,14 @@ class _SettingsState extends State<Settings> {
 
   /// Displays greeting to user
   Widget _introPhrase({required String name}) {
-    return Text('Hi, $name!', style: DivvyTheme.bodyBlack);
+    final email = FirebaseAuth.instance.currentUser!.email!;
+    return Column(
+      children: [
+        Text('Hi, $name!', style: DivvyTheme.largeHeaderBlack),
+        // show current user's email
+        Text(email, style: DivvyTheme.bodyGrey),
+      ],
+    );
   }
 
   /// Displays account information sections
@@ -207,7 +240,7 @@ class _SettingsState extends State<Settings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(entry[0], style: DivvyTheme.bodyGrey),
+                      Text(entry[0], style: DivvyTheme.bodyBlack),
                       if (!appearanceSwitch)
                         Icon(
                           CupertinoIcons.chevron_right,
@@ -239,13 +272,16 @@ class _SettingsState extends State<Settings> {
   /// Renders a logout button
   Widget _logoutButton() {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () => _logout(context),
       style: ElevatedButton.styleFrom(
         backgroundColor: DivvyTheme.darkRed,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-        maximumSize: Size(100, 40),
+        minimumSize: Size(100, 40),
       ),
-      child: Text('Log Out', style: DivvyTheme.smallBodyWhite),
+      child:
+          _isLoggingOut
+              ? CupertinoActivityIndicator(color: DivvyTheme.background)
+              : Text('Log Out', style: DivvyTheme.smallBoldMedWhite),
     );
   }
 
@@ -282,12 +318,99 @@ class _SettingsState extends State<Settings> {
     );
   }
 
-  ///////////////////////////// Navigation /////////////////////////////
+  ///////////////////////////// Util /////////////////////////////
 
-  /// Opens the chores screen
-  void _openChoresScreen(BuildContext context) {
-    Navigator.of(
+  /// Change the house's name
+  void _changeName(BuildContext context) async {
+    // get new name
+    final newName = await openInputDialog(
       context,
-    ).push(MaterialPageRoute(builder: (context) => Chores()));
+      title: 'Change Name',
+      initText: _currUser.name,
+    );
+    // Process name
+    if (newName != null) {
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).updateUserName(newName);
+    }
+  }
+
+  /// Re-authenticate and delete account for email and password users.
+  /// Must supply password parameter if user is an email user. Otherwise, can be null.
+  void _deleteAccount(BuildContext context) async {
+    final password = await openInputDialog(
+      context,
+      title: 'Re-enter password',
+      hideText: true,
+    );
+    final user = FirebaseAuth.instance.currentUser;
+    // Ensure user is not logged out (makes compiler happy)
+    if (user == null) return;
+    // Get user's username & password
+    try {
+      if (user.email != null) {
+        // Now check what provider the user is signed in with.
+        if (password != null) {
+          // Reauthenticate user with email and password
+          final credential = EmailAuthProvider.credential(
+            email: user.email!,
+            password: password,
+          );
+          await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
+            credential,
+          );
+          print('account OK to be deleted');
+        }
+        // Non-email/pwd clients are already reauthenticated
+        // TODO: need to remove user from rotations/subgroups in provider!
+        if (!context.mounted) return;
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      showErrorMessage(context, 'Invalid password', 'Please try again!');
+    }
+  }
+
+  /// Allow user to leave a house
+  void _leaveHouse(BuildContext context) async {
+    // Confirm user wants to leave the house
+    final leave = await confirmDeleteDialog(
+      context,
+      'Leave house?',
+      action: 'Leave',
+    );
+    if (leave != null && leave) {
+      if (!context.mounted) return;
+      final provider = Provider.of<DivvyProvider>(context, listen: false);
+      provider.leaveHouse(_currUser.id);
+      // Push join hosue screen
+      Navigator.of(context).pushReplacement(
+        PageTransition(
+          type: PageTransitionType.fade,
+          childBuilder: (context) => JoinHouse(currUser: provider.currUser),
+          duration: Duration(milliseconds: 100),
+        ),
+      );
+    }
+  }
+
+  // log the user out
+  void _logout(BuildContext context) async {
+    setState(() {
+      _isLoggingOut = true;
+    });
+    FirebaseAuth.instance.signOut();
+    // push login screen
+
+    Navigator.of(context).pushReplacement(
+      PageTransition(
+        type: PageTransitionType.fade,
+        child: Login(),
+        duration: Duration(milliseconds: 100),
+      ),
+    );
   }
 }

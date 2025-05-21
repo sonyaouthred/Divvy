@@ -1,4 +1,5 @@
 import 'package:divvy/models/chore.dart';
+import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 
 /// Formats a DateTime object into a string representation.
@@ -17,41 +18,55 @@ String formatDayMonth(DateTime date) {
   return '${date.month}/${date.day}';
 }
 
+/// Formats a date nicely
+String getFormattedDate(DateTime dueDate) {
+  return DateFormat.yMMMMd('en_US').format(dueDate);
+}
+
 /// Generates dates for recurring expenses based on frequency.
 /// Parameters:
 ///  - frequency: How often the expense should recur (Daily, Weekly, Monthly)
 /// Returns: List of DateTime objects representing all occurrence dates. Only generates
-/// for a 90-day period
+/// for a 365-day period
 /// Expected behavior:
 ///   - monthly: repeat once monthly on the same date for 3 months
 ///   - daily: repeat every day for 90 days + start date
 ///   - weekly: repeat weekly on the [daysOfWeek] weekdays for a 90 day period
-List<DateTime> getDateList(
-  Frequency frequency,
-  List<int> daysOfWeek,
-  DateTime startDate,
-) {
+List<DateTime> getDateList(ChoreFrequency frequency) {
   final List<DateTime> dates = [];
-  DateTime endDate = startDate.add(const Duration(days: 90));
-  switch (frequency) {
+  final startDate = frequency.startDate;
+  // check for invalid input
+  if (frequency.pattern == Frequency.weekly &&
+      (frequency.daysOfWeek.isEmpty ||
+          frequency.daysOfWeek.where((d) => d > 7 || d < 0).isNotEmpty)) {
+    return [];
+  }
+  DateTime endDate = startDate.add(const Duration(days: 365));
+  switch (frequency.pattern) {
     case Frequency.monthly:
       // End date should be adjusted to only be three months after.
-      endDate = Jiffy.parseFromDateTime(startDate).add(months: 3).dateTime;
+      endDate = Jiffy.parseFromDateTime(startDate).add(years: 1).dateTime;
       // For a montly chore, ignore days of week
       // Check if the user has requested the last day of a given month
       bool wantLastDay = isLastDay(startDate);
       DateTime curr = startDate;
-      // Add a month to the current date
-      curr = Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
-      curr = adjustDaylightSavings(curr);
-
       dates.add(startDate);
+      // Add a month to the current date
+      DateTime nextMonth =
+          Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
+      int day = nextMonth.day;
+      curr = adjustDaylightSavings(curr);
+      if (wantLastDay) {
+        // gets the last day of the current month if the user wants the last
+        // date of the month
+        day = DateTime(nextMonth.year, nextMonth.month + 1, 0).day;
+      }
+      curr = DateTime(nextMonth.year, nextMonth.month, day);
 
       while (curr.isBefore(endDate)) {
         dates.add(curr);
-        DateTime nextMonth =
-            Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
-        int day = nextMonth.day;
+        nextMonth = Jiffy.parseFromDateTime(curr).add(months: 1).dateTime;
+        day = nextMonth.day;
         if (wantLastDay) {
           // gets the last day of the current month if the user wants the last
           // date of the month
@@ -65,13 +80,15 @@ List<DateTime> getDateList(
     case Frequency.weekly:
       DateTime curr = startDate;
       final currDayOfWeek = curr.weekday;
-      final smallestWeekday = daysOfWeek.reduce((a, b) => a < b ? a : b);
+      final smallestWeekday = frequency.daysOfWeek.reduce(
+        (a, b) => a < b ? a : b,
+      );
       // Verify that start date is the smallest day of the week
       if (currDayOfWeek != smallestWeekday) {
         final diff = currDayOfWeek - smallestWeekday;
         curr = curr.subtract(Duration(days: diff));
       }
-      dates.addAll(getDatesFromWeek(curr, daysOfWeek, endDate));
+      dates.addAll(getDatesFromWeek(curr, frequency.daysOfWeek, endDate));
       // advance week
       curr = curr.add(const Duration(days: 7));
       // Adjust for daylight savings (if applicable)
@@ -79,7 +96,7 @@ List<DateTime> getDateList(
       // Now iterate until we get to the end date!
       while (curr.isBefore(endDate)) {
         // Add the new date to the list
-        dates.addAll(getDatesFromWeek(curr, daysOfWeek, endDate));
+        dates.addAll(getDatesFromWeek(curr, frequency.daysOfWeek, endDate));
         // Add seven days (one week) until the start date is after the end date
         DateTime newDate = curr.add(const Duration(days: 7));
 
@@ -224,5 +241,98 @@ String getNameOfWeekday(int weekday) => switch (weekday) {
   5 => 'Friday',
   6 => 'Saturday',
   7 => 'Sunday',
+  int() => '?',
+};
+
+/// Returns string name of month
+String getNameOfMonth(int month) => switch (month) {
+  1 => 'January',
+  2 => 'February',
+  3 => 'March',
+  4 => 'April',
+  5 => 'May',
+  6 => 'June',
+  7 => 'July',
+  8 => 'August',
+  9 => 'September',
+  10 => 'October',
+  11 => 'November',
+  12 => 'December',
+  int() => '?',
+};
+
+/// Given an initial date, returns a list of dates starting one month before
+/// and ending one month after. Will start with a sunday and end with a saturday.
+/// Actually a list of lists, each encompassing one week
+List<List<DateTime>> getSurroundingDates(DateTime day) {
+  final List<List<DateTime>> dates = [];
+  // get start date
+  DateTime start = day.subtract(const Duration(days: 30));
+  if (start.weekday != DateTime.sunday) {
+    start = start.subtract(Duration(days: start.weekday % 7));
+  }
+
+  // get end date
+  DateTime end = day.add(const Duration(days: 30));
+  if (end.weekday != DateTime.saturday) {
+    final daysToSaturday = (6 - end.weekday + 7) % 7;
+    end = end.add(Duration(days: daysToSaturday));
+  }
+
+  // Now populate list!
+  DateTime curr = start;
+  while (!curr.isAfter(end)) {
+    final week = List.generate(7, (_) {
+      final day = curr;
+      curr = curr.add(const Duration(days: 1));
+      return day;
+    });
+    dates.add(week);
+  }
+  return dates;
+}
+
+/// Returns a string representing the frequency
+String getFrequencySentence(Chore chore) {
+  String dates = '';
+  if (chore.frequency.pattern == Frequency.weekly) {
+    for (int day in chore.frequency.daysOfWeek) {
+      dates += '${getNameOfWeekday(day)}, ';
+    }
+    // slice trailing comma
+    dates = dates.substring(0, dates.length - 2);
+  }
+  switch (chore.frequency.pattern) {
+    case Frequency.daily:
+      return "Once every day";
+    case Frequency.monthly:
+      return "Once every month";
+    case Frequency.weekly:
+      return "${getRepetition(chore.frequency.daysOfWeek.length)} on $dates";
+  }
+}
+
+// A string representing how many times this chore is repeated
+// a week
+String getRepetition(int numDays) => switch (numDays) {
+  1 => 'Once every week',
+  2 => 'Twice a week',
+  3 => 'Three times a week',
+  4 => 'Four times a week',
+  5 => 'Five times a week',
+  6 => 'Six times a week',
+  7 => 'Seven times a week',
+  int() => 'Error',
+};
+
+/// Returns a one-letter string for the current weekday
+String getLetterForWeekday(int weekday) => switch (weekday) {
+  1 => 'M',
+  2 => 'T',
+  3 => 'W',
+  4 => 'Th',
+  5 => 'F',
+  6 => 'S',
+  7 => 'S',
   int() => '?',
 };

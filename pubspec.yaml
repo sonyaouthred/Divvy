@@ -7,16 +7,23 @@ environment:
   sdk: ^3.8.0-265.0.dev
 
 dependencies:
+  uuid: ^4.2.2
   cloud_firestore: ^5.6.7
   cupertino_icons: ^1.0.8
+  firebase_auth: ^5.5.3
   firebase_core: ^3.13.0
   flutter:
     sdk: flutter
   google_fonts: ^6.2.1
+  http: ^1.4.0
   image_picker: ^1.1.2
   intl: ^0.20.2
   jiffy: ^6.4.3
+  nanoid: ^1.0.0
+  page_transition: ^2.2.1
   provider: ^6.1.5
+  unicode_emojis: ^0.4.0
+  all_emojis: ^0.1.0
 
 dev_dependencies:
   flutter_test:
