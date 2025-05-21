@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:divvy/models/member.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -131,6 +132,7 @@ class ChoreInst {
   bool _isDone;
   // user chore is assigned to
   MemberID assignee;
+  SwapID swapID;
 
   ChoreInst({
     required ChoreID choreID,
@@ -138,6 +140,7 @@ class ChoreInst {
     required DateTime dueDate,
     required bool isDone,
     required this.assignee,
+    required this.swapID,
   }) : _id = id,
        _dueDate = dueDate,
        _isDone = isDone,
@@ -156,6 +159,7 @@ class ChoreInst {
       dueDate: due,
       isDone: false,
       assignee: assignee,
+      swapID: '',
     );
   }
 
@@ -168,6 +172,7 @@ class ChoreInst {
       dueDate: HttpDate.parse(json['dueDate']),
       isDone: json['isDone'],
       assignee: json['assignee'],
+      swapID: json['swapID'],
     );
   }
 
@@ -179,6 +184,7 @@ class ChoreInst {
       'dueDate': HttpDate.format(_dueDate),
       'isDone': _isDone,
       'assignee': assignee,
+      'swapID': swapID,
     };
   }
 
