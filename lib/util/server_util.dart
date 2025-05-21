@@ -5,7 +5,7 @@ import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/models/user.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
 
 ///////////////////////// Generic Server functions //////////////////////////
