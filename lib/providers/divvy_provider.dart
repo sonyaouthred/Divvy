@@ -597,7 +597,6 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-<<<<<<< HEAD
   /// Adds a swap to the database
   Future<void> addSwap(Swap swap, ChoreInst chore) async {
     await db.upsertSwap(swap, houseID);
@@ -633,12 +632,12 @@ class DivvyProvider extends ChangeNotifier {
     // Update the chore instance with the swap id
     swap.status = Status.approved;
     await db.upsertSwap(swap, houseID);
-=======
+  }
+
   Future<void> deleteChoreInst(ChoreID choreID, ChoreInstID id) async {
     if (_choreInstances[choreID] == null) return;
     _choreInstances[choreID]!.removeWhere((c) => c.id == id);
     await db.deleteChoreInst(houseID: houseID, choreInstID: id);
->>>>>>> 7f1004fd9aa35b275c4a66c1a55b427b89625513
     notifyListeners();
   }
 }
