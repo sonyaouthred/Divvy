@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
@@ -12,14 +11,6 @@ Widget availableOutgoingSwaps(DivvyProvider provider) {
   List<Swap> swaps =
       provider.swaps.where((swap) {
         return swap.from == provider.currMember.id;
-      }).toList();
-  List<Chore> chores =
-      swaps.map((swap) {
-        return provider.getSuperChore(swap.choreID)!;
-      }).toList();
-  List<ChoreInst> choreInstances =
-      swaps.map((swap) {
-        return provider.getChoreInstanceFromID(swap.choreID, swap.choreInstID);
       }).toList();
 
   List<Member> members =
@@ -43,11 +34,7 @@ Widget availableOutgoingSwaps(DivvyProvider provider) {
                 title: Text("To ${members[idx].name}"),
                 minTileHeight: 20,
               ),
-              SwapTile(
-                swap: swaps[idx],
-                chore: chores[idx],
-                choreInst: choreInstances[idx],
-              ),
+              SwapTile(swap: swaps[idx]),
             ],
           );
         },
@@ -61,15 +48,6 @@ Widget availableIncomingSwaps(DivvyProvider provider, bool truncatedView) {
       provider.swaps.where((swap) {
         return swap.to == provider.currMember.id;
       }).toList();
-  List<Chore> chores =
-      swaps.map((swap) {
-        return provider.getSuperChore(swap.choreID)!;
-      }).toList();
-  List<ChoreInst> choreInstances =
-      swaps.map((swap) {
-        return provider.getChoreInstanceFromID(swap.choreID, swap.choreInstID);
-      }).toList();
-
   List<Member> members =
       swaps.map((swap) {
         return provider.getMemberById(swap.from)!;
@@ -91,11 +69,7 @@ Widget availableIncomingSwaps(DivvyProvider provider, bool truncatedView) {
                 title: Text("${members[idx].name} Offered:"),
                 minTileHeight: 20,
               ),
-              SwapTile(
-                swap: swaps[idx],
-                chore: chores[idx],
-                choreInst: choreInstances[idx],
-              ),
+              SwapTile(swap: swaps[idx]),
             ],
           );
         },

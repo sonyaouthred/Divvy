@@ -20,14 +20,7 @@ class ChoreTile extends StatelessWidget {
   final ChoreInst? choreInst;
   Chore? superChore;
   final bool compact;
-  final bool showFullDate;
-  ChoreTile({
-    super.key,
-    this.choreInst,
-    this.superChore,
-    this.compact = false,
-    this.showFullDate = false,
-  });
+  ChoreTile({super.key, this.choreInst, this.superChore, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -74,33 +67,36 @@ class ChoreTile extends StatelessWidget {
               style: DivvyTheme.smallBodyGrey,
             ),
           SizedBox(height: spacing / 4),
-          Row(
-            children: [
-              // name, emoji of chore
-              Flexible(
-                flex: 7,
-                child: Row(
-                  children: [
-                    Text(superChore.emoji, style: TextStyle(fontSize: 20)),
-                    SizedBox(width: spacing / 2),
-                    Text(
-                      superChore.name,
-                      style: DivvyTheme.bodyBlack,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+          Padding(
+            padding: EdgeInsets.only(left: spacing / 4),
+            child: Row(
+              children: [
+                // name, emoji of chore
+                Flexible(
+                  flex: 7,
+                  child: Row(
+                    children: [
+                      Text(superChore.emoji, style: TextStyle(fontSize: 20)),
+                      SizedBox(width: spacing / 2),
+                      Text(
+                        superChore.name,
+                        style: DivvyTheme.bodyBlack,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              // Display chevron icon
-              Flexible(
-                flex: 1,
-                child: Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 20,
+                // Display chevron icon
+                Flexible(
+                  flex: 1,
+                  child: Icon(
+                    CupertinoIcons.chevron_right,
+                    color: DivvyTheme.lightGrey,
+                    size: 20,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -112,7 +108,7 @@ class ChoreTile extends StatelessWidget {
     // Super chore instances are never overdue
     bool isOverdue =
         (choreInst != null)
-            ? (choreInst!.dueDate.isBefore(DateTime.now()) &&
+            ? (dayIsAfter(DateTime.now(), choreInst!.dueDate) &&
                 !choreInst!.isDone)
             : false;
     return Column(
@@ -144,11 +140,8 @@ class ChoreTile extends StatelessWidget {
                                 ? 'Complete!'
                                 : isOverdue
                                 ? 'Was due ${getNameOfWeekday(choreInst!.dueDate.weekday)}, '
-                                    '${getFormattedDate(choreInst!.dueDate)} at '
-                                    '${getFormattedTime(choreInst!.dueDate)}'
-                                : showFullDate
-                                ? 'Due on ${getFormattedDate(choreInst!.dueDate)} at ${getFormattedTime(choreInst!.dueDate)}'
-                                : 'Due at ${getFormattedTime(choreInst!.dueDate)}',
+                                    '${getFormattedDate(choreInst!.dueDate)}'
+                                : 'Due on ${getFormattedDate(choreInst!.dueDate)}',
                             style: DivvyTheme.detailGrey.copyWith(
                               color:
                                   isOverdue
@@ -177,7 +170,8 @@ class ChoreTile extends StatelessWidget {
             ),
           ],
         ),
-        Divider(color: DivvyTheme.shadow),
+        SizedBox(height: spacing / 4),
+        Divider(color: DivvyTheme.altBeige),
       ],
     );
   }

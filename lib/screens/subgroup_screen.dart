@@ -60,7 +60,6 @@ class SubgroupScreen extends StatelessWidget {
               padding: EdgeInsets.all(spacing),
               child: SingleChildScrollView(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Display members in subgroup

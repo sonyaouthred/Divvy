@@ -1,9 +1,11 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:divvy/widgets/leaderboard.dart';
+import 'package:divvy/widgets/swap_tile.dart';
 import 'package:divvy/widgets/swap_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +30,7 @@ class Dashboard extends StatelessWidget {
         }
         Member currUser = provider.currMember;
         // get tasks due today
-        List<ChoreInst> todayChores = provider.getTodayChores(currUser.id);
+        List<ChoreInst> todayChores = provider.getChoresForDay();
         // get tasks in next week
         List<ChoreInst> thisWeekChores =
             provider
@@ -37,6 +39,8 @@ class Dashboard extends StatelessWidget {
                 .toList();
         // get overdue chores
         List<ChoreInst> overdueChores = provider.getOverdueChores(currUser.id);
+        // list of open swaps
+        List<Swap> openSwaps = provider.getOpenSwaps();
         return SizedBox.expand(
           child: SingleChildScrollView(
             child: Container(
@@ -52,7 +56,11 @@ class Dashboard extends StatelessWidget {
                     style: DivvyTheme.largeHeaderBlack,
                   ),
                   // display any overdue chores
-                  _displayRecentChores(spacing, overdueChores, todayChores),
+                  _displayTodayOverdueChores(
+                    spacing,
+                    overdueChores,
+                    todayChores,
+                  ),
                   SizedBox(height: spacing / 2),
                   // Only display today's chores if overdue chores exist
                   _displayCompactTodayChores(
@@ -74,10 +82,13 @@ class Dashboard extends StatelessWidget {
                               .toList(),
                     ),
                   ),
-                  Divider(color: DivvyTheme.shadow),
-                  SizedBox(height: spacing / 2),
+                  Divider(color: DivvyTheme.altBeige),
+                  SizedBox(height: spacing),
                   Leaderboard(title: 'House Leaderboard'),
                   availableIncomingSwaps(provider, true),
+                  SizedBox(height: spacing / 2),
+                  _displayAvailableSwaps(spacing, openSwaps),
+                  if (openSwaps.isNotEmpty) SizedBox(height: spacing * 5),
                 ],
               ),
             ),
@@ -97,26 +108,18 @@ class Dashboard extends StatelessWidget {
   ) {
     if (overdue.isEmpty) return Container();
     if (today.isEmpty) return Container();
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: spacing / 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Upcoming chores:', style: DivvyTheme.bodyBoldBlack),
-          SizedBox(height: spacing / 2),
-          ...today.map(
-            (chore) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-              child: ChoreTile(choreInst: chore, compact: true),
-            ),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Upcoming chores:', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        ...today.map((chore) => ChoreTile(choreInst: chore, compact: true)),
+      ],
     );
   }
 
-  /// If user has overdue chores, display them.
-  Widget _displayRecentChores(
+  /// Display today's chores and all overdue chores
+  Widget _displayTodayOverdueChores(
     double spacing,
     List<ChoreInst> overdue,
     List<ChoreInst> today,
@@ -134,22 +137,7 @@ class Dashboard extends StatelessWidget {
           ),
           if (today.isNotEmpty) SizedBox(height: spacing),
           // Display the chore tiles for all chores due today
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: spacing / 4),
-            child: Column(
-              children:
-                  today
-                      .map(
-                        (chore) => Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: spacing / 2,
-                          ),
-                          child: ChoreTile(choreInst: chore),
-                        ),
-                      )
-                      .toList(),
-            ),
-          ),
+          ...today.map((chore) => ChoreTile(choreInst: chore)),
           if (today.isNotEmpty) SizedBox(height: spacing / 4),
         ],
       );
@@ -178,6 +166,33 @@ class Dashboard extends StatelessWidget {
                   .toList(),
         ),
         SizedBox(height: spacing / 2),
+      ],
+    );
+  }
+
+  /// Display the available (open) swaps
+  Widget _displayAvailableSwaps(double spacing, List<Swap> openSwaps) {
+    if (openSwaps.isEmpty) return Container();
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text('Available swaps', style: DivvyTheme.bodyBoldBlack),
+            InkWell(
+              onTap: () => print('seeing all'),
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                height: 45,
+                child: Text('See all', style: DivvyTheme.bodyGrey),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: spacing),
+        ...openSwaps.map((swap) => SwapTile(swap: swap)),
       ],
     );
   }

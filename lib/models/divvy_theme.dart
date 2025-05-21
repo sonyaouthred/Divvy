@@ -18,7 +18,7 @@ class DivvyTheme {
   static const Color brightRed = Color(0xFFFF0000);
   static const Color lightRed = Color(0xFFEA8484);
   static const Color darkRed = Color(0xFFA70000);
-  static const Color shadow = Color(0xFFEAEBED);
+  static const Color shadow = Color(0xFFCFCFCF);
   static const Color altBeige = Color.fromARGB(255, 225, 223, 216);
 
   // Text Themes
@@ -180,7 +180,7 @@ class DivvyTheme {
     color: DivvyTheme.white,
     borderRadius: BorderRadius.circular(10),
     boxShadow: [
-      BoxShadow(color: DivvyTheme.lightGrey, blurRadius: 3, spreadRadius: 0),
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 3, spreadRadius: 0),
     ],
   );
 
@@ -204,7 +204,7 @@ class DivvyTheme {
     color: isDone ? DivvyTheme.mediumGreen : DivvyTheme.background,
     borderRadius: BorderRadius.circular(30),
     boxShadow: [
-      BoxShadow(color: DivvyTheme.shadow, blurRadius: 5, spreadRadius: 2),
+      BoxShadow(color: DivvyTheme.shadow, blurRadius: 3, spreadRadius: 0),
     ],
   );
 

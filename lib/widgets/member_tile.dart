@@ -9,12 +9,20 @@ import 'package:flutter/material.dart';
 class MemberTile extends StatelessWidget {
   final Member member;
   final double spacing;
-  const MemberTile({super.key, required this.member, required this.spacing});
+  final String suffix;
+  final bool button;
+  const MemberTile({
+    super.key,
+    required this.member,
+    required this.spacing,
+    this.suffix = '',
+    this.button = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _openMemberPage(context, member),
+      onTap: () => (button) ? _openMemberPage(context, member) : (),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Column(
@@ -34,22 +42,23 @@ class MemberTile extends StatelessWidget {
                     width: 25,
                   ),
                   SizedBox(width: spacing / 2),
-                  Text(member.name, style: DivvyTheme.bodyBlack),
+                  Text('${member.name} $suffix', style: DivvyTheme.bodyBlack),
                 ],
               ),
               // Display chevron icon
-              Flexible(
-                flex: 1,
-                child: Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 20,
+              if (button)
+                Flexible(
+                  flex: 1,
+                  child: Icon(
+                    CupertinoIcons.chevron_right,
+                    color: DivvyTheme.lightGrey,
+                    size: 20,
+                  ),
                 ),
-              ),
             ],
           ),
           SizedBox(height: spacing / 2),
-          Divider(color: DivvyTheme.beige),
+          if (button) Divider(color: DivvyTheme.altBeige),
         ],
       ),
     );

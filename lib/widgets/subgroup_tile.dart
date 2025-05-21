@@ -50,7 +50,7 @@ class SubgroupTile extends StatelessWidget {
               ],
             ),
             SizedBox(height: spacing / 2),
-            Divider(color: DivvyTheme.beige),
+            Divider(color: DivvyTheme.altBeige),
           ],
         ),
       ),

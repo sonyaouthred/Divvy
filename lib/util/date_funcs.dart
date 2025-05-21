@@ -23,6 +23,11 @@ String getFormattedDate(DateTime dueDate) {
   return DateFormat.yMMMMd('en_US').format(dueDate);
 }
 
+/// Formats a date nicely
+String getShortDate(DateTime dueDate) {
+  return '${dueDate.month}/${dueDate.day}';
+}
+
 /// Generates dates for recurring expenses based on frequency.
 /// Parameters:
 ///  - frequency: How often the expense should recur (Daily, Weekly, Monthly)
@@ -171,6 +176,18 @@ List<DateTime> getDatesFromWeek(
 /// check if two datetime objects have the same date, ignoring time
 bool compareDate(DateTime a, DateTime b) {
   return a.day == b.day && a.month == b.month && a.year == b.year;
+}
+
+/// true if a is strictly after b (only year/month/day comparison)
+bool dayIsAfter(DateTime a, DateTime b) {
+  if (a.year < b.year) return false;
+  if (a.year > b.year) return true;
+  // same year
+  if (a.month < b.month) return false;
+  if (a.month > b.month) return true;
+  // same month
+  if (a.day <= b.day) return false;
+  return true;
 }
 
 // check that this date is in the range, regardless of time

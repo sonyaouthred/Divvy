@@ -1,5 +1,7 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -72,3 +74,19 @@ class Swap {
 
 /// Represents the current status of a swap.
 enum Status { open, pending, approved, rejected }
+
+extension StatusInfo on Status {
+  String get displayName => switch (this) {
+    Status.approved => "Approved",
+    Status.open => "Open",
+    Status.pending => "Pending",
+    Status.rejected => "Rejected",
+  };
+
+  IconData get icon => switch (this) {
+    Status.approved => CupertinoIcons.check_mark_circled_solid,
+    Status.open => CupertinoIcons.circle,
+    Status.pending => CupertinoIcons.refresh_circled,
+    Status.rejected => CupertinoIcons.clear_circled_solid,
+  };
+}
