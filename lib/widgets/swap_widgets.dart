@@ -7,7 +7,8 @@ import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/widgets/swap_tile.dart';
 import 'package:flutter/material.dart';
 
-Widget AvailableOutgoingSwaps(DivvyProvider provider) {
+/// Widgets related to swaps. More documentation to come.
+Widget availableOutgoingSwaps(DivvyProvider provider) {
   List<Swap> swaps =
       provider.swaps.where((swap) {
         return swap.from == provider.currMember.id;
@@ -55,7 +56,7 @@ Widget AvailableOutgoingSwaps(DivvyProvider provider) {
   );
 }
 
-Widget AvailableIncomingSwaps(DivvyProvider provider, bool truncatedView) {
+Widget availableIncomingSwaps(DivvyProvider provider, bool truncatedView) {
   List<Swap> swaps =
       provider.swaps.where((swap) {
         return swap.to == provider.currMember.id;

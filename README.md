@@ -1,21 +1,41 @@
 # Divvy
 
-A chore sharing app that aims to eliminates conflicts over chores serving as a neutral mediator that tracks chore schedules, assigns tasks, and reminds roommates when they haven’t done their work. With special features like swapping chores and dividing roomates into chore groups.
+# User Documentation
 
-Build in Flutter, using Firebase as database and connected to backend via Flask.
+Divvy is a chore sharing app that aims to eliminates conflicts over chores serving as a neutral mediator that tracks chore schedules, assigns tasks, and reminds roommates when they haven’t done their work. Divvy includes special features like swapping chores and dividing roomates into chore groups.
+
+## Installation
+
+The end target for this app is to be deployed to physical devices over the App Store or Google Play Store. For now, it is necessary to download the code repository and run it on a simulator (right now, we recommend iOS as we have tested on it the most). The final release build will be launched via TestFlight, so it can be installed with just a link. Please refer to the [Build Instructions](#build-instructions) and the [Build and Run](#build-and-run) sections of the developer documentation below for information on how to run the repository (be sure to refer to the [Setting up the Backend](#setting-up-the-backend) section to run the backend server as well). This section will explain the system requirements.
+
+## Bug Tracking
+
+All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We just finished some major implementations of features, and while we are not aware of any massive bugs at the moment (other than the listed android bug), it is not unlikely that there will be some minor discrepancies between the database and the app UI. These bugs will be more thoroughly documented and squashed in the coming days.
+
+Please report any bugs found to our issue page here. While we do not have a template set up (we need GitHub pro??), please use the following format:
+
+**Clear, succinct title that mentions the data/functions corrupted/ineffective**
+
+- <ins>Your information:</ins> Explanation of what machine you are running the app on (iOS/android) and the installed OS.
+- <ins>Location:</ins> where are you encountering the bug? This should be just a few words. Dashboard? House page?
+- <ins>Frequency:</ins> Description of the "repeatability" of the bug - can you trigger it every time you try to? Does it seem to be sporadic?
+- <ins>Steps to reproduce:</ins> If highly repeatable, describe the exact steps necessary to reproduce it.
+- <ins>Problem</ins>: Explain the desired result of your actions versus the actual results. Prefer facts over observations.
+
+# Developer Documentation
 
 ## Backend
 
-We have two repos one for backend and this on for frontend in order to run the app with connection to backend you must set up and run the backend repo which is located at https://github.com/Arkanous/DivvyBackend.
+In order to run the app, you must run our flask server on your device. The repository for the backend is at: https://github.com/Arkanous/DivvyBackend. Please refer to the backend repo on how to run the server.
 
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Build Instructions](#build-instructions)
 - [Build and Run](#build-and-run)
 - [Setting up the Backend](#setting-up-the-backend)
 - [Testing](#testing)
-- [Code Structure](#code-structure)
+- [Code Structure/Layout](#code-structure)
 - [Use Case](#use-case)
 
 ## Prerequisites
@@ -28,7 +48,7 @@ The frontend is written in a combination of Flutter and Dart:
 
 * This will required main channel version of flutter
 
-## Installation
+## Build Instructions
 
 1. Install Flutter
 
@@ -110,35 +130,29 @@ flutter test --name theTestName
 
 2. To run via VSC, navigate to the tests inside of the test folder, click the run buttons along the left hand side to run either specific tests or a group of tests
 
+3. In order to run the server tests, move the server_test.dart file into the /test folder and follow the above instructions. This will only pass when you also have the backend server running on your local device.
+
+4. If you wish to add new tests, simply create a dart file in the test/ folder. Be aware that all tests in that directory will automatically be run by the CI. Follow the standard flutter testing syntax, as modeled by the other test files.
+
+## Release Builds
+
+In order to create a release build, you must attach a tag to your github commit/merge that starts with **v**. In order to ensure correct numbering, make the tag the next version number. As a sanity check, please make sure to build the app one last time before you push! Often we fix minor things just before a release that accidentally breaks something. Building the app & running on a simulator should be the absolute last thing you do before pushing.
+
 ## Code Structure
 
 The bulk of the source code resides in lib folder while the rest are the tests which are contained in the test directory.
 
+- **android/ios/mac/web/windows**: These folders contain the requisite assets involved with running the app on either android, ios, mac, or web.
+- **assets**: This stores any images locally used for the app. For now, it just stores a dummy user profile image.
 - **firebase**: Contains code need for firebase authentication
 - **models**: Contains code for creating object sturctures used around app such as chore (which describes a chore), member (which describes a user), and subgroup (which discribes a group of users assigned to certain chores) along with divvy_theme.dart which is the theme file used to style the app.
 - **provider**: Contains the provider used across the app to keep the screens in sync and allows for modification to data and communication with backend
 - **screens**: Contains the code to create each of the screen with each file linked to a specific screen.
-- **util**: Contains addition functionality for app like date_funcs.dart which handled date formating and generating automatic assignment of chores and dialogs.dart which creates create skeletons of dialogs used around the app for user interaction.
+- **util**: Contains addition functionality for app like date_funcs.dart which handled date formating and generating automatic assignment of chores and dialogs.dart which creates create skeletons of dialogs used around the app for user interaction. Also contains the code for accessing the server and posting/fetching requests
 - **widgets**: Contains custom widget pages that are used to create certain aspects of the app that share styling and structure.
 - **divvy_navigation.dart**: Handles bottom navigation bar that connects main pages.
 - **firebase_options.dart**: Contains the necessary information for connecting to firebase.
 - **main.dart**: Creates the main function and runs the app.
 - **test (outside of lib)**: Contains all test files and is run with CI through GitHub actions.
+- **server_test (outside of lib)**: Contains a file with tests for the server connection. This is not part of the CI pipeline because the CI does not run the server locally. Until the server operates as a separate entity, this will not be part of CI.
 - **.github\workflows\flutter-ci.yaml**: Configures GitHub actions to both run tests and build app in both IOS and Andorid when pulling from main.
-
-## Use Case
-
-The use case that is currently operational is that a user can:
-
-- Sign in to their account (backed up with Firebase Auth)
-- If they are a member of a house, be redirected to the house's information
-- View all the information associated with a house (pulled from the server/FirebaseFirestore), including all chores, chore instances, members, subgroups, and more.
-
-In order to experience this flow, sign in with the following credentials:
-
-Email: demo@uw.edu
-Password: divvydemo
-
-The entire UI is completed and set up with a Provider to update across the screens. The database is set up, but not all ports are established. Thus while it is not currently possible to create new entries/modify entries in the database, all it will take is writing a few more functions on the backend.
-
-Because the provider is set up, most modifications/additions actually do show up in the frontend, but do not persist across sessions/refreshes. Thus you can still get a feel for how the app will operate (it's a beta version!).

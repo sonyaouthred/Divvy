@@ -29,8 +29,8 @@ class _SwapScreenState extends State<SwapScreen> {
               padding: EdgeInsets.symmetric(horizontal: spacing),
               child: Column(
                 children: [
-                  AvailableIncomingSwaps(provider, false),
-                  AvailableOutgoingSwaps(provider)
+                  availableIncomingSwaps(provider, false),
+                  availableOutgoingSwaps(provider),
                 ],
               ),
             ),

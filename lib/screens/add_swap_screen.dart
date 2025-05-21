@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uuid/v4.dart';
 
 class AddSwapScreen extends StatefulWidget {
   const AddSwapScreen({super.key});
@@ -127,7 +126,7 @@ class _AddSwapScreenState extends State<AddSwapScreen> {
                       });
                     },
                     children: List.generate(assignees.length, (index) {
-                      return Text("${assignees[index].name}");
+                      return Text(assignees[index].name);
                     }),
                   ),
                 ),

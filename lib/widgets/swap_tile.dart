@@ -5,26 +5,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+/// Represents a pending swap. More documentation to come.
 class SwapTile extends StatelessWidget {
-
   final Swap swap;
   final Chore chore;
   final ChoreInst choreInst;
 
-  const SwapTile({super.key, required this.swap, required this.chore, required this.choreInst});
+  const SwapTile({
+    super.key,
+    required this.swap,
+    required this.chore,
+    required this.choreInst,
+  });
 
   static Map<Status, String> swapStatusToString = const {
-    Status.approved : "Approved",
-    Status.open : "Open",
+    Status.approved: "Approved",
+    Status.open: "Open",
     Status.pending: "Pending",
-    Status.rejected: "Rejected"
+    Status.rejected: "Rejected",
   };
 
   static Map<Status, IconData> swapStatusToIcon = const {
     Status.approved: CupertinoIcons.check_mark_circled_solid,
     Status.open: CupertinoIcons.circle,
     Status.pending: CupertinoIcons.refresh_circled,
-    Status.rejected: CupertinoIcons.clear_circled_solid
+    Status.rejected: CupertinoIcons.clear_circled_solid,
   };
 
   String getFormattedDate(ChoreInst choreInst) {
@@ -37,7 +42,7 @@ class SwapTile extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(swapStatusToIcon[swapSatus]),
-        Text(swapStatusToString[swapSatus]!)
+        Text(swapStatusToString[swapSatus]!),
       ],
     );
   }
@@ -47,13 +52,8 @@ class SwapTile extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: Text(chore.emoji),
-        title: Text(
-          chore.name,
-          style: DivvyTheme.bodyBoldBlack,
-        ),
-        subtitle: Text(
-          getFormattedDate(choreInst)
-        ),
+        title: Text(chore.name, style: DivvyTheme.bodyBoldBlack),
+        subtitle: Text(getFormattedDate(choreInst)),
         trailing: iconWidget(swap.status),
       ),
     );
