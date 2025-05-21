@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/firebase_options.dart';
 import 'package:divvy/models/divvy_theme.dart';
@@ -7,11 +5,11 @@ import 'package:divvy/models/user.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/login.dart';
+import 'package:divvy/util/server_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -39,7 +37,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           final user = FirebaseAuth.instance.currentUser!;
           return FutureBuilder<DivvyUser?>(
-            future: getUser(user.uid),
+            future: fetchUser(user.uid),
             builder: (context, asyncSnapshot) {
               if (asyncSnapshot.connectionState == ConnectionState.waiting) {
                 return Container(
@@ -56,39 +54,29 @@ class AuthWrapper extends StatelessWidget {
               if (divvyUser == null) {
                 // log user out
                 // this really should never be triggered
+                print('user is null');
                 FirebaseAuth.instance.signOut();
                 return MaterialApp(home: Login());
               }
               final isInHouse = divvyUser.houseID != '';
               if (isInHouse) {
+                print('user is in house');
                 // Return regular house app
                 return HouseApp(user: divvyUser);
               } else {
+                print('user is not in house');
                 // Return join house screen if user is not in house
                 return MaterialApp(home: JoinHouse(currUser: divvyUser));
               }
             },
           );
         } else {
+          print('user is not signed in');
           // User is not signed in, show Login screen
           return MaterialApp(home: Login());
         }
       },
     );
-  }
-
-  /// Returns user's db object or null if not a current user
-  Future<DivvyUser?> getUser(String uid) async {
-    try {
-      final uri = 'http://127.0.0.1:5000/get-user-$uid';
-      final headers = {'Content-Type': 'application/json'};
-      final response = await get(Uri.parse(uri), headers: headers);
-      final jsonData = json.decode(response.body);
-      final userData = DivvyUser.fromJson(jsonData);
-      return userData;
-    } catch (e) {
-      return null;
-    }
   }
 }
 

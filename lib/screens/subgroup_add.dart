@@ -155,7 +155,7 @@ class _SubgroupAddState extends State<SubgroupAdd> {
             SizedBox(width: spacing / 6),
             // User profile image
             Container(
-              decoration: DivvyTheme.profileCircle(member.profilePicture),
+              decoration: DivvyTheme.profileCircle(member.profilePicture.color),
               height: 25,
               width: 25,
             ),
@@ -346,7 +346,7 @@ class _SubgroupAddState extends State<SubgroupAdd> {
         _nameController.text,
         _subgroupMember,
         _subgroupChore,
-        Colors.black,
+        ProfileColor.black,
       );
     } else {
       if (_nameController.text != '' ||

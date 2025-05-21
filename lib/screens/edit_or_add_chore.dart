@@ -476,7 +476,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                             children: [
                               CircleAvatar(
                                 radius: 15,
-                                backgroundColor: s.profilePicture,
+                                backgroundColor: s.profilePicture.color,
                               ),
                               SizedBox(width: spacing / 2),
                               Text(s.name, style: DivvyTheme.bodyBlack),
@@ -530,7 +530,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                             children: [
                               CircleAvatar(
                                 radius: 15,
-                                backgroundColor: m.profilePicture,
+                                backgroundColor: m.profilePicture.color,
                               ),
                               SizedBox(width: spacing / 2),
                               Text(m.name, style: DivvyTheme.bodyBlack),

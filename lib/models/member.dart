@@ -11,7 +11,7 @@ class Member {
   String name;
   // For now, color of user's profile picture.
   // To be changed when users can add profile pictures.
-  Color profilePicture;
+  ProfileColor profilePicture;
   // On time record. num on time / total, rounded to int & * 100
   int onTimePct;
   // List of chore instance IDs
@@ -41,7 +41,7 @@ class Member {
     name: name,
     id: uid,
     email: email,
-    profilePicture: Colors.black,
+    profilePicture: ProfileColor.black,
     onTimePct: 0,
     subgroups: [],
   );
@@ -66,7 +66,7 @@ class Member {
     'name': name,
     'id': _id,
     'chores': chores,
-    'profilePicture': getNameFromColor(profilePicture),
+    'profilePicture': profilePicture.name,
     'onTimePct': onTimePct,
     'email': email,
     'subgroups': subgroups,
@@ -80,26 +80,48 @@ class Member {
 typedef MemberID = String;
 typedef Email = String;
 
-/// Returns a string for a given color
-String getNameFromColor(Color color) => switch (color) {
-  DivvyTheme.darkGreen => 'darkGreen',
-  DivvyTheme.mediumGreen => 'mediumGreen',
-  DivvyTheme.lightGreen => 'lightGreen',
-  DivvyTheme.brightRed => 'red',
-  DivvyTheme.darkGrey => 'darkGrey',
-  DivvyTheme.lightGrey => 'lightGrey',
-  DivvyTheme.black => 'black',
-  Color() => 'black',
-};
+enum ProfileColor {
+  darkGreen,
+  mediumGreen,
+  lightGreen,
+  brightRed,
+  darkGrey,
+  lightGrey,
+  black,
+}
+
+extension ProfileColorInfo on ProfileColor {
+  /// Returns a string for a given color
+  String get name => switch (this) {
+    ProfileColor.darkGreen => 'darkGreen',
+    ProfileColor.mediumGreen => 'mediumGreen',
+    ProfileColor.lightGreen => 'lightGreen',
+    ProfileColor.brightRed => 'red',
+    ProfileColor.darkGrey => 'darkGrey',
+    ProfileColor.lightGrey => 'lightGrey',
+    ProfileColor.black => 'black',
+  };
+
+  /// Returns a color for a given string
+  Color get color => switch (this) {
+    ProfileColor.darkGreen => DivvyTheme.darkGreen,
+    ProfileColor.mediumGreen => DivvyTheme.mediumGreen,
+    ProfileColor.lightGreen => DivvyTheme.lightGreen,
+    ProfileColor.brightRed => DivvyTheme.brightRed,
+    ProfileColor.darkGrey => DivvyTheme.darkGrey,
+    ProfileColor.lightGrey => DivvyTheme.lightGrey,
+    ProfileColor.black => DivvyTheme.black,
+  };
+}
 
 /// Returns a color for a given string
-Color getColorFromName(String name) => switch (name) {
-  'darkGreen' => DivvyTheme.darkGreen,
-  'mediumGreen' => DivvyTheme.mediumGreen,
-  'lightGreen' => DivvyTheme.lightGreen,
-  'red' => DivvyTheme.brightRed,
-  'darkGrey' => DivvyTheme.darkGrey,
-  'lightGrey' => DivvyTheme.lightGrey,
-  'black' => DivvyTheme.black,
-  String() => DivvyTheme.black,
+ProfileColor getColorFromName(String name) => switch (name) {
+  'darkGreen' => ProfileColor.darkGreen,
+  'mediumGreen' => ProfileColor.mediumGreen,
+  'lightGreen' => ProfileColor.lightGreen,
+  'red' => ProfileColor.brightRed,
+  'darkGrey' => ProfileColor.darkGrey,
+  'lightGrey' => ProfileColor.lightGrey,
+  'black' => ProfileColor.black,
+  String() => ProfileColor.black,
 };

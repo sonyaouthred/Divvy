@@ -37,6 +37,7 @@ class House extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: spacing),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Members list
                   _displayMembers(context, spacing, members),
@@ -104,7 +105,7 @@ class House extends StatelessWidget {
                         children: [
                           Container(
                             decoration: DivvyTheme.profileCircle(
-                              member.profilePicture,
+                              member.profilePicture.color,
                             ),
                             height: 60,
                             width: 60,

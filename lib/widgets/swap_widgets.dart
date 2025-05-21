@@ -38,7 +38,7 @@ Widget availableOutgoingSwaps(DivvyProvider provider) {
             children: [
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: members[idx].profilePicture,
+                  backgroundColor: members[idx].profilePicture.color,
                 ),
                 title: Text("To ${members[idx].name}"),
                 minTileHeight: 20,
@@ -86,7 +86,7 @@ Widget availableIncomingSwaps(DivvyProvider provider, bool truncatedView) {
             children: [
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: members[idx].profilePicture,
+                  backgroundColor: members[idx].profilePicture.color,
                 ),
                 title: Text("${members[idx].name} Offered:"),
                 minTileHeight: 20,

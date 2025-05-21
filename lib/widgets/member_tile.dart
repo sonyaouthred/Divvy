@@ -27,7 +27,9 @@ class MemberTile extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    decoration: DivvyTheme.profileCircle(member.profilePicture),
+                    decoration: DivvyTheme.profileCircle(
+                      member.profilePicture.color,
+                    ),
                     height: 25,
                     width: 25,
                   ),

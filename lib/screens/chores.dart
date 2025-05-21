@@ -2,6 +2,7 @@
 // Commented out for testing
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/edit_or_add_chore.dart';
@@ -56,8 +57,9 @@ class Chores extends StatelessWidget {
                   ),
                   // Display subgroup chores
                   SizedBox(height: spacing * 1.5),
-                  _subgroupChores(spacing, subgroups, context),
-                  SizedBox(height: spacing),
+                  if (subgroups.isNotEmpty)
+                    _subgroupChores(spacing, subgroups, context),
+                  if (subgroups.isNotEmpty) SizedBox(height: spacing),
                   Text('House Chores', style: DivvyTheme.bodyBoldBlack),
                   SizedBox(height: spacing / 2),
                   // Display house chores
@@ -78,6 +80,9 @@ class Chores extends StatelessWidget {
     double spacing,
   ) {
     List<Chore> otherChores = provider.getNonSubgroupChores();
+    if (otherChores.isEmpty) {
+      return Text('No house chores yet!', style: DivvyTheme.bodyGrey);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children:
@@ -126,7 +131,10 @@ class Chores extends StatelessWidget {
       children: [
         Row(
           children: [
-            CircleAvatar(radius: 12, backgroundColor: subgroup.profilePicture),
+            CircleAvatar(
+              radius: 12,
+              backgroundColor: subgroup.profilePicture.color,
+            ),
             SizedBox(width: 10),
             Text(subgroup.name, style: DivvyTheme.bodyBlack),
           ],

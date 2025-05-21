@@ -6,7 +6,6 @@ import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
 import 'package:divvy/util/server_util.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// This code is not in the test/ directory in order to prevent
@@ -20,7 +19,7 @@ void main() {
       // Create a generic user
       final userID = '8590480294134';
       final email = 'test@test.edu';
-      await createUser(userID, email);
+      await createUser(userID, email, 'l');
       final receivedUser = await fetchUser(userID);
       assert(receivedUser != null);
       // Assert data is correct
@@ -38,7 +37,7 @@ void main() {
       // Create a generic user
       final userID = '9028490320973';
       final email = 'test@test.edu';
-      await createUser(userID, email);
+      await createUser(userID, email, 'm');
       DivvyUser? receivedUser = await fetchUser(userID);
       assert(receivedUser != null);
       // Assert data is correct
@@ -75,7 +74,7 @@ void main() {
       // Create a generic user
       final userID = '9028490320973';
       final email = 'test@test.edu';
-      await createUser(userID, email);
+      await createUser(userID, email, 'm');
       DivvyUser? receivedUser = await fetchUser(userID);
       assert(receivedUser != null);
       // Assert data is correct
@@ -123,7 +122,7 @@ void main() {
       // Create a generic user to start house
       final userID = '908590209432';
       final email = 'founder@test.edu';
-      await createUser(userID, email);
+      await createUser(userID, email, 'm');
       final receivedUser = await fetchUser(userID);
       assert(receivedUser != null);
 
@@ -140,10 +139,10 @@ void main() {
       // now add another user to the house
       final userID2 = '9090ujf0u302432';
       final email2 = 'member2@test.edu';
-      await createUser(userID2, email2);
+      await createUser(userID2, email2, 'm');
       final receivedUser2 = await fetchUser(userID2);
       assert(receivedUser2 != null);
-      await addUserToHouse(receivedUser2!, receivedHouse!.joinCode, 'name');
+      await addUserToHouse(receivedUser2!, receivedHouse!.joinCode);
       // Assert user was added to house fully
       expect(receivedUser2.houseID, receivedHouse.id);
       receivedHouse = await fetchHouse(receivedUser2.houseID);
@@ -166,9 +165,9 @@ void main() {
       final member2ID = 'fieowtu48935u230';
       final member3ID = '39120ujrfioj9032';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'm'),
+        createUser(member2ID, 'member1@test.com', 'l'),
+        createUser(member3ID, 'member1@test.com', ','),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -188,8 +187,8 @@ void main() {
 
       // add users to house
       futures = [
-        addUserToHouse(mem2!, house.joinCode, 'name'),
-        addUserToHouse(mem3!, house.joinCode, 'name'),
+        addUserToHouse(mem2!, house.joinCode),
+        addUserToHouse(mem3!, house.joinCode),
       ];
       await Future.wait(futures);
 
@@ -242,10 +241,10 @@ void main() {
       final member3ID = '39120ujrfioj9032';
       final member4ID = '9459430njno435nt';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member2@test.com'),
-        createUser(member3ID, 'member3@test.com'),
-        createUser(member4ID, 'member4@test.com'),
+        createUser(member1ID, 'member1@test.com', 'm'),
+        createUser(member2ID, 'member2@test.com', 'm'),
+        createUser(member3ID, 'member3@test.com', 'm'),
+        createUser(member4ID, 'member4@test.com', 'm'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -255,7 +254,7 @@ void main() {
       assert(founder != null);
       assert(founder2 != null);
       assert(mem3 != null);
-       assert(mem4 != null);
+      assert(mem4 != null);
 
       // add a house to the db
       final house1 = House.fromNew(
@@ -266,12 +265,10 @@ void main() {
       await createHouse(founder, house1, 'name1');
 
       // adding member 3 to house 1
-      futures = [
-        addUserToHouse(mem3!, house1.joinCode, 'name1'),
-      ];
+      futures = [addUserToHouse(mem3!, house1.joinCode)];
       await Future.wait(futures);
 
-      // creating a second house 
+      // creating a second house
       final house2 = House.fromNew(
         houseName: 'Test house 2!!',
         uid: founder2!.id,
@@ -280,9 +277,7 @@ void main() {
       await createHouse(founder2, house2, 'name2');
 
       // adding member 4 to house 2
-      futures = [
-        addUserToHouse(mem4!, house2.joinCode, 'name2'),
-      ];
+      futures = [addUserToHouse(mem4!, house2.joinCode)];
       await Future.wait(futures);
 
       // make sure member docs exist for house 1
@@ -299,7 +294,7 @@ void main() {
       assert(members2[member2ID] != null);
       assert(members2[member4ID] != null);
 
-      // member 3 leaves house 1 
+      // member 3 leaves house 1
       await deleteMember(memberID: member3ID, houseID: house1.id);
       members1 = await fetchMembers(house1.id);
       assert(members1 != null);
@@ -308,7 +303,7 @@ void main() {
       assert(members1[member3ID] == null);
 
       // member 3 rejoins house 2
-      await addUserToHouse(mem3, house2.joinCode, 'name2');
+      await addUserToHouse(mem3, house2.joinCode);
       members2 = await fetchMembers(house2.id);
       assert(members2 != null);
       expect(members2!.length, 3);
@@ -341,9 +336,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'm'),
+        createUser(member2ID, 'member1@test.com', 'm'),
+        createUser(member3ID, 'member1@test.com', 'm'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -365,8 +360,8 @@ void main() {
 
       // add users to house
       futures = [
-        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
-        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+        addUserToHouse(mem2!, receivedHouse!.joinCode),
+        addUserToHouse(mem3!, receivedHouse.joinCode),
       ];
       await Future.wait(futures);
 
@@ -374,12 +369,12 @@ void main() {
       final subgroup1 = Subgroup.fromNew(
         members: [member3ID, member2ID],
         name: '2 & 3',
-        color: Colors.black,
+        color: ProfileColor.black,
       );
       final subgroup2 = Subgroup.fromNew(
         members: [member1ID, member2ID],
         name: '1 & 2',
-        color: Colors.black,
+        color: ProfileColor.black,
       );
       futures = [
         upsertSubgroup(subgroup1, house.id),
@@ -426,9 +421,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'm'),
+        createUser(member2ID, 'member1@test.com', 'm'),
+        createUser(member3ID, 'member1@test.com', 'm'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -448,8 +443,8 @@ void main() {
 
       // add users to house
       futures = [
-        addUserToHouse(mem2!, house.joinCode, 'name'),
-        addUserToHouse(mem3!, house.joinCode, 'name'),
+        addUserToHouse(mem2!, house.joinCode),
+        addUserToHouse(mem3!, house.joinCode),
       ];
       await Future.wait(futures);
 
@@ -457,7 +452,7 @@ void main() {
       final subgroup1 = Subgroup.fromNew(
         members: [member3ID, member2ID],
         name: '2 & 3',
-        color: Colors.black,
+        color: ProfileColor.black,
       );
       await upsertSubgroup(subgroup1, house.id);
 
@@ -548,7 +543,7 @@ void main() {
     //   assert(setEquals(sub1.members.toSet(), {member2ID, member3ID}));
     //   assert(setEquals(sub2.members.toSet(), {member2ID, member1ID}));
 
-    //   // Then delete  memeber 2 
+    //   // Then delete  memeber 2
     //   await deleteMember(memberID: member2ID, houseID: house.id);
 
     //   // Test if subgroup was updated
@@ -586,7 +581,6 @@ void main() {
     //   final deletedSubs = await fetchSubgroups(house.id);
     //   assert(deletedSubs == null || deletedSubs.isEmpty);
     // });
-    
   });
 
   group('Chore (super) tests', () {
@@ -596,9 +590,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'm'),
+        createUser(member2ID, 'member1@test.com', 'm'),
+        createUser(member3ID, 'member1@test.com', 'm'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -620,8 +614,8 @@ void main() {
 
       // add users to house
       futures = [
-        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
-        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+        addUserToHouse(mem2!, receivedHouse!.joinCode),
+        addUserToHouse(mem3!, receivedHouse.joinCode),
       ];
       await Future.wait(futures);
 
@@ -677,9 +671,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'Member 1'),
+        createUser(member2ID, 'member1@test.com', 'm'),
+        createUser(member3ID, 'member1@test.com', 'm'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -700,14 +694,14 @@ void main() {
       assert(receivedHouse != null);
       // add users to house
       futures = [
-        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
-        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+        addUserToHouse(mem2!, receivedHouse!.joinCode),
+        addUserToHouse(mem3!, receivedHouse.joinCode),
       ];
       await Future.wait(futures);
       final subgroup = Subgroup.fromNew(
         members: [member3ID, member2ID],
         name: '2 & 3',
-        color: Colors.black,
+        color: ProfileColor.black,
       );
       await upsertSubgroup(subgroup, house.id);
 
@@ -776,9 +770,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member2@test.com'),
-        createUser(member3ID, 'member3@test.com'),
+        createUser(member1ID, 'member1@test.com', 'Member 1'),
+        createUser(member2ID, 'member2@test.com', 'member 2'),
+        createUser(member3ID, 'member3@test.com', 'member 3'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -799,19 +793,19 @@ void main() {
       assert(receivedHouse != null);
       // add users to house
       futures = [
-        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
-        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+        addUserToHouse(mem2!, receivedHouse!.joinCode),
+        addUserToHouse(mem3!, receivedHouse.joinCode),
       ];
       await Future.wait(futures);
       final subgroup1 = Subgroup.fromNew(
         members: [member3ID, member2ID],
         name: '2 & 3',
-        color: Colors.black,
+        color: ProfileColor.black,
       );
       final subgroup2 = Subgroup.fromNew(
         members: [member1ID, member2ID],
         name: '1 & 2',
-        color: Colors.black,
+        color: ProfileColor.black,
       );
       futures = [
         upsertSubgroup(subgroup1, house.id),
@@ -835,7 +829,7 @@ void main() {
       await upsertChore(chore, house.id);
       subgroup1.chores.add(chore.id);
       await upsertSubgroup(subgroup1, house.id);
-      
+
       // chore for other subgroup
       final chore2 = Chore.fromNew(
         name: 'Kitchen',
@@ -896,7 +890,7 @@ void main() {
       Subgroup? newSub = await fetchSubgroup(receivedSub.id, house.id);
       assert(newSub != null);
       assert(newSub!.chores.isEmpty);
-      // Delete second chore 
+      // Delete second chore
       await deleteChore(houseID: house.id, choreID: chore2.id);
       receivedSub = await fetchSubgroup(subgroup2.id, house.id);
       assert(receivedSub != null);
@@ -920,7 +914,6 @@ void main() {
       final deletedChores = await fetchChores(house.id);
       assert(deletedChores == null || deletedChores.isEmpty);
     });
-    
   });
 
   group('Chore (instance) tests', () {
@@ -930,9 +923,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'Memebr 1'),
+        createUser(member2ID, 'member1@test.com', 'Member 2'),
+        createUser(member3ID, 'member1@test.com', 'Member 3'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -953,8 +946,8 @@ void main() {
       assert(receivedHouse != null);
       // add users to house
       futures = [
-        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
-        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+        addUserToHouse(mem2!, receivedHouse!.joinCode),
+        addUserToHouse(mem3!, receivedHouse.joinCode),
       ];
       await Future.wait(futures);
 
@@ -1046,9 +1039,9 @@ void main() {
       final member2ID = '0850948902432';
       final member3ID = 'fji2u59349032jgf';
       List<Future> futures = [
-        createUser(member1ID, 'member1@test.com'),
-        createUser(member2ID, 'member1@test.com'),
-        createUser(member3ID, 'member1@test.com'),
+        createUser(member1ID, 'member1@test.com', 'Member 1'),
+        createUser(member2ID, 'member1@test.com', 'Member 2'),
+        createUser(member3ID, 'member1@test.com', 'Member 4'),
       ];
       await Future.wait(futures);
       final founder = await fetchUser(member1ID);
@@ -1069,8 +1062,8 @@ void main() {
       assert(receivedHouse != null);
       // add users to house
       futures = [
-        addUserToHouse(mem2!, receivedHouse!.joinCode, 'name'),
-        addUserToHouse(mem3!, receivedHouse.joinCode, 'name'),
+        addUserToHouse(mem2!, receivedHouse!.joinCode),
+        addUserToHouse(mem3!, receivedHouse.joinCode),
       ];
       await Future.wait(futures);
 

@@ -120,7 +120,10 @@ class UserInfoScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          CircleAvatar(radius: 50, backgroundColor: member.profilePicture),
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: member.profilePicture.color,
+          ),
           SizedBox(width: 20),
           Flexible(
             child: Column(

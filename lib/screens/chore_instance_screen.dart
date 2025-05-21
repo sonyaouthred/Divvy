@@ -183,7 +183,9 @@ class ChoreInstanceScreen extends StatelessWidget {
               SizedBox(width: spacing / 2),
               if (assignee != null)
                 Container(
-                  decoration: DivvyTheme.profileCircle(assignee.profilePicture),
+                  decoration: DivvyTheme.profileCircle(
+                    assignee.profilePicture.color,
+                  ),
                   height: 25,
                   width: 25,
                 ),

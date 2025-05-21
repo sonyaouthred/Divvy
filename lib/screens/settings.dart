@@ -74,6 +74,7 @@ class _SettingsState extends State<Settings> {
                     text: 'Account Info',
                     buttons: [
                       ['Change Name', _changeName],
+                      ['Change Profile Color', _changeColor],
                       ['Delete Account', _deleteAccount],
                     ],
                     flex: 2,
@@ -152,14 +153,7 @@ class _SettingsState extends State<Settings> {
       height: imageSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        image: DecorationImage(
-          // TODO: connect to provider once provider has actual images
-          image:
-              imageFile == null
-                  ? Image.asset('assets/defaultImage.jpg').image
-                  : Image.file(imageFile!).image,
-          fit: BoxFit.fill,
-        ),
+        color: _currUser.profilePicture.color,
       ),
     );
   }
@@ -335,6 +329,26 @@ class _SettingsState extends State<Settings> {
         context,
         listen: false,
       ).updateUserName(newName);
+    }
+  }
+
+  /// Change the user's profile color
+  void _changeColor(BuildContext context) async {
+    final width = MediaQuery.of(context).size.width;
+    final spacing = width * 0.05;
+    // get new name
+    final newColor = await openColorDialog(
+      context,
+      _currUser.profilePicture,
+      spacing,
+    );
+    // Process name
+    if (newColor != _currUser.profilePicture) {
+      if (!context.mounted) return;
+      Provider.of<DivvyProvider>(
+        context,
+        listen: false,
+      ).updateMemberColor(newColor);
     }
   }
 

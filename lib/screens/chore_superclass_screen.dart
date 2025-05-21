@@ -281,7 +281,7 @@ class ChoreSuperclassScreen extends StatelessWidget {
   Widget _memberTile(Member member, double spacing) => Row(
     children: [
       Container(
-        decoration: DivvyTheme.profileCircle(member.profilePicture),
+        decoration: DivvyTheme.profileCircle(member.profilePicture.color),
         height: 25,
         width: 25,
       ),

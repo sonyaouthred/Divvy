@@ -158,17 +158,13 @@ Future<Map<ChoreID, List<ChoreInst>>?> fetchChoreInstances(
 ///////////////////////// Upsert //////////////////////////
 
 /// Creates a user doc. Updates DB. TESTED
-Future<void> createUser(String uid, String email) async {
-  final user = DivvyUser.fromNew(uid: uid, email: email);
-  await upsertUser(user);
+Future<bool> createUser(String uid, String email, String name) async {
+  final user = DivvyUser.fromNew(uid: uid, email: email, name: name);
+  return await upsertUser(user);
 }
 
 /// Add a user to a house. Updates DB. Returns House object, or null. TESTED
-Future<House?> addUserToHouse(
-  DivvyUser user,
-  String joinCode,
-  String userName,
-) async {
+Future<House?> addUserToHouse(DivvyUser user, String joinCode) async {
   final houseJson = await _getDataFromServer(
     serverFunc: 'get-house-join-$joinCode',
   );
@@ -178,7 +174,7 @@ Future<House?> addUserToHouse(
   final member = Member.fromNew(
     uid: user.id,
     email: user.email,
-    name: userName,
+    name: user.name,
   );
   await upsertMember(member, house.id);
   // Now add user to house
@@ -188,8 +184,8 @@ Future<House?> addUserToHouse(
 }
 
 /// Upserts a user doc. Updates DB. TESTED
-Future<void> upsertUser(DivvyUser user) async {
-  await _postToServer(data: user.toJson(), serverFunc: 'upsert-user');
+Future<bool> upsertUser(DivvyUser user) async {
+  return await _postToServer(data: user.toJson(), serverFunc: 'upsert-user');
 }
 
 /// Deletes a user doc. Updates DB. TESTED

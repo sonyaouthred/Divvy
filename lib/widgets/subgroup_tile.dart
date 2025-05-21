@@ -1,4 +1,5 @@
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/screens/subgroup_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -32,7 +33,7 @@ class SubgroupTile extends StatelessWidget {
                   children: [
                     Container(
                       decoration: DivvyTheme.profileCircle(
-                        subgroup.profilePicture,
+                        subgroup.profilePicture.color,
                       ),
                       height: 25,
                       width: 25,

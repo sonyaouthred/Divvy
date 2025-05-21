@@ -99,7 +99,7 @@ class _LeaderboardState extends State<Leaderboard> {
           Text('#$position: ', style: DivvyTheme.smallBodyBlack),
           SizedBox(width: spacing / 2),
           Container(
-            decoration: DivvyTheme.profileCircle(member.profilePicture),
+            decoration: DivvyTheme.profileCircle(member.profilePicture.color),
             height: 25,
             width: 25,
           ),

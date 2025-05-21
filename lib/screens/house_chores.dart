@@ -2,6 +2,7 @@
 // Commented out for testing
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/widgets/chore_tile.dart';
@@ -126,7 +127,10 @@ class HouseChores extends StatelessWidget {
       children: [
         Row(
           children: [
-            CircleAvatar(radius: 12, backgroundColor: subgroup.profilePicture),
+            CircleAvatar(
+              radius: 12,
+              backgroundColor: subgroup.profilePicture.color,
+            ),
             SizedBox(width: 10),
             Text(subgroup.name, style: DivvyTheme.bodyBlack),
           ],

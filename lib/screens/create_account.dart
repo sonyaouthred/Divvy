@@ -380,11 +380,24 @@ class _CreateAccountState extends State<CreateAccount> {
   void _createUserDB(BuildContext context) async {
     try {
       final User user = FirebaseAuth.instance.currentUser!;
-      await user.updateDisplayName(_name.text);
-      await user.reload();
 
       /// add user doc to database
-      await createUser(user.uid, user.email!);
+      final res = await createUser(user.uid, user.email!, _name.text);
+      if (!res) {
+        // failed to create user doc!!
+        // output an error and delete the account
+        if (!context.mounted) return;
+        await showErrorMessage(context, 'Error', 'Could not create user.');
+        await user.delete();
+        if (!context.mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const AuthWrapper()),
+          (route) => false, // Clears the navigation stack
+        );
+        return;
+      }
+      print('added user doc');
 
       // Sign in!!
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -401,6 +414,8 @@ class _CreateAccountState extends State<CreateAccount> {
         (route) => false, // Clears the navigation stack
       );
     } catch (e) {
+      print('error');
+      if (!context.mounted) return;
       showErrorMessage(context, 'Error', 'Error creating user: $e');
     }
   }

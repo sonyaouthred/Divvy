@@ -166,13 +166,8 @@ class _JoinHouseState extends State<JoinHouse> {
       setState(() {
         _joining = true;
       });
-      final username = FirebaseAuth.instance.currentUser!.displayName;
       // Try to add user to house
-      final house = await addUserToHouse(
-        _currUser,
-        _codeController.text,
-        username ?? 'No name',
-      );
+      final house = await addUserToHouse(_currUser, _codeController.text);
       if (!context.mounted) return;
       if (house == null) {
         // handle errors in adding user

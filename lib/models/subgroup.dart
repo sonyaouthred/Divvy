@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
 import 'package:uuid/uuid.dart';
@@ -14,7 +12,7 @@ class Subgroup {
   String name;
   // For now, color of subgroup's profile
   // To be changed when users can add profile pictures.
-  Color profilePicture;
+  ProfileColor profilePicture;
   // List of member user IDs
   final List<MemberID> members;
   // List of specific chores
@@ -32,7 +30,7 @@ class Subgroup {
   factory Subgroup.fromNew({
     required List<MemberID> members,
     required String name,
-    required Color color,
+    required ProfileColor color,
   }) {
     final id = uuid.v4();
     return Subgroup(
@@ -60,7 +58,7 @@ class Subgroup {
     'id': _id,
     'chores': chores,
     'members': members,
-    'profilePicture': getNameFromColor(profilePicture),
+    'profilePicture': profilePicture.name,
   };
 
   //// Getters

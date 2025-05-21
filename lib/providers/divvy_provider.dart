@@ -483,6 +483,13 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates user name with inputed name
+  Future<void> updateMemberColor(ProfileColor newColor) async {
+    _currentMember.profilePicture = newColor;
+    await db.upsertMember(_currentMember, houseID);
+    notifyListeners();
+  }
+
   /// Removes given user from the house
   Future<void> leaveHouse(MemberID id) async {
     // remove user from all subgroups they may be in
@@ -533,7 +540,7 @@ class DivvyProvider extends ChangeNotifier {
     String name,
     List<Member> members,
     List<Chore> chores,
-    Color color,
+    ProfileColor color,
   ) async {
     // don't add if a subgroup already exists with these memebrs
     for (Subgroup sub in _subgroups.values) {

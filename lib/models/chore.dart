@@ -172,7 +172,7 @@ class ChoreInst {
       dueDate: HttpDate.parse(json['dueDate']),
       isDone: json['isDone'],
       assignee: json['assignee'],
-      swapID: json['swapID'],
+      swapID: json['swapID'] ?? '',
     );
   }
 
