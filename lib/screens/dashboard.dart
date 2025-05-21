@@ -1,9 +1,12 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:divvy/widgets/leaderboard.dart';
+import 'package:divvy/widgets/swap_tile.dart';
+import 'package:divvy/widgets/swap_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -77,6 +80,7 @@ class Dashboard extends StatelessWidget {
                   Divider(color: DivvyTheme.shadow),
                   SizedBox(height: spacing / 2),
                   Leaderboard(title: 'House Leaderboard'),
+                  AvailableIncomingSwaps(provider, true)
                 ],
               ),
             ),
@@ -85,6 +89,7 @@ class Dashboard extends StatelessWidget {
       },
     );
   }
+
 
   /// Concatenate today's chores to start of upcoming tasks list
   /// if overdue chores are being displayed at top of screen.
