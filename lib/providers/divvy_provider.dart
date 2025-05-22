@@ -659,32 +659,51 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Adds a swap to the database
-  Future<void> sendSwapInvite(Swap swap, Member member) async {
-    await db.upsertSwap(swap, houseID);
-    // Update the chore instance with the swap id
+  /// Updates a swap as pending
+  /// For now, can only swap same chore (later date)
+  Future<void> sendSwapInvite(
+    Swap swap,
+    Member member,
+    ChoreInstID offered,
+  ) async {
+    // update the offered chore instance info
+    final offeredInst = getChoreInstanceFromID(swap.choreID, offered);
+    if (offeredInst == null) return;
+    offeredInst.swapID = swap.id;
+    await db.upsertChoreInst(offeredInst, houseID);
+    // Update the swap info
     swap.status = Status.pending;
     swap.to = member.id;
+    swap.offered = offered;
+    await db.upsertSwap(swap, houseID);
+    notifyListeners();
+  }
+
+  /// Approve a swap to take place!
+  Future<void> approveSwapInvite(Swap swap) async {
+    // fetch the chore instances & swap IDs
+    final ogChore = getChoreInstanceFromID(swap.choreID, swap.choreInstID)!;
+    final swappedChore = getChoreInstanceFromID(swap.choreID, swap.offered)!;
+    ogChore.assignee = swap.to;
+    swappedChore.assignee = swap.from;
+    await Future.wait([
+      db.upsertChoreInst(ogChore, houseID),
+      db.upsertChoreInst(swappedChore, houseID),
+    ]);
+    // Update the swap info!
+    swap.status = Status.approved;
     await db.upsertSwap(swap, houseID);
     notifyListeners();
   }
 
   /// Adds a swap to the database
   Future<void> rejectSwapInvite(Swap swap) async {
-    await db.upsertSwap(swap, houseID);
     // Update the chore instance with the swap id
     swap.status = Status.rejected;
     swap.to = '';
+    swap.offered = '';
     await db.upsertSwap(swap, houseID);
     notifyListeners();
-  }
-
-  /// Adds a swap to the database
-  Future<void> approveSwap(Swap swap) async {
-    await db.upsertSwap(swap, houseID);
-    // Update the chore instance with the swap id
-    swap.status = Status.approved;
-    await db.upsertSwap(swap, houseID);
   }
 
   /// Deletes a chore instance

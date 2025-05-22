@@ -4,6 +4,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
+import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/util/server_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -1033,7 +1034,7 @@ void main() {
   });
 
   group('Swap tests', () {
-    test('Swap can be added & deleted', () async {
+    test('Swap can be added & indirectly deleted', () async {
       // Create three users
       final member1ID = '9508239408304';
       final member2ID = '0850948902432';
@@ -1097,6 +1098,146 @@ void main() {
       // Make sure all swaps were deleted
       final deletedSwaps = await fetchSwaps(house.id);
       assert(deletedSwaps == null || deletedSwaps.isEmpty);
+    });
+    test('Test swap lifecycle', () async {
+      // Create three users
+      final member1ID = '84075420432435';
+      final member2ID = '123ut09u5932j0';
+      List<Future> futures = [
+        createUser(member1ID, 'member1@test.com', 'Member 1'),
+        createUser(member2ID, 'member2@test.com', 'Member 2'),
+      ];
+      await Future.wait(futures);
+      final founder = await fetchUser(member1ID);
+      final mem2 = await fetchUser(member2ID);
+      assert(founder != null);
+      assert(mem2 != null);
+
+      // add a house to the db
+      final house = House.fromNew(
+        houseName: 'Test house!!',
+        uid: founder!.id,
+        joinCode: '5-04860924304',
+      );
+      await createHouse(founder, house, 'name');
+      House? receivedHouse = await fetchHouse(house.id);
+      assert(receivedHouse != null);
+      // add users to house
+      await addUserToHouse(mem2!, receivedHouse!.joinCode);
+
+      // add chores
+      final superChore = Chore.fromNew(
+        name: 'Bathroom',
+        pattern: Frequency.weekly,
+        daysOfWeek: [5],
+        assignees: [member2ID, member1ID],
+        emoji: '🥹',
+        description: 'Clean broom',
+        startDate: DateTime.now(),
+      );
+      await upsertChore(superChore, house.id);
+      // now create instances!
+      final dates = getDateList(superChore.frequency);
+      futures = [];
+      dates.asMap().forEach((index, date) {
+        final assignee =
+            superChore.assignees[index % superChore.assignees.length];
+        // create chore instance
+        ChoreInst choreInst = ChoreInst.fromNew(
+          superCID: superChore.id,
+          due: date,
+          assignee: assignee,
+        );
+        futures.add(upsertChoreInst(choreInst, house.id));
+      });
+      await Future.wait(futures);
+
+      Map<String, List<ChoreInst>>? dbChoreInst = await fetchChoreInstances(
+        house.id,
+      );
+      assert(dbChoreInst != null && dbChoreInst.isNotEmpty);
+      assert(dbChoreInst![superChore.id] != null);
+      final firstChore = dbChoreInst![superChore.id]!.first;
+      final swapperIsMem1 = firstChore.assignee == member1ID;
+      final instToOffer = dbChoreInst[superChore.id]!.last;
+
+      // now create a swap for that chore.
+      Swap newSwap = Swap.fromNew(
+        choreID: superChore.id,
+        choreInstID: firstChore.id,
+        from: firstChore.assignee,
+      );
+      await upsertSwap(newSwap, house.id);
+      // Update the chore instance with the swap id
+      firstChore.swapID = newSwap.id;
+      await upsertChoreInst(firstChore, house.id);
+
+      // make sure the chore instance was updated
+      dbChoreInst = await fetchChoreInstances(house.id);
+      assert(dbChoreInst != null && dbChoreInst.isNotEmpty);
+      assert(dbChoreInst![superChore.id] != null);
+      // make sure swap id was stored as expected
+      expect(
+        dbChoreInst![superChore.id]!
+            .firstWhere((c) => c.id == firstChore.id)
+            .swapID,
+        newSwap.id,
+      );
+
+      // Ok, now pretend that the other user accepted it & is suggesting the last chore.
+      // update the offered chore instance info
+      instToOffer.swapID = newSwap.id;
+      await upsertChoreInst(instToOffer, house.id);
+      // Update the swap info
+      newSwap.status = Status.pending;
+      newSwap.to = swapperIsMem1 ? member2ID : member1ID;
+      newSwap.offered = instToOffer.id;
+      await upsertSwap(newSwap, house.id);
+
+      // refresh swap
+      Map<SwapID, Swap>? dbSwaps = await fetchSwaps(house.id);
+      assert(dbSwaps != null);
+      expect(dbSwaps!.length, 1);
+      final receivedSwap = dbSwaps[newSwap.id];
+      assert(receivedSwap != null);
+      expect(receivedSwap!.choreID, firstChore.superID);
+      expect(receivedSwap.choreInstID, firstChore.id);
+      expect(receivedSwap.from, firstChore.assignee);
+      expect(receivedSwap.to, swapperIsMem1 ? member2ID : member1ID);
+      expect(receivedSwap.offered, instToOffer.id);
+      expect(receivedSwap.status, Status.pending);
+
+      // Pretend o.g. member approved the swap!
+      firstChore.assignee = receivedSwap.to;
+      instToOffer.assignee = receivedSwap.from;
+      await Future.wait([
+        upsertChoreInst(firstChore, house.id),
+        upsertChoreInst(instToOffer, house.id),
+      ]);
+
+      // Update the swap info!
+      receivedSwap.status = Status.approved;
+      await upsertSwap(receivedSwap, house.id);
+
+      // Now delete the swap & make sure it's gone
+      // update all affected chores
+      firstChore.swapID = '';
+      instToOffer.swapID = '';
+      await Future.wait([
+        upsertChoreInst(firstChore, house.id),
+        upsertChoreInst(instToOffer, house.id),
+      ]);
+      await deleteSwap(houseID: house.id, swapID: receivedSwap.id);
+      dbSwaps = await fetchSwaps(house.id);
+      assert(dbSwaps == null || dbSwaps.isEmpty);
+
+      // Clean up - delete data
+      futures = [
+        deleteUser(member1ID),
+        deleteUser(member2ID),
+        deleteHouse(house.id),
+      ];
+      await Future.wait(futures);
     });
   });
 }

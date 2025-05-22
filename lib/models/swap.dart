@@ -23,6 +23,9 @@ class Swap {
   MemberID to;
   // Status of swap.
   Status status;
+  // Other chore suggested to be swapped for this one.
+  // Empty if status is open.
+  ChoreInstID offered;
 
   Swap({
     required this.id,
@@ -31,6 +34,7 @@ class Swap {
     required this.from,
     required this.to,
     required this.status,
+    required this.offered,
   });
 
   /// Creates a new Swap object.
@@ -47,6 +51,7 @@ class Swap {
       from: from,
       to: '',
       status: Status.open,
+      offered: '',
     );
   }
 
@@ -57,8 +62,9 @@ class Swap {
     choreID: json['choreID'],
     choreInstID: json['choreInstID'],
     from: json['from'],
-    to: json['to'],
+    to: json['to'] ?? '',
     status: Status.values.firstWhere((s) => s.name == json['status']),
+    offered: json['offered'] ?? '',
   );
 
   /// Returns subgroup object as json
@@ -69,6 +75,7 @@ class Swap {
     'from': from,
     'to': to,
     'status': status.name,
+    'offered': offered,
   };
 }
 
