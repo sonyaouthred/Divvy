@@ -13,7 +13,7 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 182);
+      expect(dates.length, 181);
       expect(dates.first, start);
       expect(dates.last, start.add(const Duration(days: 180)));
     });
@@ -27,7 +27,7 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 182);
+      expect(dates.length, 181);
     });
   });
 
