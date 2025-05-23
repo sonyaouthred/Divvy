@@ -27,7 +27,7 @@ String getFormattedDate(DateTime dueDate) {
 /// Parameters:
 ///  - frequency: How often the expense should recur (Daily, Weekly, Monthly)
 /// Returns: List of DateTime objects representing all occurrence dates. Only generates
-/// for a 365-day period
+/// for a 180-day period
 /// Expected behavior:
 ///   - monthly: repeat once monthly on the same date for 3 months
 ///   - daily: repeat every day for 90 days + start date
@@ -41,7 +41,7 @@ List<DateTime> getDateList(ChoreFrequency frequency) {
           frequency.daysOfWeek.where((d) => d > 7 || d < 0).isNotEmpty)) {
     return [];
   }
-  DateTime endDate = startDate.add(const Duration(days: 365));
+  DateTime endDate = startDate.add(const Duration(days: 180));
   switch (frequency.pattern) {
     case Frequency.monthly:
       // End date should be adjusted to only be three months after.
