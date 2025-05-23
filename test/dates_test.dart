@@ -150,11 +150,11 @@ void main() {
           startDate: startDate,
         ),
       );
-      expect(dates.length, 366);
+      expect(dates.length, 181);
       // Expect "biggest" day to be start + 90 days
       expect(
         dates.reduce((a, b) => a.isAfter(b) ? a : b),
-        startDate.add(const Duration(days: 365)),
+        startDate.add(const Duration(days: 180)),
       );
       // Expect "smallest" day to be start date
       expect(dates.reduce((a, b) => a.isBefore(b) ? a : b), startDate);
