@@ -2,6 +2,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/swap_instance.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +62,7 @@ class SwapTile extends StatelessWidget {
                         ),
                         SizedBox(height: spacing * 0.25),
                         Text(
-                          'You have $numChoresOnDay other chores on that day.',
+                          'You have $numChoresOnDay other chore${numChoresOnDay != 1 ? 's' : ''} on that day.',
                           style: DivvyTheme.smallBodyGrey,
                         ),
                       ],
@@ -106,6 +107,9 @@ class SwapTile extends StatelessWidget {
 
   /// opens an informational page about a swap.
   void _openSwapScreen(BuildContext context) {
-    print('opening swap screen!!');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SwapInstance(swap: swap)),
+    );
   }
 }

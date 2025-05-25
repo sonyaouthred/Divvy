@@ -11,9 +11,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// import 'package:divvy/models/divvy_theme.dart';
-// Commented out for testing
-
 /// Displays the current user's dashboard with their upcoming chores,
 /// house leaderboard, etc.
 class Dashboard extends StatelessWidget {
@@ -186,7 +183,7 @@ class Dashboard extends StatelessWidget {
               child: Container(
                 alignment: Alignment.bottomCenter,
                 height: 45,
-                child: Text('See all', style: DivvyTheme.bodyGrey),
+                child: Text('View all', style: DivvyTheme.smallBodyGrey),
               ),
             ),
           ],

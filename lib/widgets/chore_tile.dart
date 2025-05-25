@@ -20,7 +20,18 @@ class ChoreTile extends StatelessWidget {
   final ChoreInst? choreInst;
   Chore? superChore;
   final bool compact;
-  ChoreTile({super.key, this.choreInst, this.superChore, this.compact = false});
+  final bool showDivider;
+  final Function? customAction;
+  final Icon? trailing;
+  ChoreTile({
+    super.key,
+    this.choreInst,
+    this.superChore,
+    this.compact = false,
+    this.showDivider = true,
+    this.customAction,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +50,9 @@ class ChoreTile extends StatelessWidget {
     return InkWell(
       onTap:
           () =>
-              choreInst != null
+              customAction != null
+                  ? customAction!(choreInst)
+                  : choreInst != null
                   ? _openChoreInstancePage(
                     context,
                     choreInst!.id,
@@ -89,11 +102,13 @@ class ChoreTile extends StatelessWidget {
                 // Display chevron icon
                 Flexible(
                   flex: 1,
-                  child: Icon(
-                    CupertinoIcons.chevron_right,
-                    color: DivvyTheme.lightGrey,
-                    size: 20,
-                  ),
+                  child:
+                      trailing ??
+                      Icon(
+                        CupertinoIcons.chevron_right,
+                        color: DivvyTheme.lightGrey,
+                        size: 20,
+                      ),
                 ),
               ],
             ),
@@ -162,16 +177,18 @@ class ChoreTile extends StatelessWidget {
             // Display chevron icon
             Flexible(
               flex: 1,
-              child: Icon(
-                CupertinoIcons.chevron_right,
-                color: DivvyTheme.lightGrey,
-                size: 20,
-              ),
+              child:
+                  trailing ??
+                  Icon(
+                    CupertinoIcons.chevron_right,
+                    color: DivvyTheme.lightGrey,
+                    size: 20,
+                  ),
             ),
           ],
         ),
         SizedBox(height: spacing / 4),
-        Divider(color: DivvyTheme.altBeige),
+        if (showDivider) Divider(color: DivvyTheme.altBeige),
       ],
     );
   }

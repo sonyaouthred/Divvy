@@ -236,6 +236,24 @@ class DivvyProvider extends ChangeNotifier {
     return res;
   }
 
+  /// Returns all chore instances w/ passed chore super ID assigned to the passed
+  /// member that are open to be swapped. If no memberID is passed, uses current member.
+  List<ChoreInst> getMemberSwappableChores({
+    required ChoreID choreID,
+    MemberID? memberID,
+  }) {
+    final List<ChoreInst> instances = _choreInstances[choreID] ?? [];
+    final List<ChoreInst> available =
+        instances
+            .where(
+              (chore) =>
+                  chore.assignee == (memberID ?? _currentMember.id) &&
+                  !chore.isDone,
+            )
+            .toList();
+    return List.from(available);
+  }
+
   /// Returns all chore instances assigned to the passed member
   /// in the next week - not overdue or due today.
   List<ChoreInst> getUpcomingChores(MemberID member) {
@@ -308,7 +326,7 @@ class DivvyProvider extends ChangeNotifier {
         instances
             .where(
               (inst) =>
-                  inst.assignee == member &&
+                  inst.assignee == (member ?? _currentMember.id) &&
                   // Check if the due date is today
                   isSameDay(inst.dueDate, day ?? DateTime.now()),
             )
@@ -419,6 +437,11 @@ class DivvyProvider extends ChangeNotifier {
               (swap.status == Status.open && swap.from != _currentMember.id),
         )
         .toList();
+  }
+
+  /// Returns a swap with the given ID.
+  Swap? getSwap(SwapID swapID) {
+    return _swaps[swapID];
   }
 
   ////////////////////////////// Setters //////////////////////////////
@@ -640,6 +663,19 @@ class DivvyProvider extends ChangeNotifier {
       await Future.wait(futures);
       _choreInstances.remove(choreID);
     }
+
+    // now delete all swaps with this chore ID
+    final swaps = _swaps.values;
+    final List<Future> futures = [];
+    for (Swap swap in swaps) {
+      if (swap.choreID == choreID) {
+        // delete this swap!!
+        futures.add(db.deleteSwap(houseID: houseID, swapID: swap.id));
+        _swaps.remove(swap.id);
+      }
+    }
+    await Future.wait(futures);
+
     _chores.remove(choreID);
     await db.deleteChore(houseID: houseID, choreID: choreID);
     notifyListeners();
@@ -659,13 +695,8 @@ class DivvyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates a swap as pending
-  /// For now, can only swap same chore (later date)
-  Future<void> sendSwapInvite(
-    Swap swap,
-    Member member,
-    ChoreInstID offered,
-  ) async {
+  /// Allows current user to make an offer for the swap.
+  Future<void> sendSwapInvite(Swap swap, ChoreInstID offered) async {
     // update the offered chore instance info
     final offeredInst = getChoreInstanceFromID(swap.choreID, offered);
     if (offeredInst == null) return;
@@ -673,7 +704,7 @@ class DivvyProvider extends ChangeNotifier {
     await db.upsertChoreInst(offeredInst, houseID);
     // Update the swap info
     swap.status = Status.pending;
-    swap.to = member.id;
+    swap.to = _currentMember.id;
     swap.offered = offered;
     await db.upsertSwap(swap, houseID);
     notifyListeners();

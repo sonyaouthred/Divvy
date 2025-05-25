@@ -1,29 +1,33 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
-import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/calendar.dart';
 import 'package:divvy/util/date_funcs.dart';
+import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-typedef Week = List<DateTime>;
-
-// TODO: aware of bug when selecting March 10, 2025
-
-/// Displays an interactive calendar that lets the user view a schedule of chores
-class Calendar extends StatefulWidget {
-  const Calendar({super.key});
+/// Allow the user to add/edit a model, saves on close.
+class ChooseSwap extends StatefulWidget {
+  final ChoreID choreID;
+  const ChooseSwap({super.key, required this.choreID});
 
   @override
-  State<Calendar> createState() => _CalendarState();
+  State<ChooseSwap> createState() => _ChooseSwapState();
 }
 
-class _CalendarState extends State<Calendar> {
-  late Member _currUser;
-  // All of the user's chore instances
-  late List<ChoreInst> _chores;
+class _ChooseSwapState extends State<ChooseSwap> {
+  /// The ChoreID for the superclass of chore the user can pick from
+  late final ChoreID _choreID;
+
+  /// The list of chore instances available to be swapped.
+  /// Must be this user's and incomplete.
+  late List<ChoreInst> _availableChores;
+
+  /// the chore the user has selected to swap.
+  late ChoreInst? _selected;
   // Track the user's current selection of chores
   DateSelection _rangeSelection = DateSelection.week;
   // The date the user has selected
@@ -38,9 +42,9 @@ class _CalendarState extends State<Calendar> {
   @override
   void initState() {
     super.initState();
+    _choreID = widget.choreID;
     final providerRef = Provider.of<DivvyProvider>(context, listen: false);
-    _currUser = providerRef.currMember;
-    _chores = providerRef.getMemberChoreInstances(_currUser.id);
+    _availableChores = providerRef.getMemberSwappableChores(choreID: _choreID);
     final now = DateTime.now();
     // select today as the date!
     _selectedDate = now;
@@ -52,41 +56,79 @@ class _CalendarState extends State<Calendar> {
     );
     _controller = PageController(initialPage: indexOfNow);
     _currMonth = getNameOfMonth(now.month);
+    _selected = null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
-    final spacing = width * 0.05;
-    return Consumer<DivvyProvider>(
-      builder: (context, provider, child) {
-        // refresh data from provider
-        _chores = provider.getMemberChoreInstances(_currUser.id);
-        return SizedBox.expand(
-          child: SingleChildScrollView(
-            child: Container(
-              width: width,
-              padding: EdgeInsets.symmetric(horizontal: spacing),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Display date range
-                  _selectDateRange(spacing),
-                  // Display Calendar dates for date range
-                  _displayCalendar(width, spacing, height),
-                  SizedBox(height: spacing),
-                  // Display chores on current date
-                  _displayChores(spacing),
-                ],
-              ),
-            ),
+    final double width = MediaQuery.of(context).size.width;
+    final double height = MediaQuery.of(context).size.height;
+    final double spacing = width * 0.05;
+    return Scaffold(
+      backgroundColor: DivvyTheme.background,
+      appBar: AppBar(
+        title: Text('Select a chore', style: DivvyTheme.largeHeaderBlack),
+        backgroundColor: DivvyTheme.background,
+        automaticallyImplyLeading: false,
+        actions: [
+          InkWell(
+            onTap: () => _popBack(context, false),
+            child: SizedBox(width: 45, height: 45, child: Icon(Icons.close)),
           ),
-        );
-      },
+        ],
+      ),
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult:
+            (didPop, result) => {
+              if (!didPop) {_popBack(context, false)},
+            },
+        child: SizedBox.expand(
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: DivvyTheme.background,
+                ),
+                alignment: Alignment.topCenter,
+                padding: EdgeInsets.symmetric(horizontal: spacing),
+                child: SingleChildScrollView(
+                  child: Consumer<DivvyProvider>(
+                    builder: (context, provider, child) {
+                      // refresh data from provider
+                      _availableChores = provider.getMemberSwappableChores(
+                        choreID: _choreID,
+                      );
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Display date range
+                          _selectDateRange(spacing),
+                          // Display Calendar dates for date range
+                          _displayCalendar(width, spacing, height),
+                          SizedBox(height: spacing),
+                          // Display chores on current date
+                          _displayChores(spacing),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: _swapButon(spacing, context),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
+
+  ////////////////////////////// Widgets ///////////////////////////////
 
   // Allows user to select a date range
   Widget _selectDateRange(double spacing) {
@@ -265,7 +307,9 @@ class _CalendarState extends State<Calendar> {
     bool isSelected = isSameDay(date, _selectedDate);
     // True if current date has chores
     bool hasChores =
-        _chores.where((chore) => isSameDay(chore.dueDate, date)).isNotEmpty;
+        _availableChores
+            .where((chore) => isSameDay(chore.dueDate, date))
+            .isNotEmpty;
     return InkWell(
       onTap: () => setState(() => _selectedDate = date),
       child: IntrinsicHeight(
@@ -317,7 +361,7 @@ class _CalendarState extends State<Calendar> {
 
   /// Displays the list of chores for the selected date.
   Widget _displayChores(double spacing) {
-    final choreList = _chores.where(
+    final choreList = _availableChores.where(
       (chore) => isSameDay(chore.dueDate, _selectedDate),
     );
     // Handle empty chore list
@@ -340,19 +384,74 @@ class _CalendarState extends State<Calendar> {
           padding: EdgeInsets.all(spacing / 2),
           child: Column(
             children:
-                choreList.map((chore) => ChoreTile(choreInst: chore)).toList(),
+                choreList
+                    .map(
+                      (chore) => ChoreTile(
+                        choreInst: chore,
+                        customAction: _selectInstance,
+                        trailing: Icon(
+                          _selected == chore
+                              ? Icons.circle
+                              : Icons.circle_outlined,
+                          color: DivvyTheme.mediumGreen,
+                        ),
+                      ),
+                    )
+                    .toList(),
           ),
         ),
       ],
     );
   }
-}
 
-enum DateSelection { week, day }
+  /// Triggers the swap action
+  Widget _swapButon(double spacing, BuildContext context) => Container(
+    height: 60,
+    width: 60,
+    margin: EdgeInsets.symmetric(
+      horizontal: spacing * 2,
+      vertical: spacing * 3,
+    ),
+    child: InkWell(
+      onTap: () => _popBack(context, true),
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      child: Container(
+        decoration: DivvyTheme.completeBox(true),
+        child: Icon(Icons.check, color: DivvyTheme.background, size: 40),
+      ),
+    ),
+  );
 
-extension DateSelectionInfo on DateSelection {
-  String get name => switch (this) {
-    DateSelection.week => 'This week',
-    DateSelection.day => 'Selected date',
-  };
+  ////////////////////////////// Util Functions ///////////////////////////////
+
+  /// Either select or deselect the passed chore instance
+  void _selectInstance(ChoreInst choreInst) {
+    setState(() {
+      if (_selected == choreInst) {
+        _selected = null;
+      } else {
+        _selected = choreInst;
+      }
+    });
+  }
+
+  /// Add new project, updating provider. If fields are empty, do nothing.
+  void _popBack(BuildContext context, bool swap) async {
+    if (!context.mounted) return;
+    if (!swap) {
+      // User doesn't want to swap, just pop back.
+      Navigator.pop(context);
+      return;
+    }
+    if (_selected == null) {
+      await showErrorMessage(
+        context,
+        'No chore selected',
+        'Please choose a chore to swap.',
+      );
+      return;
+    }
+    Navigator.pop(context, _selected!.id);
+  }
 }

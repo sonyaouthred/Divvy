@@ -46,11 +46,11 @@ List<DateTime> getDateList(ChoreFrequency frequency) {
           frequency.daysOfWeek.where((d) => d > 7 || d < 0).isNotEmpty)) {
     return [];
   }
-  DateTime endDate = startDate.add(const Duration(days: 365));
+  DateTime endDate = startDate.add(const Duration(days: 180));
   switch (frequency.pattern) {
     case Frequency.monthly:
       // End date should be adjusted to only be three months after.
-      endDate = Jiffy.parseFromDateTime(startDate).add(years: 1).dateTime;
+      endDate = Jiffy.parseFromDateTime(startDate).add(months: 6).dateTime;
       // For a montly chore, ignore days of week
       // Check if the user has requested the last day of a given month
       bool wantLastDay = isLastDay(startDate);

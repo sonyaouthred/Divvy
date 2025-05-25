@@ -104,15 +104,17 @@ class ChoreInstanceScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _markCompleteButton(
-                    context,
-                    spacing,
-                    choreInstance,
-                    provider,
+                // don't allow user to check off chore if they aren't the assignee
+                if (choreInstance.assignee == provider.currMember.id)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _markCompleteButton(
+                      context,
+                      spacing,
+                      choreInstance,
+                      provider,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
