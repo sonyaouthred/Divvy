@@ -32,7 +32,7 @@ String getShortDate(DateTime dueDate) {
 /// Parameters:
 ///  - frequency: How often the expense should recur (Daily, Weekly, Monthly)
 /// Returns: List of DateTime objects representing all occurrence dates. Only generates
-/// for a 365-day period
+/// for a 180-day period
 /// Expected behavior:
 ///   - monthly: repeat once monthly on the same date for 3 months
 ///   - daily: repeat every day for 90 days + start date

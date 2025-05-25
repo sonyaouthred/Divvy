@@ -480,16 +480,16 @@ void main() {
       assert(deletedSubs == null || deletedSubs.isEmpty);
     });
 
-    // TODO: subgroup updates when user is deleted
+    // // TODO: subgroup updates when user is deleted
     // test('Subgroup docs properly updated when user deleted', () async {
     //   // Create three users
     //   final member1ID = '9508239408304';
     //   final member2ID = '0850948902432';
     //   final member3ID = 'fji2u59349032jgf';
     //   List<Future> futures = [
-    //     createUser(member1ID, 'member1@test.com'),
-    //     createUser(member2ID, 'member1@test.com'),
-    //     createUser(member3ID, 'member1@test.com'),
+    //     createUser(member1ID, 'member1@test.com', 'member1'),
+    //     createUser(member2ID, 'member2@test.com', 'member2'),
+    //     createUser(member3ID, 'member3@test.com', 'member3'),
     //   ];
     //   await Future.wait(futures);
     //   final founder = await fetchUser(member1ID);
@@ -509,8 +509,8 @@ void main() {
 
     //   // add users to house
     //   futures = [
-    //     addUserToHouse(mem2!, house.joinCode, 'name'),
-    //     addUserToHouse(mem3!, house.joinCode, 'name'),
+    //     addUserToHouse(mem2!, house.joinCode),
+    //     addUserToHouse(mem3!, house.joinCode),
     //   ];
     //   await Future.wait(futures);
 
@@ -518,12 +518,12 @@ void main() {
     //   final subgroup1 = Subgroup.fromNew(
     //     members: [member3ID, member2ID],
     //     name: '2 & 3',
-    //     color: Colors.black,
+    //     color: ProfileColor.black,
     //   );
     //   final subgroup2 = Subgroup.fromNew(
     //     members: [member1ID, member2ID],
     //     name: '1 & 2',
-    //     color: Colors.black,
+    //     color: ProfileColor.black,
     //   );
     //   futures = [
     //     upsertSubgroup(subgroup1, house.id),
@@ -545,6 +545,19 @@ void main() {
     //   assert(setEquals(sub2.members.toSet(), {member2ID, member1ID}));
 
     //   // Then delete  memeber 2
+    //   // Simulating provider leave house function 
+    //   // Imtating provider 
+      
+
+    // /// remove user from all chores they may have belonged to
+    // for (Chore chore in getMemberChores(id)) {
+    //   chore.removeAssignee(id);
+    //   if (chore.assignees.isEmpty) {
+    //     // delete chore bc there are no more users on it
+    //     // this will handle db update
+    //     deleteSuperclassChore(chore.id);
+    //   }
+    // }
     //   await deleteMember(memberID: member2ID, houseID: house.id);
 
     //   // Test if subgroup was updated

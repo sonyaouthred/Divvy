@@ -13,9 +13,9 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 366);
+      expect(dates.length, 181);
       expect(dates.first, start);
-      expect(dates.last, start.add(const Duration(days: 365)));
+      expect(dates.last, start.add(const Duration(days: 180)));
     });
 
     test('Daily recurrence handles DST spring forward', () {
@@ -27,7 +27,7 @@ void main() {
           startDate: start,
         ),
       );
-      expect(dates.length, 366);
+      expect(dates.length, 181);
     });
   });
 
