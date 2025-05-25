@@ -1,79 +1,84 @@
-import 'dart:math';
-
-import 'package:divvy/models/member.dart';
+import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/widgets/pending_swap_tile.dart';
 import 'package:divvy/widgets/swap_tile.dart';
 import 'package:flutter/material.dart';
 
-/// Widgets related to swaps. More documentation to come.
-Widget availableOutgoingSwaps(DivvyProvider provider) {
-  List<Swap> swaps =
-      provider.swaps.where((swap) {
-        return swap.from == provider.currMember.id;
-      }).toList();
-
-  List<Member> members =
-      swaps.map((swap) {
-        return provider.getMemberById(swap.to)!;
-      }).toList();
-
+/// Display the available (open) swaps
+Widget displayOpenSwaps(DivvyProvider provider, double spacing) {
+  final openSwaps = provider.getOpenSwaps();
+  if (openSwaps.isEmpty) return Container();
   return Column(
+    mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      swaps.isEmpty ? SizedBox() : Text("Outgoing Swap Requests"),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text('Available swaps', style: DivvyTheme.bodyBoldBlack),
+          InkWell(
+            onTap: () => print('seeing all'),
+            child: Container(
+              alignment: Alignment.bottomCenter,
+              height: 45,
+              child: Text('View all', style: DivvyTheme.smallBodyGrey),
+            ),
+          ),
+        ],
+      ),
+      SizedBox(height: spacing),
+      ...openSwaps.map((swap) => SwapTile(swap: swap)),
+    ],
+  );
+}
+
+/// Dixplays swaps suggested by current user that are pending
+Widget displayPendingSwaps(DivvyProvider provider, double spacing) {
+  List<Swap> swaps = provider.getPendingSwaps();
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (swaps.isNotEmpty) SizedBox(height: spacing),
+      if (swaps.isNotEmpty)
+        Text("Your pending swaps:", style: DivvyTheme.bodyBoldBlack),
+      if (swaps.isNotEmpty) SizedBox(height: spacing / 2),
       ListView.builder(
         shrinkWrap: true,
         itemCount: swaps.length,
+        physics: NeverScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, idx) {
-          return Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: members[idx].profilePicture.color,
-                ),
-                title: Text("To ${members[idx].name}"),
-                minTileHeight: 20,
-              ),
-              SwapTile(swap: swaps[idx]),
-            ],
-          );
+          return PendingSwapTile(swap: swaps[idx]);
         },
       ),
     ],
   );
 }
 
-Widget availableIncomingSwaps(DivvyProvider provider, bool truncatedView) {
-  List<Swap> swaps =
-      provider.swaps.where((swap) {
-        return swap.to == provider.currMember.id;
-      }).toList();
-  List<Member> members =
-      swaps.map((swap) {
-        return provider.getMemberById(swap.from)!;
-      }).toList();
-
+/// Display the available (open) swaps
+Widget displayOpenSwapsForCurrMember(DivvyProvider provider, double spacing) {
+  final openSwaps = provider.getOpenSwapsForCurrMember();
+  if (openSwaps.isEmpty) return Container();
   return Column(
+    mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      swaps.isEmpty ? SizedBox() : Text("Incoming Swap Requests"),
-      ListView.builder(
-        shrinkWrap: true,
-        itemCount: truncatedView ? min(swaps.length, 1) : swaps.length,
-        itemBuilder: (BuildContext context, idx) {
-          return Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: members[idx].profilePicture.color,
-                ),
-                title: Text("${members[idx].name} Offered:"),
-                minTileHeight: 20,
-              ),
-              SwapTile(swap: swaps[idx]),
-            ],
-          );
-        },
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text('Your open swaps:', style: DivvyTheme.bodyBoldBlack),
+          InkWell(
+            onTap: () => print('seeing all'),
+            child: Container(
+              alignment: Alignment.bottomCenter,
+              height: 45,
+              child: Text('View all', style: DivvyTheme.smallBodyGrey),
+            ),
+          ),
+        ],
       ),
+      SizedBox(height: spacing),
+      ...openSwaps.map((swap) => SwapTile(swap: swap, showMemberTile: false)),
     ],
   );
 }

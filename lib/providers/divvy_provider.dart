@@ -439,6 +439,27 @@ class DivvyProvider extends ChangeNotifier {
         .toList();
   }
 
+  /// Returns all open swaps that were offered by the current member.
+  List<Swap> getOpenSwapsForCurrMember() {
+    return _swaps.values
+        .where(
+          (swap) =>
+              (swap.status == Status.open && swap.from == _currentMember.id),
+        )
+        .toList();
+  }
+
+  /// Returns swaps created by this user that have been responded to
+  /// by someone. (i.e. this user needs to decide if they want to approve them)
+  List<Swap> getPendingSwaps() {
+    return _swaps.values
+        .where(
+          (swap) =>
+              (swap.from == _currentMember.id && swap.status == Status.pending),
+        )
+        .toList();
+  }
+
   /// Returns a swap with the given ID.
   Swap? getSwap(SwapID swapID) {
     return _swaps[swapID];

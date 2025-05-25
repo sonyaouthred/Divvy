@@ -1,11 +1,9 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
-import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:divvy/widgets/leaderboard.dart';
-import 'package:divvy/widgets/swap_tile.dart';
 import 'package:divvy/widgets/swap_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -36,8 +34,6 @@ class Dashboard extends StatelessWidget {
                 .toList();
         // get overdue chores
         List<ChoreInst> overdueChores = provider.getOverdueChores(currUser.id);
-        // list of open swaps
-        List<Swap> openSwaps = provider.getOpenSwaps();
         return SizedBox.expand(
           child: SingleChildScrollView(
             child: Container(
@@ -82,10 +78,12 @@ class Dashboard extends StatelessWidget {
                   Divider(color: DivvyTheme.altBeige),
                   SizedBox(height: spacing),
                   Leaderboard(title: 'House Leaderboard'),
-                  availableIncomingSwaps(provider, true),
+                  displayOpenSwapsForCurrMember(provider, spacing),
                   SizedBox(height: spacing / 2),
-                  _displayAvailableSwaps(spacing, openSwaps),
-                  if (openSwaps.isNotEmpty) SizedBox(height: spacing * 5),
+                  displayPendingSwaps(provider, spacing),
+                  SizedBox(height: spacing / 2),
+                  displayOpenSwaps(provider, spacing),
+                  SizedBox(height: spacing * 5),
                 ],
               ),
             ),
@@ -157,39 +155,11 @@ class Dashboard extends StatelessWidget {
                   .map(
                     (chore) => Padding(
                       padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                      child: ChoreTile(choreInst: chore),
+                      child: ChoreTile(choreInst: chore, showDivider: false),
                     ),
                   )
                   .toList(),
         ),
-        SizedBox(height: spacing / 2),
-      ],
-    );
-  }
-
-  /// Display the available (open) swaps
-  Widget _displayAvailableSwaps(double spacing, List<Swap> openSwaps) {
-    if (openSwaps.isEmpty) return Container();
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text('Available swaps', style: DivvyTheme.bodyBoldBlack),
-            InkWell(
-              onTap: () => print('seeing all'),
-              child: Container(
-                alignment: Alignment.bottomCenter,
-                height: 45,
-                child: Text('View all', style: DivvyTheme.smallBodyGrey),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: spacing),
-        ...openSwaps.map((swap) => SwapTile(swap: swap)),
       ],
     );
   }

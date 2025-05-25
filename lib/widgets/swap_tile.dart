@@ -11,8 +11,9 @@ import 'package:provider/provider.dart';
 /// Represents a pending swap. More documentation to come.
 class SwapTile extends StatelessWidget {
   final Swap swap;
+  final bool showMemberTile;
 
-  const SwapTile({super.key, required this.swap});
+  const SwapTile({super.key, required this.swap, this.showMemberTile = true});
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -35,8 +36,9 @@ class SwapTile extends StatelessWidget {
               provider.getChoresForDay(day: choreInst.dueDate).length;
           return Column(
             children: [
-              _showSwappingMember(context, spacing, fromMember),
-              SizedBox(height: spacing / 2),
+              if (showMemberTile)
+                _showSwappingMember(context, spacing, fromMember),
+              if (showMemberTile) SizedBox(height: spacing / 2),
               Container(
                 decoration: DivvyTheme.standardBox,
                 padding: EdgeInsets.symmetric(

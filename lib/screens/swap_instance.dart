@@ -172,8 +172,9 @@ class _SwapInstanceState extends State<SwapInstance> {
           final chosenChoreInst = await _openChooseChoreScreen(context);
           if (chosenChoreInst == null || chosenChoreInst is! ChoreID) return;
           provider.sendSwapInvite(_swap!, chosenChoreInst);
-        } else {
-          print('unhandled tap case');
+          if (!mounted) return;
+          // pop back to a previous screen
+          Navigator.pop(context);
         }
       },
       highlightColor: Colors.transparent,

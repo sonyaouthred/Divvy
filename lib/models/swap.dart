@@ -1,7 +1,6 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();

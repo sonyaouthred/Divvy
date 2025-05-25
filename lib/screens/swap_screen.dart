@@ -1,7 +1,6 @@
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/widgets/swap_widgets.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +21,7 @@ class _SwapScreenState extends State<SwapScreen> {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Get data from the provider
-        // final swaps = provider.getOpenSwaps(_swap!.id);
+
         return Scaffold(
           backgroundColor: DivvyTheme.background,
           appBar: AppBar(
@@ -37,8 +36,8 @@ class _SwapScreenState extends State<SwapScreen> {
                 SingleChildScrollView(
                   child: Column(
                     children: [
-                      availableIncomingSwaps(provider, false),
-                      availableOutgoingSwaps(provider),
+                      displayOpenSwaps(provider, spacing),
+                      displayPendingSwaps(provider, spacing),
                     ],
                   ),
                 ),
@@ -50,17 +49,17 @@ class _SwapScreenState extends State<SwapScreen> {
     );
   }
 
-  // Indicates invalid data
-  Widget _invalidDataScreen() {
-    return Scaffold(
-      backgroundColor: DivvyTheme.background,
-      appBar: AppBar(
-        title: Text("Swap not found", style: DivvyTheme.screenTitle),
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        backgroundColor: DivvyTheme.background,
-      ),
-      body: SizedBox.expand(child: CupertinoActivityIndicator()),
-    );
-  }
+  // // Indicates invalid data
+  // Widget _invalidDataScreen() {
+  //   return Scaffold(
+  //     backgroundColor: DivvyTheme.background,
+  //     appBar: AppBar(
+  //       title: Text("Swap not found", style: DivvyTheme.screenTitle),
+  //       centerTitle: true,
+  //       scrolledUnderElevation: 0,
+  //       backgroundColor: DivvyTheme.background,
+  //     ),
+  //     body: SizedBox.expand(child: CupertinoActivityIndicator()),
+  //   );
+  // }
 }
