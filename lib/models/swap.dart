@@ -1,5 +1,6 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -21,6 +22,9 @@ class Swap {
   MemberID to;
   // Status of swap.
   Status status;
+  // Other chore suggested to be swapped for this one.
+  // Empty if status is open.
+  ChoreInstID offered;
 
   Swap({
     required this.id,
@@ -29,6 +33,7 @@ class Swap {
     required this.from,
     required this.to,
     required this.status,
+    required this.offered,
   });
 
   /// Creates a new Swap object.
@@ -45,6 +50,7 @@ class Swap {
       from: from,
       to: '',
       status: Status.open,
+      offered: '',
     );
   }
 
@@ -55,8 +61,9 @@ class Swap {
     choreID: json['choreID'],
     choreInstID: json['choreInstID'],
     from: json['from'],
-    to: json['to'],
+    to: json['to'] ?? '',
     status: Status.values.firstWhere((s) => s.name == json['status']),
+    offered: json['offered'] ?? '',
   );
 
   /// Returns subgroup object as json
@@ -67,8 +74,25 @@ class Swap {
     'from': from,
     'to': to,
     'status': status.name,
+    'offered': offered,
   };
 }
 
 /// Represents the current status of a swap.
 enum Status { open, pending, approved, rejected }
+
+extension StatusInfo on Status {
+  String get displayName => switch (this) {
+    Status.approved => "Approved",
+    Status.open => "Open",
+    Status.pending => "Pending",
+    Status.rejected => "Rejected",
+  };
+
+  IconData get icon => switch (this) {
+    Status.approved => CupertinoIcons.check_mark_circled_solid,
+    Status.open => CupertinoIcons.circle,
+    Status.pending => CupertinoIcons.refresh_circled,
+    Status.rejected => CupertinoIcons.clear_circled_solid,
+  };
+}

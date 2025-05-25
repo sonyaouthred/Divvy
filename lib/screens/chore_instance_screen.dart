@@ -36,10 +36,11 @@ class ChoreInstanceScreen extends StatelessWidget {
         if (parentChore == null) return _choreNotFoundScreen(width, spacing);
 
         // Get the updated instance (potentially with new info) from provider
-        ChoreInst choreInstance = provider.getChoreInstanceFromID(
+        ChoreInst? choreInstance = provider.getChoreInstanceFromID(
           choreID,
           choreInstanceId,
         );
+        if (choreInstance == null) return _choreNotFoundScreen(width, spacing);
         // Get the assignee to the chore
         Member? thisAssignee = provider.getMemberById(choreInstance.assignee);
         // Get a list of other people assigned to the chore
@@ -57,7 +58,7 @@ class ChoreInstanceScreen extends StatelessWidget {
             actions: [
               // Allow user to take actions for this chore
               InkWell(
-                onTap: () => _showActionMenu(context),
+                onTap: () => _showActionMenu(context, choreInstance),
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 child: Container(
@@ -103,15 +104,17 @@ class ChoreInstanceScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _markCompleteButton(
-                    context,
-                    spacing,
-                    choreInstance,
-                    provider,
+                // don't allow user to check off chore if they aren't the assignee
+                if (choreInstance.assignee == provider.currMember.id)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _markCompleteButton(
+                      context,
+                      spacing,
+                      choreInstance,
+                      provider,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -144,7 +147,7 @@ class ChoreInstanceScreen extends StatelessWidget {
 
   /// Returns true if the given chore instance is overdue.
   bool isInstanceOverdue(ChoreInst instance) =>
-      instance.dueDate.isBefore(DateTime.now()) && !instance.isDone;
+      dayIsAfter(DateTime.now(), instance.dueDate) && !instance.isDone;
 
   /// Displays the information for this chore and its instance.
   Widget _displayCurrChoreInfo(
@@ -154,7 +157,7 @@ class ChoreInstanceScreen extends StatelessWidget {
     Member? assignee,
     double spacing,
   ) => Container(
-    decoration: DivvyTheme.textInput,
+    decoration: DivvyTheme.standardBox,
     padding: EdgeInsets.only(
       left: spacing,
       right: spacing,
@@ -262,49 +265,51 @@ class ChoreInstanceScreen extends StatelessWidget {
     double spacing,
     ChoreInst choreInst,
     DivvyProvider provider,
-  ) => InkWell(
-    onTap: () {
-      bool isDone = !choreInst.isDone;
-      // Toggle completion
-      provider.toggleChoreInstanceCompletedState(
-        superChoreID: choreInst.superID,
-        choreInst: choreInst,
-      );
-      // Pop screen if chore is now done
-      if (isDone) Navigator.of(context).pop();
-    },
-    highlightColor: Colors.transparent,
-    splashColor: Colors.transparent,
-    child: Container(
-      height: 60,
-      margin: EdgeInsets.all(spacing * 3),
-      decoration: DivvyTheme.completeBox(choreInst.isDone),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Display check and text representing current state
-          Icon(
-            Icons.check,
-            color:
-                choreInst.isDone
-                    ? DivvyTheme.background
-                    : DivvyTheme.mediumGreen,
-          ),
-          SizedBox(width: spacing),
-          Text(
-            choreInst.isDone ? 'Complete' : 'Mark Complete',
-            style:
-                choreInst.isDone
-                    ? DivvyTheme.largeBoldMedWhite
-                    : DivvyTheme.largeBoldMedGreen,
-          ),
-        ],
+  ) => Container(
+    height: 60,
+    margin: EdgeInsets.all(spacing * 3),
+    child: InkWell(
+      onTap: () {
+        bool isDone = !choreInst.isDone;
+        // Toggle completion
+        provider.toggleChoreInstanceCompletedState(
+          superChoreID: choreInst.superID,
+          choreInst: choreInst,
+        );
+        // Pop screen if chore is now done
+        if (isDone) Navigator.of(context).pop();
+      },
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      child: Container(
+        decoration: DivvyTheme.completeBox(choreInst.isDone),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Display check and text representing current state
+            Icon(
+              Icons.check,
+              color:
+                  choreInst.isDone
+                      ? DivvyTheme.background
+                      : DivvyTheme.mediumGreen,
+            ),
+            SizedBox(width: spacing),
+            Text(
+              choreInst.isDone ? 'Complete' : 'Mark Complete',
+              style:
+                  choreInst.isDone
+                      ? DivvyTheme.largeBoldMedWhite
+                      : DivvyTheme.largeBoldMedGreen,
+            ),
+          ],
+        ),
       ),
     ),
   );
 
   /// Shows a Cupertino action menu that allows user to delete chore
-  void _showActionMenu(BuildContext context) async {
+  void _showActionMenu(BuildContext context, ChoreInst choreInst) async {
     final delete = await showCupertinoModalPopup<bool>(
       context: context,
       builder:
@@ -312,9 +317,14 @@ class ChoreInstanceScreen extends StatelessWidget {
             title: const Text('Chore Actions'),
             actions: <CupertinoActionSheetAction>[
               CupertinoActionSheetAction(
-                /// This parameter indicates the action would perform
-                /// a destructive action such as delete or exit and turns
-                /// the action's text color to red.
+                onPressed: () async {
+                  await _openSwap(context, choreInst);
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop(false);
+                },
+                child: const Text('Swap Chore'),
+              ),
+              CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 onPressed: () {
                   Navigator.of(context).pop(true);
@@ -335,6 +345,14 @@ class ChoreInstanceScreen extends StatelessWidget {
         Navigator.of(context).pop();
       }
     }
+  }
+
+  /// Mark a chore as ready to be swapped
+  Future<void> _openSwap(BuildContext context, ChoreInst choreInst) async {
+    await Provider.of<DivvyProvider>(
+      context,
+      listen: false,
+    ).openSwap(choreInst, choreID);
   }
 
   /// Will open the passed member's page

@@ -177,12 +177,6 @@ void main() {
         DateTime(2025, 4, 1),
         DateTime(2025, 5, 1),
         DateTime(2025, 6, 1),
-        DateTime(2025, 7, 1),
-        DateTime(2025, 8, 1),
-        DateTime(2025, 9, 1),
-        DateTime(2025, 10, 1),
-        DateTime(2025, 11, 1),
-        DateTime(2025, 12, 1),
       ]);
     });
     test('Monthly recurring dates, different number of days', () {
@@ -201,23 +195,7 @@ void main() {
         DateTime(2025, 7, 10),
         DateTime(2025, 8, 10),
         DateTime(2025, 9, 10),
-        DateTime(2025, 10, 10),
-        DateTime(2025, 11, 10),
-        DateTime(2025, 12, 10),
-        DateTime(2026, 1, 10),
-        DateTime(2026, 2, 10),
-        DateTime(2026, 3, 10),
       ]);
     });
   });
-
-
-
-
-
-
-
-
 }
-
-

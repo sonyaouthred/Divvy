@@ -239,11 +239,7 @@ class ChoreSuperclassScreen extends StatelessWidget {
       children: [
         _memberTile(member, spacing),
         SizedBox(height: spacing / 2),
-        ChoreTile(
-          choreInst: choreInstance,
-          // only show full date if chore is not due today
-          showFullDate: !isSameDay(choreInstance.dueDate, DateTime.now()),
-        ),
+        ChoreTile(choreInst: choreInstance),
         SizedBox(height: spacing / 2),
       ],
     ),

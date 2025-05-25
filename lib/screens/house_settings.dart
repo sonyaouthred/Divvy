@@ -110,7 +110,7 @@ class _HouseSettingsState extends State<HouseSettings> {
               Text(text, style: DivvyTheme.bodyBoldBlack),
             ],
           ),
-          const Divider(color: DivvyTheme.beige, height: 1),
+          const Divider(color: DivvyTheme.altBeige, height: 1),
           SizedBox(height: spacing / 4),
           // Show relevant actions
           ListView.builder(

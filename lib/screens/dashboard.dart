@@ -9,9 +9,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// import 'package:divvy/models/divvy_theme.dart';
-// Commented out for testing
-
 /// Displays the current user's dashboard with their upcoming chores,
 /// house leaderboard, etc.
 class Dashboard extends StatelessWidget {
@@ -28,7 +25,7 @@ class Dashboard extends StatelessWidget {
         }
         Member currUser = provider.currMember;
         // get tasks due today
-        List<ChoreInst> todayChores = provider.getTodayChores(currUser.id);
+        List<ChoreInst> todayChores = provider.getChoresForDay();
         // get tasks in next week
         List<ChoreInst> thisWeekChores =
             provider
@@ -52,7 +49,11 @@ class Dashboard extends StatelessWidget {
                     style: DivvyTheme.largeHeaderBlack,
                   ),
                   // display any overdue chores
-                  _displayRecentChores(spacing, overdueChores, todayChores),
+                  _displayTodayOverdueChores(
+                    spacing,
+                    overdueChores,
+                    todayChores,
+                  ),
                   SizedBox(height: spacing / 2),
                   // Only display today's chores if overdue chores exist
                   _displayCompactTodayChores(
@@ -74,10 +75,15 @@ class Dashboard extends StatelessWidget {
                               .toList(),
                     ),
                   ),
-                  Divider(color: DivvyTheme.shadow),
-                  SizedBox(height: spacing / 2),
+                  Divider(color: DivvyTheme.altBeige),
+                  SizedBox(height: spacing),
                   Leaderboard(title: 'House Leaderboard'),
-                  availableIncomingSwaps(provider, true),
+                  displayOpenSwapsForCurrMember(provider, spacing),
+                  SizedBox(height: spacing / 2),
+                  displayPendingSwaps(provider, spacing),
+                  SizedBox(height: spacing / 2),
+                  displayOpenSwaps(provider, spacing),
+                  SizedBox(height: spacing * 5),
                 ],
               ),
             ),
@@ -97,26 +103,18 @@ class Dashboard extends StatelessWidget {
   ) {
     if (overdue.isEmpty) return Container();
     if (today.isEmpty) return Container();
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: spacing / 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Upcoming chores:', style: DivvyTheme.bodyBoldBlack),
-          SizedBox(height: spacing / 2),
-          ...today.map(
-            (chore) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-              child: ChoreTile(choreInst: chore, compact: true),
-            ),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Upcoming chores:', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        ...today.map((chore) => ChoreTile(choreInst: chore, compact: true)),
+      ],
     );
   }
 
-  /// If user has overdue chores, display them.
-  Widget _displayRecentChores(
+  /// Display today's chores and all overdue chores
+  Widget _displayTodayOverdueChores(
     double spacing,
     List<ChoreInst> overdue,
     List<ChoreInst> today,
@@ -134,22 +132,7 @@ class Dashboard extends StatelessWidget {
           ),
           if (today.isNotEmpty) SizedBox(height: spacing),
           // Display the chore tiles for all chores due today
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: spacing / 4),
-            child: Column(
-              children:
-                  today
-                      .map(
-                        (chore) => Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: spacing / 2,
-                          ),
-                          child: ChoreTile(choreInst: chore),
-                        ),
-                      )
-                      .toList(),
-            ),
-          ),
+          ...today.map((chore) => ChoreTile(choreInst: chore)),
           if (today.isNotEmpty) SizedBox(height: spacing / 4),
         ],
       );
@@ -172,12 +155,11 @@ class Dashboard extends StatelessWidget {
                   .map(
                     (chore) => Padding(
                       padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                      child: ChoreTile(choreInst: chore),
+                      child: ChoreTile(choreInst: chore, showDivider: false),
                     ),
                   )
                   .toList(),
         ),
-        SizedBox(height: spacing / 2),
       ],
     );
   }
