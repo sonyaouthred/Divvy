@@ -8,6 +8,15 @@ Divvy is a chore sharing app that aims to eliminates conflicts over chores servi
 
 The end target for this app is to be deployed to physical devices over the App Store or Google Play Store. For now, it is necessary to download the code repository and run it on a simulator (right now, we recommend iOS as we have tested on it the most). The final release build will be launched via TestFlight, so it can be installed with just a link. Please refer to the [Build Instructions](#build-instructions) and the [Build and Run](#build-and-run) sections of the developer documentation below for information on how to run the repository (be sure to refer to the [Setting up the Backend](#setting-up-the-backend) section to run the backend server as well). This section will explain the system requirements.
 
+## How To Use
+
+While you can create your own house with roommates right now, we have a few fake accounts you can try out to see a house with some chores populated. All of the below emails work with the password: divvydemo.
+
+natasha@divvy.com
+iamironman@divvy.com
+nickfury@divvy.com
+peter@divvy.com
+
 ## Bug Tracking
 
 All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We just finished some major implementations of features, and while we are not aware of any massive bugs at the moment (other than the listed android bug), it is not unlikely that there will be some minor discrepancies between the database and the app UI. These bugs will be more thoroughly documented and squashed in the coming days.
