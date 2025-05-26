@@ -11,7 +11,6 @@ import 'package:page_transition/page_transition.dart';
 /// Also allows them to sign in using a provider - Apple, Google.
 /// The user can choose to navigate to the create account page if they don't
 /// already have an account.
-// TODO(bhoop2b): enable Microsoft authentication. Complicated, will need Azure dev account
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -20,9 +19,6 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  /// Store the width of the image dynamically
-  double? imageWidth;
-
   /// True if the user wants password input to be displayed as ***
   late bool _hidePassword;
 

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Displays information about a given swap
+/// Currently: not ever shown to the user.
+/// {dead screen}
 class SwapScreen extends StatefulWidget {
   const SwapScreen({super.key});
 

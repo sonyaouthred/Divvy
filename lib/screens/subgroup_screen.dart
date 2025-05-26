@@ -14,6 +14,8 @@ import 'package:provider/provider.dart';
 /// Displays information about a given subgroup.
 /// Displays name, members, and chores.
 /// Allows user to delete subgroup.
+/// Parameters:
+///   - currSubgroup: the Subgroup to be displayed.
 class SubgroupScreen extends StatelessWidget {
   final Subgroup currSubgroup;
   const SubgroupScreen({super.key, required this.currSubgroup});

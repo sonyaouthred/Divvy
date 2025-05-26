@@ -12,7 +12,8 @@ import 'package:provider/provider.dart';
 
 const double _kItemExtent = 32.0;
 
-/// Displays the house's settings page
+/// Displays the house's settings page. Allows users
+/// to view house join code, members, change name, etc.
 class HouseSettings extends StatefulWidget {
   const HouseSettings({super.key});
 

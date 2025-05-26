@@ -7,7 +7,11 @@ import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Represents a pending swap. More documentation to come.
+/// Represents a pending swap tile. Displays the
+/// chore put up to be swapped, the chore offered (and the
+/// offering member), and allows the user to accept or reject the swap.
+/// Parameters:
+///   - swap: the Swap to display. Must have status = Status.pending.
 class PendingSwapTile extends StatelessWidget {
   final Swap swap;
 

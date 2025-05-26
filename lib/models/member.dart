@@ -3,7 +3,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:flutter/material.dart';
 
-/// represents a house with a collection of users
+/// This class represents a house with a collection of users
 class Member {
   // ID of the user. Same as Firestore doc ID
   MemberID _id;
@@ -16,7 +16,7 @@ class Member {
   int onTimePct;
   // List of chore instance IDs
   List<ChoreInstID> chores;
-  // email
+  // email of the user
   Email email;
   // member's subgroups
   List<SubgroupID> subgroups;
@@ -76,10 +76,13 @@ class Member {
   String get id => _id;
 }
 
-// Simplify definitions
+// Typedefs to simplify definitions
 typedef MemberID = String;
 typedef Email = String;
 
+// This is used to represent the profile picture
+// of a user, as we don't have a way for users to upload
+// images yet.
 enum ProfileColor {
   darkGreen,
   mediumGreen,
@@ -90,6 +93,7 @@ enum ProfileColor {
   black,
 }
 
+/// helpful functions for the ProfilePicture enum.
 extension ProfileColorInfo on ProfileColor {
   /// Returns a string for a given color
   String get name => switch (this) {
@@ -114,7 +118,8 @@ extension ProfileColorInfo on ProfileColor {
   };
 }
 
-/// Returns a color for a given string
+/// Returns a ProfileColor for a given string (intended to be
+/// used when de-jsonifying a ProfileColor entry).
 ProfileColor getColorFromName(String name) => switch (name) {
   'darkGreen' => ProfileColor.darkGreen,
   'mediumGreen' => ProfileColor.mediumGreen,

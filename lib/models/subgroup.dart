@@ -2,9 +2,10 @@ import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/member.dart';
 import 'package:uuid/uuid.dart';
 
+// used to generate unique IDs for each document.
 const uuid = Uuid();
 
-/// represents a subgroup of users
+/// This class represents a subgroup of users
 class Subgroup {
   // ID of the user. Same as Firestore doc ID
   final SubgroupID _id;
@@ -18,6 +19,8 @@ class Subgroup {
   // List of specific chores
   final List<ChoreID> chores;
 
+  /// Creates a subgroup with all fields. Should only be used by factory
+  /// constructors.
   Subgroup({
     required SubgroupID id,
     required this.profilePicture,
@@ -26,7 +29,7 @@ class Subgroup {
     required this.members,
   }) : _id = id;
 
-  /// Creates a new subgroup object (no chores)
+  /// Creates a new subgroup object (no chores).
   factory Subgroup.fromNew({
     required List<MemberID> members,
     required String name,

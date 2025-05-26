@@ -10,7 +10,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Represents all the information for a given member
+/// Represents all the information for a given member.
+/// Parameters:
+///   - memberID: the unique ID of the member to be displayed.
 class UserInfoScreen extends StatelessWidget {
   final MemberID memberID;
 

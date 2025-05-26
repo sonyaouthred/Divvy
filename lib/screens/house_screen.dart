@@ -1,6 +1,3 @@
-// import 'package:divvy/models/divvy_theme.dart';
-// Commented out for testing
-
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
@@ -15,6 +12,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Displays the current house's dashboard.
+/// Shows the list of current members/subgroups, allows
+/// users to open house settings, allows users to view
+/// all chores for house, etc.
 class House extends StatelessWidget {
   const House({super.key});
 

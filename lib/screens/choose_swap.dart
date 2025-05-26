@@ -9,7 +9,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Allow the user to add/edit a model, saves on close.
+/// Allow the user select a chore instance to swap.
+/// Only allows users to select an instance of the same
+/// super chore.
+/// Parameters:
+///   - choreID: the ID of the superclass chore for which instances
+///       can be selected.
+/// Returns:
+///   - The ID of the chore instance the user selected to swap,
+/// OR null if no selection was made.
 class ChooseSwap extends StatefulWidget {
   final ChoreID choreID;
   const ChooseSwap({super.key, required this.choreID});
