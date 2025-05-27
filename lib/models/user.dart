@@ -1,7 +1,7 @@
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 
-/// Represents basic data about a user, just their id, email, and house id
+/// Represents basic data about a user, just their id, email, house id, and name
 class DivvyUser {
   // User's uid. Same as their FirebaseAuth ID
   final String id;
@@ -9,8 +9,11 @@ class DivvyUser {
   Email email;
   // User's house id that they belong to
   HouseID houseID;
+  // The display name of the user.
   String name;
 
+  /// Creates a DivvyUser with all fields. Should only be used by factory
+  /// constructors.
   DivvyUser({
     required this.id,
     required this.email,

@@ -5,6 +5,12 @@ import 'package:divvy/screens/user_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Displays the leaderboard of the top 3 users
+/// in the house, sorted by completion rate. If fewer than 3
+/// users are in the house, simply sorts all users by completion
+/// rate.
+/// Parameters:
+///   - title: String title to be displayed above leaderboard.
 class Leaderboard extends StatefulWidget {
   final String title;
   const Leaderboard({super.key, required this.title});

@@ -8,7 +8,11 @@ import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Represents a pending swap. More documentation to come.
+/// Represents a tile for a swap.
+/// parameters:
+///   - swap: the Swap instance to display
+///   - showMemberTile: if true, shows a preceding widget with
+///       the name of the member offering the swap + their profile image.
 class SwapTile extends StatelessWidget {
   final Swap swap;
   final bool showMemberTile;

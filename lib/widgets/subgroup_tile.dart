@@ -6,7 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// Displays the tile for a subgroup with their
-/// image and name. When tapped, opens their page
+/// image and name. When tapped, opens their page.
+/// Parameters:
+///   - subgroup: the Subgroup to display
+///   - spacing: the spacing of the parent screen.
 class SubgroupTile extends StatelessWidget {
   final Subgroup subgroup;
   final double spacing;

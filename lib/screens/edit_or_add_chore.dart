@@ -12,6 +12,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 /// Allows the user to add a chore & save it to their house
+/// Parameters:
+///   - choreID: the ID of the chore they are editing. if null,
+///       the user is adding a chore.
+///   - subgroup: the ID of the subgroup this chore is being added to.
+///       If null, the subgroup is not selected as the default.
 class EditOrAddChore extends StatefulWidget {
   final ChoreID? choreID;
   final Subgroup? subgroup;

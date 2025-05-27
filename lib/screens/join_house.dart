@@ -20,9 +20,13 @@ class JoinHouse extends StatefulWidget {
 }
 
 class _JoinHouseState extends State<JoinHouse> {
+  // Email of the current user
   late final String _email;
+  // Handle the inputted code
   late TextEditingController _codeController;
+  // True if user is currently joining a house
   bool _joining = false;
+  // The current signed in user.
   late final DivvyUser _currUser;
   @override
   void initState() {

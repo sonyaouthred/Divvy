@@ -8,6 +8,9 @@
 // import 'package:provider/provider.dart';
 // import 'package:uuid/uuid.dart';
 
+// Currently: not ever shown to the user.
+// {dead screen}
+
 // class AddSwapScreen extends StatefulWidget {
 //   const AddSwapScreen({super.key});
 

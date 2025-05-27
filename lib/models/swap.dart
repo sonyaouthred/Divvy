@@ -3,6 +3,7 @@ import 'package:divvy/models/member.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 
+// used to generate unique IDs for each document.
 const uuid = Uuid();
 
 typedef SwapID = String;
@@ -26,6 +27,8 @@ class Swap {
   // Empty if status is open.
   ChoreInstID offered;
 
+  /// Creates a swap with all fields. Should only be used by factory
+  /// constructors.
   Swap({
     required this.id,
     required this.choreID,
@@ -81,7 +84,9 @@ class Swap {
 /// Represents the current status of a swap.
 enum Status { open, pending, approved, rejected }
 
+/// Helper methods for the Status enum.
 extension StatusInfo on Status {
+  // Returns the display name for the UI
   String get displayName => switch (this) {
     Status.approved => "Approved",
     Status.open => "Open",
@@ -89,6 +94,7 @@ extension StatusInfo on Status {
     Status.rejected => "Rejected",
   };
 
+  // Returns an icon to be used for swaps with this status.
   IconData get icon => switch (this) {
     Status.approved => CupertinoIcons.check_mark_circled_solid,
     Status.open => CupertinoIcons.circle,

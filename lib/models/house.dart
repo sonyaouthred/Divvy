@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:uuid/uuid.dart';
 
+// used to generate unique IDs for each document.
 const uuid = Uuid();
 
-/// represents a house with a collection of users
+/// This class represents a house with a collection of users
 class House {
   // ID of the house. Same as Firestore doc ID
   final HouseID _id;
@@ -14,8 +15,11 @@ class House {
   String name;
   // The unique join code for a house.
   final String _joinCode;
+  // The date this house was created.
   final DateTime _dateCreated;
 
+  /// Creates a house with all fields. Should only be used by factory
+  /// constructors.
   House({
     required HouseID id,
     required String imageID,
@@ -28,7 +32,7 @@ class House {
        _joinCode = joinCode,
        _dateCreated = dateCreated;
 
-  /// Creates a new house object
+  /// Creates a new house object.
   factory House.fromNew({
     required String houseName,
     required String uid,
@@ -64,11 +68,13 @@ class House {
     'dateCreated': HttpDate.format(_dateCreated),
   };
 
+  // Getters
+
   HouseID get id => _id;
   String get imageID => _imageID;
   String get joinCode => _joinCode;
 }
 
-// Simplify definitions
+// Typedefs to simplify definitions
 typedef HouseID = String;
 typedef ImageID = String;

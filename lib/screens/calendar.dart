@@ -12,7 +12,8 @@ typedef Week = List<DateTime>;
 
 // TODO: aware of bug when selecting March 10, 2025
 
-/// Displays an interactive calendar that lets the user view a schedule of chores
+/// Displays an interactive calendar that lets the user view their chore
+/// schedule.
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
 
@@ -348,6 +349,8 @@ class _CalendarState extends State<Calendar> {
   }
 }
 
+/// Represents if the user has custom selected a date range
+/// or is viewing the current week.
 enum DateSelection { week, day }
 
 extension DateSelectionInfo on DateSelection {

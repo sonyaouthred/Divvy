@@ -12,6 +12,8 @@ import 'package:nanoid/async.dart';
 import 'package:page_transition/page_transition.dart';
 
 /// Allows user to join a house using a unique six-digit code.
+/// Parameters:
+///   - currUser: the user currently signed in.
 class CreateHouse extends StatefulWidget {
   final DivvyUser currUser;
   const CreateHouse({super.key, required this.currUser});

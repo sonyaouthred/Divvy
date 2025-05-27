@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// This class represents all the colors, themes, and decorations used
+/// across the Divvy app.
 class DivvyTheme {
   DivvyTheme._();
 

@@ -11,6 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Displays information about a given chore instance
+/// Parameters:
+///   - choreInstanceID: the ID of the chore instance being
+///       displayed.
+///   - choreID: the ID of the superclass of the chore instance
+///       being displayed.
 class ChoreInstanceScreen extends StatelessWidget {
   // The current chore instance
   final ChoreInstID choreInstanceId;

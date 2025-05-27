@@ -4,12 +4,23 @@ import 'package:divvy/screens/user_info_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-/// Displays the tile for a subgroup with their
-/// image and name
+/// Displays the tile for a member with their
+/// profile image and name.
+/// Parameters:
+///   - member: the member to display
+///   - spacing: the spacing of the parent screen.
+///   - suffix: the suffix to be attached to the member's name,
+///       if desired.
+///   - button: if true, the member tile is tappable & displays a
+///       trailing chevron.
 class MemberTile extends StatelessWidget {
+  // Member to be shown
   final Member member;
+  // spacing between elements
   final double spacing;
+  // text to follow the name of the member
   final String suffix;
+  // True if button is tappable & chevron should be shown.
   final bool button;
   const MemberTile({
     super.key,
@@ -66,6 +77,7 @@ class MemberTile extends StatelessWidget {
 
   ///////////////////////////// util /////////////////////////////
 
+  /// Opens the page for a specific member.
   void _openMemberPage(BuildContext context, Member member) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (ctx) => UserInfoScreen(memberID: member.id)),

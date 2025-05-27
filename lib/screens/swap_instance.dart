@@ -12,7 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
-/// Displays information about a given swap
+/// Displays information about a given swap.
+/// Parameters:
+///   - swap: the swap to be displayed.
 class SwapInstance extends StatefulWidget {
   final Swap swap;
   const SwapInstance({super.key, required this.swap});
