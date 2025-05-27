@@ -12,16 +12,16 @@ The end target for this app is to be deployed to physical devices over the App S
 
 While you can create your own house with roommates right now, we have a few fake accounts you can try out to see a house with some chores populated. All of the below emails work with the password: divvydemo.
 
-natasha@divvy.com
-iamironman@divvy.com
-nickfury@divvy.com
-peter@divvy.com
+- natasha@divvy.com
+- iamironman@divvy.com
+- nickfury@divvy.com
+- peter@divvy.com
 
 ## Bug Tracking
 
-All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We just finished some major implementations of features, and while we are not aware of any massive bugs at the moment (other than the listed android bug), it is not unlikely that there will be some minor discrepancies between the database and the app UI. These bugs will be more thoroughly documented and squashed in the coming days.
+All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We are not currently aware of any major bugs.
 
-Please report any bugs found to our issue page here. While we do not have a template set up (we need GitHub pro??), please use the following format:
+Please report any bugs found to our issue page (above). While we do not have a template set up (we need GitHub pro??), please use the following format:
 
 **Clear, succinct title that mentions the data/functions corrupted/ineffective**
 
@@ -114,7 +114,7 @@ Please choose one (or "q" to quit):
 That lists all connected device you can choose from.
 Note the app is design for phone size screen so when running on chrome or other webpages please shrink down size of window otherwise could be some formatting issues.
 
-The app will prompt you to sign in. Please refer to Use Cases below to see further instructions.
+The app will prompt you to sign in. Please refer to the [How to Use](#how-to-use) section above for sample logins.
 
 ## Setting up the Backend
 
