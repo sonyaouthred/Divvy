@@ -151,6 +151,10 @@ In order to create a release build, you must attach a tag to your github commit/
 
 The bulk of the source code resides in lib folder while the rest are the tests which are contained in the test directory.
 
+Here is a helpful diagram of the various files and how they fit together:
+
+![repo structure](assets/repo_structure.png?raw=true "Repository Structure")
+
 - **android/ios/mac/web/windows**: These folders contain the requisite assets involved with running the app on either android, ios, mac, or web.
 - **assets**: This stores any images locally used for the app. For now, it just stores a dummy user profile image.
 - **firebase**: Contains code need for firebase authentication
