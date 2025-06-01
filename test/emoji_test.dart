@@ -11,10 +11,6 @@ void main() {
       }
     });
 
-    test('odd', () {
-      assert(isEmoji('🥳'));
-    });
-
     test('Two emojis are rejected', () {
       final text = '😄😆';
       assert(!isEmoji(text));

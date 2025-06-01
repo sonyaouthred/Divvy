@@ -17,6 +17,18 @@ iamironman@divvy.com
 nickfury@divvy.com
 peter@divvy.com
 
+Basic path:
+After downloading the app, you have several options. You can either sign in with one of the dummy accounts we have above, or you can press "Create Account" to create a new account. This will then prompt you to create a house. Once you've created a house, you will be redirected to your home screen.
+
+Once your house has been created, you can invite people by having them download the app and then sharing your house's join code with them (found in House screen -> House Settings -> Join Code). Once you have a house (with or without roommates), you can create chores, subgroups, and more. Creating a chore can be done on the Chore screen. Subgroups can be created on the House screen. Once a chore is created, you can edit it or delete it. You can't change the frequency of a chore that has already been created, though.
+
+By tapping on the Calendar screen, you can see a day-by-day breakdown of the chores that are assigned to you. You can also select a custom date. Overdue chores are displayed prominently on your dashboard, and you can easily mark them as completed by tapping the button on the bottom of the page that opens when you tap on the overdue chore.
+
+You can tap on any user's profile picture to see their information and upcoming chores.
+
+If you want to swap a chore, you can click the three dots at the top right (when you have the chore's instance screen open) and tap "Swap chore". This will open it up to all other users in the house. If they want to swap with you, they can see the open swap on their dashboard and then select a chore they want to offer to you. Once they have selected a chore, it will show up on your dashboard that "So-and-so offered to swap Y for X". You will easily be able to see the chore they offered, and hit either "accept" or "reject". Once you accept it, the chore assignments will be swapped and your calendar/schedule will be updated. If you reject it, the swap will be set to open again, and other members of the house will again be able to offer other chores for it.
+**Important note on swaps**: You can only swap two chores of the same type. E.g. Upstairs bathroom on 5/25/25 can only be swapped for another Upstairs Bathroom assignment on a different (later) date.
+
 ## Bug Tracking
 
 All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We just finished some major implementations of features, and while we are not aware of any massive bugs at the moment (other than the listed android bug), it is not unlikely that there will be some minor discrepancies between the database and the app UI. These bugs will be more thoroughly documented and squashed in the coming days.
@@ -49,13 +61,7 @@ In order to run the app, you must run our flask server on your device. The repos
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
-The frontend is written in a combination of Flutter and Dart:
-
-- **Flutter 3.32**
-- **Dart 3.8+**
-
-* This will required main channel version of flutter
+There are no prerequisites for this app. You will need flutter and dart installed, but this can be achieved through our build instructions.
 
 ## Build Instructions
 
@@ -76,7 +82,7 @@ flutter upgrade
 3. Clone repo
 
 ```
-git clone <your_repository_url>
+git clone https://github.com/sonyaouthred/Divvy.git
 cd <your_repository_directory>
 ```
 
@@ -86,6 +92,15 @@ cd <your_repository_directory>
 dart pub get
 flutter pub get
 ```
+
+For Mac users:
+
+- If you want to run the app on an iPhone simulator, you should download & install XCode. If you wish to only run on MacOS or Chrome, this is not necessary.
+- You will likely be prompted at some point to install Android Studio - if you do not (which is ok), your android folder will always be red/show an error. This is OK!!!! It will not impact your ability to run on other target destinations.
+
+For Windows users:
+
+- You should download Android Studio to run the app on an Android emulator.
 
 ## Build and Run
 
@@ -114,6 +129,10 @@ Please choose one (or "q" to quit):
 That lists all connected device you can choose from.
 Note the app is design for phone size screen so when running on chrome or other webpages please shrink down size of window otherwise could be some formatting issues.
 
+We can guarantee the app will run as expected on iPhone simulators, Android emulators, and MacOS/Windows. Some of our devs have found Chrome to be inconsistent and a bit tempremental with the app, which we do not intend to fix because the app is not meant to be a web app.
+
+**Important**: TL;DR: Run on Chrome at your own risk. We _do not_ recommend this. It will work, but the app is intended for a mobile device.
+
 The app will prompt you to sign in. Please refer to Use Cases below to see further instructions.
 
 ## Setting up the Backend
@@ -141,7 +160,9 @@ flutter test --name theTestName
 
 3. In order to run the server tests, move the server_test.dart file into the /test folder and follow the above instructions. This will only pass when you also have the backend server running on your local device.
 
-4. If you wish to add new tests, simply create a dart file in the test/ folder. Be aware that all tests in that directory will automatically be run by the CI. Follow the standard flutter testing syntax, as modeled by the other test files.
+4. If you wish to add new tests, simply create a dart file in the test/ folder. Be aware that all tests in that directory will automatically be run by the CI. The name of the file should represent what it is testing, followed by "\_test.dart". Tests should be placed in group()s that are relevant to what is being tested, and each individual test() should be testing a specific use case/desired output. Test()s should have descriptive names that represent the input and desired output.
+
+**IMPORTANT NOTE ON TESTS**: If you run the dates tests on your local computer, it is likely that one or more tests will fail. These tests fail on our local machines, but pass the GitHub CI. If we modify them so that they pass on our local machines, they fail on the GitHub CI. We are not sure why, but if you encounter this, don't worry! We know. So annoying.
 
 ## Release Builds
 
@@ -168,4 +189,4 @@ Here is a helpful diagram of the various files and how they fit together:
 - **main.dart**: Creates the main function and runs the app.
 - **test (outside of lib)**: Contains all test files and is run with CI through GitHub actions.
 - **server_test (outside of lib)**: Contains a file with tests for the server connection. This is not part of the CI pipeline because the CI does not run the server locally. Until the server operates as a separate entity, this will not be part of CI.
-- **.github\workflows\flutter-ci.yaml**: Configures GitHub actions to both run tests and build app in both IOS and Andorid when pulling from main.
+- **.github\workflows\flutter-ci.yaml**: Configures GitHub actions to both run tests and build app in both IOS and Android when pulling from main.
