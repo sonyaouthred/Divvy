@@ -324,7 +324,10 @@ class _CalendarState extends State<Calendar> {
     // Handle empty chore list
     if (choreList.isEmpty) {
       return Center(
-        child: Text('Nothing to see here!', style: DivvyTheme.bodyGrey),
+        child: Text(
+          'No chores on ${getFormattedDate(_selectedDate)}!',
+          style: DivvyTheme.bodyGrey,
+        ),
       );
     }
     // Nonempty chore list, display results
