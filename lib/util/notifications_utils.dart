@@ -150,7 +150,7 @@ class NotificationsUtils {
 
   // Generate next week worth of scheduled notifications
   void generateNextWeekNotificaitons(List<ChoreInst> chores, List<Chore?> superChores, String userID) async {
-    createScheduleNotification(content, date)
+    createScheduleNotification(NotificationContent(id: 23, title: 'Test', body: 'This is a tesst', channelKey: userID), DateTime.now().add(Duration(seconds: 10)));
     generatedNextWeek = true;
     List<NotificationModel> scheduledNotifications = await AwesomeNotifications().listScheduledNotifications();
     List<int> ids = [];
@@ -163,11 +163,11 @@ class NotificationsUtils {
       final int notifID = generateId(instID: chore.id);
       if (!ids.contains(notifID)) {
         final DateTime date = DateTime(chore.dueDate.year, chore.dueDate.month, chore.dueDate.day, 8);
-        final Chore superChore = superChores.firstWhere((superchore) => superchore?.id == chore.superID);
+        final Chore? superChore = superChores.firstWhere((superchore) => superchore?.id == chore.superID);
         final NotificationContent content = NotificationContent(
           id: notifID, 
-          title: superChore.name,
-           
+          title: 'Reminder that ${superChore!.name} is due today!',
+          body: 'Day of reminder that ${superChore!.name} is due today for completion.',
         channelKey: userID);
         createScheduleNotification(content, date);
       }

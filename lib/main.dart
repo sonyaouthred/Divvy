@@ -52,7 +52,7 @@ class AuthWrapper extends StatelessWidget {
                 );
               }
               if (asyncSnapshot.hasError) {
-                return Center(child: Text('Error checking user house.'));
+                return Center(child: Text('Error checking user house.', textDirection: TextDirection.ltr));
               }
               final DivvyUser? divvyUser = asyncSnapshot.data;
               if (divvyUser == null) {
