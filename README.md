@@ -164,6 +164,14 @@ flutter test --name theTestName
 
 **IMPORTANT NOTE ON TESTS**: If you run the dates tests on your local computer, it is likely that one or more tests will fail. These tests fail on our local machines, but pass the GitHub CI. If we modify them so that they pass on our local machines, they fail on the GitHub CI. We are not sure why, but if you encounter this, don't worry! We know. So annoying.
 
+## Continuous Integration Testing
+Our github repo uses Github Action to preform continuous intregration testing and to automate building. It currently triggers everytime someone pushes or pulls from the main branch, or if someone pushes with the tag **v** which we use to tag the build number of different versions. There are three phases it completes the Run Flutter Test, Build Flutter app (IOS), Build Flutter App (Android). The first phase Run Flutter Test sets up flutter with all the requirments and then runs all the test located in the **test** folder, it will then report which test fail and pass. Note, if there is any failing tests in this first phase it doesn't attempt the other two. The second and third phase both attempt to build app in IOS and Android respectivly as report if the build was successful.
+
+### Where to find new and previous runs?
+All reports from Github Actions are available in the Github Repo website (https://github.com/sonyaouthred/Divvy) under the tab labeled Actions (found along the top bar next to Discussions and Projects). All previous workflows are displayed on the page with the commit number notated and what triggered the workflow (i.e. Commit 345636 pushed by sonyaouthred or Pull request #12 opened by sonyaouthred). When clicking on a specific work flow it will open up a details page which shows actions process in a diagram where you can open different segements to see what exactly failed whether it be the linter in the Run Flutter Test or a portion of the builds.
+
+The configuration for our Github Actions is located in **github\workflows\flutter-ci.yaml**.
+
 ## Release Builds
 
 In order to create a release build, you must attach a tag to your github commit/merge that starts with **v**. In order to ensure correct numbering, make the tag the next version number. As a sanity check, please make sure to build the app one last time before you push! Often we fix minor things just before a release that accidentally breaks something. Building the app & running on a simulator should be the absolute last thing you do before pushing.
