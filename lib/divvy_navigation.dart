@@ -1,7 +1,10 @@
+import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/providers/divvy_provider.dart';
 
 import 'package:divvy/screens/login.dart';
 import 'package:divvy/screens/notifications.dart';
+import 'package:divvy/util/notifications_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/screens/settings.dart';
@@ -10,6 +13,7 @@ import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/dashboard.dart';
 import 'package:divvy/screens/house_screen.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 /// Handles bottom navigation flow for the app
 class DivvyNavigation extends StatefulWidget {
@@ -20,6 +24,7 @@ class DivvyNavigation extends StatefulWidget {
 }
 
 class _DivvyNavigationState extends State<DivvyNavigation> {
+  NotificationsUtils notificationsUtils = NotificationsUtils();
   int _selectedIndex = 2;
   static const List<Widget> _widgetOptions = <Widget>[
     Calendar(),
@@ -33,6 +38,15 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
   @override
   void initState() {
     super.initState();
+    notificationsUtils.checkingPermissionNotification(context);
+    notificationsUtils.startListeningNotificaitonEvents();
+    final provRef = Provider.of<DivvyProvider>(context, listen: false);
+    notificationsUtils.setUserChannel(provRef.currMember.id);
+    if (!notificationsUtils.generatedNextWeek) {
+      List<ChoreInst> instances = provRef.nextWeekOfChores();
+      List<Chore?> superChores = instances.map((inst) => provRef.getSuperChore(inst.superID)).toList();
+      notificationsUtils.generateNextWeekNotificaitons(instances, superChores, provRef.currMember.id); 
+    }
     _titles = <Widget>[
       Text('Calendar', style: DivvyTheme.screenTitle),
       Text('Chores', style: DivvyTheme.screenTitle),

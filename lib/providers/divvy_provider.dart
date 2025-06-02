@@ -465,6 +465,14 @@ class DivvyProvider extends ChangeNotifier {
     return _swaps[swapID];
   }
 
+  // Returns next week of chores for current user
+  List<ChoreInst> nextWeekOfChores() {
+    List<ChoreInst> chores = getMemberChoreInstances(_currentMember.id);
+    DateTime currDay = DateTime.now();
+    DateTime inAWeek = currDay.add(const Duration(days: 7)); 
+    return chores.where((inst) =>  dayIsBefore(inst.dueDate, inAWeek) && dayIsAfter(inst.dueDate, currDay)).toList();
+  }
+
   ////////////////////////////// Setters //////////////////////////////
 
   /// Adds a chore to this house under the correct group.

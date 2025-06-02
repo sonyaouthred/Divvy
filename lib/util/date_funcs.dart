@@ -190,6 +190,18 @@ bool dayIsAfter(DateTime a, DateTime b) {
   return true;
 }
 
+// true if a is strictly before or equal too 
+bool dayIsBefore(DateTime a, DateTime b) {
+  if (a.year < b.year) return true;
+  if (a.year > b.year) return false;
+  // same year
+  if (a.month < b.month) return true;
+  if (a.month > b.month) return false;
+  // same month
+  if (a.day > b.day) return false;
+  return true;
+}
+
 // check that this date is in the range, regardless of time
 bool inRange(DateTime date, List<DateTime> range) {
   return range.where((item) => compareDate(item, date)).toList().isNotEmpty;

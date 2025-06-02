@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:divvy/divvy_navigation.dart';
 import 'package:divvy/firebase_options.dart';
 import 'package:divvy/models/divvy_theme.dart';
@@ -5,6 +6,8 @@ import 'package:divvy/models/user.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/join_house.dart';
 import 'package:divvy/screens/login.dart';
+import 'package:divvy/util/notifications_utils.dart';
+import 'package:divvy/util/route_generator.dart';
 import 'package:divvy/util/server_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,9 +15,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await NotificationsUtils().configuration();
   // Initialize the firebase app
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const AuthWrapper());
@@ -78,13 +82,18 @@ class AuthWrapper extends StatelessWidget {
 
 /// Wraps the navigation app in a provider.
 class HouseApp extends StatelessWidget {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final DivvyUser user;
   const HouseApp({super.key, required this.user});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => DivvyProvider(user),
-      child: MaterialApp(home: DivvyNavigation()),
+      child: MaterialApp(//home: DivvyNavigation(),
+      initialRoute: '/',
+      navigatorKey: navigatorKey,
+      onGenerateRoute: RouteGenerator.generatorRoute,),
     );
   }
 }
