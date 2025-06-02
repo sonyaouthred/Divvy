@@ -490,17 +490,17 @@ class DivvyProvider extends ChangeNotifier {
         due: date,
         assignee: assignee,
       );
-      addChoreInstance(choreInst);
+      _addChoreInstance(choreInst);
     });
     notifyListeners();
   }
 
   /// Adds a given chore instance to the database
-  Future<void> addChoreInstance(ChoreInst choreInstance) async {
+  /// Does not notify listeners
+  Future<void> _addChoreInstance(ChoreInst choreInstance) async {
     if (_choreInstances[choreInstance.superID] == null) return;
     _choreInstances[choreInstance.superID]!.add(choreInstance);
     await db.upsertChoreInst(choreInstance, houseID);
-    notifyListeners();
   }
 
   /// Updates a super chore. because frequency/members
@@ -626,6 +626,60 @@ class DivvyProvider extends ChangeNotifier {
     _subgroups.remove(subgroupID);
     await db.deleteSubgroup(houseID: houseID, subgroupID: subgroupID);
     notifyListeners();
+  }
+
+  /// deletes current user
+  Future<void> deleteMember() async {
+    // Delete user from any subgroups they may be part of
+    final subgroups = currMember.subgroups;
+    List<Future> futures = [];
+    for (SubgroupID subID in subgroups) {
+      // remove user from subgroup
+      final subgroup = _subgroups[subID];
+      if (subgroup == null) continue;
+      subgroup.removeMember(currMember.id);
+      futures.add(db.upsertSubgroup(subgroup, houseID));
+    }
+    await Future.wait(futures);
+
+    // now handle any chores they may be assigned to this user
+    futures.clear();
+    final chores = getMemberChores(currMember.id);
+    for (Chore chore in chores) {
+      chore.assignees.remove(currMember.id);
+      futures.add(db.upsertChore(chore, houseID));
+
+      // reassign the chore schedule
+      // delete all upcoming instances
+      final upcomingInstances =
+          _choreInstances[chore.id]?.where(
+            (inst) => inst.dueDate.isAfter(DateTime.now()),
+          ) ??
+          [];
+      for (ChoreInst inst in upcomingInstances) {
+        futures.add(db.deleteChoreInst(houseID: houseID, choreInstID: inst.id));
+      }
+
+      // now repopulate!!
+      final dates =
+          getDateList(
+            chore.frequency,
+          ).where((date) => date.isAfter(DateTime.now())).toList();
+      dates.asMap().forEach((index, date) {
+        final assignee = chore.assignees[index % chore.assignees.length];
+        // create chore instance
+        ChoreInst choreInst = ChoreInst.fromNew(
+          superCID: chore.id,
+          due: date,
+          assignee: assignee,
+        );
+        _addChoreInstance(choreInst);
+      });
+    }
+    await Future.wait(futures);
+
+    // Finally, delete user doc
+    await db.deleteMember(houseID: houseID, memberID: currMember.id);
   }
 
   /// Leaves the specified subgroup. If no member ID specified,
