@@ -29,7 +29,6 @@ class Chores extends StatelessWidget {
         List<Subgroup> subgroups = provider.getSubgroupsForMember(
           provider.currMember.id,
         );
-        print(subgroups);
         return SizedBox.expand(
           child: SingleChildScrollView(
             child: Container(

@@ -396,14 +396,11 @@ class DivvyProvider extends ChangeNotifier {
   /// Returns list of subgroups user is involved in
   List<Subgroup> getSubgroupsForMember(MemberID id) {
     final List<Subgroup> res = [];
-    print(_subgroups.keys.toList());
     final member = getMemberById(id);
     if (member == null) return res;
     for (SubgroupID subID in member.subgroups) {
-      print(subID);
       final subgroup = _subgroups[subID];
       // only add subgroup if it still exists
-      print(subgroup);
       if (subgroup != null) res.add(subgroup);
     }
     return res;

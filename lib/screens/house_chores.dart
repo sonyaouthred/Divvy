@@ -5,6 +5,7 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
+import 'package:divvy/screens/edit_or_add_chore.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -42,9 +43,14 @@ class HouseChores extends StatelessWidget {
                   children: [
                     // Add chore button
                     InkWell(
-                      onTap: () => print('adding chore'),
+                      onTap:
+                          () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => EditOrAddChore(choreID: null),
+                            ),
+                          ),
                       child: Container(
-                        decoration: DivvyTheme.textInput,
+                        decoration: DivvyTheme.standardBox,
                         child: ListTile(
                           leading: Icon(CupertinoIcons.add),
                           title: Text(
@@ -153,7 +159,7 @@ class HouseChores extends StatelessWidget {
             padding: EdgeInsets.only(left: spacing / 2),
             child: Text('No chores yet!', style: DivvyTheme.bodyGrey),
           ),
-        SizedBox(height: spacing / 2),
+        SizedBox(height: spacing),
       ],
     );
   }

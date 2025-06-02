@@ -154,6 +154,13 @@ class DivvyTheme {
       color: mediumGreen,
     ),
   );
+  static TextStyle largeBoldMedGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 20,
+      color: lightGrey,
+    ),
+  );
   static TextStyle largeBoldMedWhite = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w700,
@@ -169,6 +176,13 @@ class DivvyTheme {
     ),
   );
 
+  static TextStyle smallBoldMedGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 15,
+      color: lightGrey,
+    ),
+  );
   static TextStyle smallBoldMedWhite = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w700,
