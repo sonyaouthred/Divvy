@@ -396,11 +396,14 @@ class DivvyProvider extends ChangeNotifier {
   /// Returns list of subgroups user is involved in
   List<Subgroup> getSubgroupsForMember(MemberID id) {
     final List<Subgroup> res = [];
+    print(_subgroups.keys.toList());
     final member = getMemberById(id);
     if (member == null) return res;
     for (SubgroupID subID in member.subgroups) {
+      print(subID);
       final subgroup = _subgroups[subID];
       // only add subgroup if it still exists
+      print(subgroup);
       if (subgroup != null) res.add(subgroup);
     }
     return res;
@@ -602,16 +605,56 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Deletes a subgroup specified
   Future<void> deleteSubgroup(SubgroupID subgroupID) async {
+    final subgroup = _subgroups[subgroupID];
+    if (subgroup == null) return;
     // Delete any of their chores
     for (Chore c in getSubgroupChores(subgroupID)) {
       // delete super chore!
       // this will handle db update
       deleteSuperclassChore(c.id);
     }
+    // Delete subgroup from member lists
+    final List<Future> futures =
+        subgroup.members
+            .map(
+              (m) => leaveSubgroup(
+                subgroupID: subgroupID,
+                mID: m,
+                notifList: false,
+              ),
+            )
+            .toList();
+    await Future.wait(futures);
     // Finally, remove the subgroup
     _subgroups.remove(subgroupID);
     await db.deleteSubgroup(houseID: houseID, subgroupID: subgroupID);
     notifyListeners();
+  }
+
+  /// Leaves the specified subgroup. If no member ID specified,
+  /// assumes current user
+  Future<void> leaveSubgroup({
+    required SubgroupID subgroupID,
+    MemberID? mID,
+    bool notifList = true,
+  }) async {
+    // remove from member's list
+    final memberID = mID ?? currMember.id;
+    final member = getMemberById(memberID);
+    if (member == null) return;
+    member.subgroups.remove(subgroupID);
+    await db.upsertMember(member, houseID);
+
+    // remove member from subgroup's list
+    final subgroup = _subgroups[subgroupID];
+    if (subgroup != null) {
+      subgroup.members.remove(memberID);
+      await db.upsertSubgroup(subgroup, houseID);
+    }
+
+    // if m is not null, we assume this method is being called from another
+    // provider func
+    if (notifList) notifyListeners();
   }
 
   /// Add a subgroup specified

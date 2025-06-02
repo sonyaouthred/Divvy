@@ -152,6 +152,9 @@ class SubgroupScreen extends StatelessWidget {
   void _showActionMenu(BuildContext context) async {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
+    final currMemID =
+        Provider.of<DivvyProvider>(context, listen: false).currMember.id;
+    final isCurrMembersGroup = currSubgroup.members.contains(currMemID);
     final delete = await showCupertinoModalPopup<bool>(
       context: context,
       builder:
@@ -175,6 +178,19 @@ class SubgroupScreen extends StatelessWidget {
                 },
                 child: const Text('Change Color'),
               ),
+              // don't let user leave a subgroup they don't belong to
+              if (isCurrMembersGroup)
+                CupertinoActionSheetAction(
+                  isDestructiveAction: true,
+                  onPressed: () {
+                    Provider.of<DivvyProvider>(
+                      context,
+                      listen: false,
+                    ).leaveSubgroup(subgroupID: currSubgroup.id);
+                    Navigator.of(context).pop(false);
+                  },
+                  child: const Text('Leave subgroup'),
+                ),
               CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 onPressed: () {
