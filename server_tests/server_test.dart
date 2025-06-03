@@ -1306,6 +1306,7 @@ void main() {
         assignee: mem1!.id,
         swapID: '',
         doneOnTime: false,
+        comments: [],
       );
       // today chore inst
       final chore1Inst2 = ChoreInst(
@@ -1316,6 +1317,7 @@ void main() {
         assignee: mem1.id,
         swapID: '',
         doneOnTime: false,
+        comments: [],
       );
       // future chore inst
       final chore1Inst3 = ChoreInst(
@@ -1326,6 +1328,7 @@ void main() {
         assignee: mem1.id,
         swapID: '',
         doneOnTime: false,
+        comments: [],
       );
       final choreInsts = [chore1Inst1, chore1Inst2, chore1Inst3];
       futures =
