@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:divvy/models/comment.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:uuid/uuid.dart';
@@ -148,6 +149,8 @@ class ChoreInst {
   // True if the assignment was done before the due date.
   // Should only be looked at if _isDone is true
   bool doneOnTime;
+  // List of comments left on this chore instance
+  List<Comment> comments;
 
   /// Creates a chore instancewith all fields. Should only be used by
   /// factory constructors.
@@ -159,6 +162,7 @@ class ChoreInst {
     required this.assignee,
     required this.swapID,
     required this.doneOnTime,
+    required this.comments,
   }) : _id = id,
        _dueDate = dueDate,
        _isDone = isDone,
@@ -179,12 +183,22 @@ class ChoreInst {
       assignee: assignee,
       swapID: '',
       doneOnTime: false,
+      comments: [],
     );
   }
 
   /// From a json map, returns a new Subgroup object
   /// with relevant fields filled out.
   factory ChoreInst.fromJson(Map<String, dynamic> json) {
+    // parse comments
+    dynamic comments = json['comments'];
+    List<Comment> commentsList = [];
+    if (comments != null && comments is List<dynamic>) {
+      commentsList =
+          comments.map((entry) {
+            return Comment.fromJson(entry as Map<String, dynamic>);
+          }).toList();
+    }
     return ChoreInst(
       choreID: json['choreID'],
       id: json['id'],
@@ -193,6 +207,7 @@ class ChoreInst {
       assignee: json['assignee'],
       swapID: json['swapID'] ?? '',
       doneOnTime: json['doneOnTime'],
+      comments: commentsList,
     );
   }
 
@@ -206,6 +221,7 @@ class ChoreInst {
       'assignee': assignee,
       'swapID': swapID,
       'doneOnTime': false,
+      'comments': [for (final c in comments) c.toJson()],
     };
   }
 
