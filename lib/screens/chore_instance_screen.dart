@@ -111,6 +111,9 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
                           spacing,
                         ),
                         SizedBox(height: spacing),
+                        // Display this chore's description
+                        _displayDescription(spacing, parentChore),
+                        SizedBox(height: spacing),
                         // Display the frequency this chore repeats
                         _displayFrequency(spacing, parentChore),
                       ],
@@ -242,7 +245,7 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
     ),
   );
 
-  /// Displays the other people this chore is assigned to
+  // Displays the other people this chore is assigned to
   Widget _displayOtherAssignees(
     List<Member> otherAssignees,
     Chore superChore,
@@ -261,6 +264,17 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
           child: MemberTile(member: assignee, spacing: spacing),
         );
       }),
+    ],
+  );
+
+  // Displays this chore's description
+  Widget _displayDescription(double spacing, Chore superChore) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("Description:", style: DivvyTheme.bodyBoldBlack),
+      SizedBox(height: spacing / 4),
+      // Text("${superChore.frequency.daysOfWeek[0].toString()}")
+      Text(superChore.description.isEmpty ? "No description specified for this chore." : superChore.description, style: DivvyTheme.bodyBlack),
     ],
   );
 

@@ -83,6 +83,8 @@ class ChoreSuperclassScreen extends StatelessWidget {
                     _choreNameTile(chore, context, spacing),
                     SizedBox(height: spacing / 2),
                     _customDivider(spacing),
+                    _descriptionWidget(chore, spacing),
+                    _customDivider(spacing),
                     _frequencyWidget(chore, spacing),
                     _customDivider(spacing),
                     _getAssigneesWidget(context, choreAssignees, spacing),
@@ -246,6 +248,19 @@ class ChoreSuperclassScreen extends StatelessWidget {
       ],
     ),
   );
+
+  // Displays this chore's description
+  Widget _descriptionWidget(Chore chore, double spacing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Description:", style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        // The frequency of the chore
+        Text(chore.description.isEmpty ? "No desription provided for this chore." : chore.description, style: DivvyTheme.bodyBlack),
+      ],
+    );
+  }
 
   /// Displays the frequency of the chore
   Widget _frequencyWidget(Chore chore, double spacing) => Column(
