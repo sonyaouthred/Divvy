@@ -132,10 +132,7 @@ class _SettingsState extends State<Settings> {
               decoration: DivvyTheme.circleWhite,
               height: 35,
               width: 35,
-              child: Icon(
-                Icons.camera_alt_outlined,
-                color: DivvyTheme.lightGreen,
-              ),
+              child: Icon(Icons.edit, color: DivvyTheme.lightGreen),
             ),
           ),
         ],
