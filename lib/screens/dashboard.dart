@@ -61,6 +61,9 @@ class Dashboard extends StatelessWidget {
                     overdueChores,
                     todayChores,
                   ),
+                  SizedBox(height: spacing / 2),
+                  Text('Upcoming Chores', style: DivvyTheme.bodyBoldBlack),
+                  SizedBox(height: spacing / 4),
                   // Display a compact chore tile for all chores not due today
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: spacing / 4),

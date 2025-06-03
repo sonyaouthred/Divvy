@@ -587,16 +587,20 @@ class DivvyProvider extends ChangeNotifier {
   Future<void> leaveHouse(MemberID id) async {
     // remove user from all subgroups they may be in
     // delete subgroups that have nobody left
+    List<Future> futures = [];
     for (Subgroup sub in getSubgroupsForMember(id)) {
       sub.removeMember(id);
       if (sub.members.isEmpty) {
         // delete subgroup!
         // this will handle db update
         deleteSubgroup(sub.id);
+      } else {
+        futures.add(db.upsertSubgroup(sub, houseID));
       }
     }
+    await Future.wait(futures);
 
-    List<Future> futures = [];
+    futures.clear();
     for (Swap swap in swaps) {
       if (swap.from == _currentMember.id) {
         // delete swap
@@ -613,6 +617,8 @@ class DivvyProvider extends ChangeNotifier {
     }
     await Future.wait(futures);
 
+    futures.clear();
+
     /// remove user from all chores they may have belonged to
     for (Chore chore in getMemberChores(id)) {
       chore.removeAssignee(id);
@@ -620,8 +626,11 @@ class DivvyProvider extends ChangeNotifier {
         // delete chore bc there are no more users on it
         // this will handle db update
         deleteSuperclassChore(chore.id);
+      } else {
+        futures.add(db.upsertChore(chore, houseID));
       }
     }
+    await Future.wait(futures);
 
     await db.deleteMember(houseID: houseID, memberID: id);
     _user.houseID = '';
