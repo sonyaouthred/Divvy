@@ -68,6 +68,8 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
         backgroundColor: DivvyTheme.background,
         actions: [
           InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => _openNotificationsPage(context),
             child: Container(
               height: 50,

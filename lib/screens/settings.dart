@@ -6,8 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:divvy/models/divvy_theme.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
@@ -24,12 +22,6 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   // Current user's data
   late Member _currUser;
-
-  // Current user's profile image
-  File? imageFile;
-  // Used to allow user to pull their profile image
-  final picker = ImagePicker();
-
   bool themeSwitch = true;
 
   /// show loading indicator when user is logging out
@@ -62,7 +54,7 @@ class _SettingsState extends State<Settings> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Display user's profile image
-                  _imageSelectionButton(width),
+                  _imageSelectionButton(provider, width, spacing),
                   SizedBox(height: spacing),
                   // Greet user
                   _introPhrase(name: _currUser.name),
@@ -74,7 +66,6 @@ class _SettingsState extends State<Settings> {
                     text: 'Account Info',
                     buttons: [
                       ['Change Name', _changeName],
-                      ['Change Profile Color', _changeColor],
                       ['Delete Account', _deleteAccount],
                     ],
                     flex: 2,
@@ -118,11 +109,17 @@ class _SettingsState extends State<Settings> {
 
   /// Displays the user's profile picture and the upload image
   /// icon. Entire area is tappable.
-  Widget _imageSelectionButton(double width) {
+  Widget _imageSelectionButton(
+    DivvyProvider provider,
+    double width,
+    double spacing,
+  ) {
     final imageSize = width / 3;
     return InkWell(
-      onTap: () {
-        _showPicker(context: context);
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      onTap: () async {
+        await _changeColor(context, provider);
       },
       child: Stack(
         children: [
@@ -156,26 +153,6 @@ class _SettingsState extends State<Settings> {
         color: _currUser.profilePicture.color,
       ),
     );
-  }
-
-  // Todo: adapt into provider info and backend once an image
-  /// Gets an image from the user's photo gallery
-  Future getImage(ImageSource img) async {
-    // pick image from gallary
-    final pickedFile = await picker.pickImage(source: img);
-    // store it in a valid variable
-    XFile? xfilePick = pickedFile;
-    setState(() {
-      if (xfilePick != null) {
-        // store that in global variable galleryFile in the form of File
-        imageFile = File(pickedFile!.path);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          // is this context <<<
-          const SnackBar(content: Text('No image was selected')),
-        );
-      }
-    });
   }
 
   /// Displays greeting to user
@@ -225,6 +202,8 @@ class _SettingsState extends State<Settings> {
                   vertical: spacing * 0.45,
                 ),
                 child: InkWell(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.transparent,
                   // Trigger the action
                   onTap:
                       () =>
@@ -279,39 +258,6 @@ class _SettingsState extends State<Settings> {
     );
   }
 
-  /// Allows user to pick whether they want to upload an image
-  /// or take an image.
-  void _showPicker({required BuildContext context}) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: DivvyTheme.background,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Photo Library'),
-                onTap: () {
-                  getImage(ImageSource.gallery);
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Camera'),
-                onTap: () {
-                  getImage(ImageSource.camera);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   ///////////////////////////// Util /////////////////////////////
 
   /// Change the house's name
@@ -333,22 +279,21 @@ class _SettingsState extends State<Settings> {
   }
 
   /// Change the user's profile color
-  void _changeColor(BuildContext context) async {
+  Future<void> _changeColor(
+    BuildContext context,
+    DivvyProvider provider,
+  ) async {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
-    // get new name
+    // get new color
     final newColor = await openColorDialog(
       context,
       _currUser.profilePicture,
       spacing,
     );
-    // Process name
+    // Process color
     if (newColor != _currUser.profilePicture) {
-      if (!context.mounted) return;
-      Provider.of<DivvyProvider>(
-        context,
-        listen: false,
-      ).updateMemberColor(newColor);
+      provider.updateMemberColor(newColor);
     }
   }
 
@@ -378,8 +323,8 @@ class _SettingsState extends State<Settings> {
           );
         }
         // Non-email/pwd clients are already reauthenticated
-        // TODO: need to remove user from rotations/subgroups in provider!
         if (!context.mounted) return;
+        Provider.of<DivvyProvider>(context, listen: false).deleteMember();
       }
     } catch (e) {
       if (!context.mounted) return;

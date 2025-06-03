@@ -126,6 +126,8 @@ class _HouseSettingsState extends State<HouseSettings> {
                   vertical: spacing * 0.45,
                 ),
                 child: InkWell(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.transparent,
                   // Trigger the action
                   onTap: () => entry[1](context),
                   child: Row(

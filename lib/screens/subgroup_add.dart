@@ -137,6 +137,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
     // Check if tile is currently selected
     bool inList = _subgroupMember.contains(member);
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap:
           () => setState(() {
             // toggle selection
@@ -231,6 +233,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
           children: [
             Text('Chores', style: DivvyTheme.bodyBoldBlack),
             InkWell(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
               onTap: () => _addChore(context),
               child: SizedBox(
                 height: 45,
@@ -277,6 +281,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
     // Check if chore is currently in list
     bool inList = _subgroupChore.contains(chore);
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap:
           () => setState(() {
             inList ? _subgroupChore.remove(chore) : _subgroupChore.add(chore);
@@ -306,6 +312,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
   // Save button
   Widget _buttons(double spacing) {
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => _popBack(context, true),
       child: Container(
         height: 50,

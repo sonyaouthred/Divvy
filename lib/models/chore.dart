@@ -145,6 +145,9 @@ class ChoreInst {
   // The swap ID for this chore, if it is being swapped.
   // If this chore is not being swapped, this field is empty.
   SwapID swapID;
+  // True if the assignment was done before the due date.
+  // Should only be looked at if _isDone is true
+  bool doneOnTime;
 
   /// Creates a chore instancewith all fields. Should only be used by
   /// factory constructors.
@@ -155,6 +158,7 @@ class ChoreInst {
     required bool isDone,
     required this.assignee,
     required this.swapID,
+    required this.doneOnTime,
   }) : _id = id,
        _dueDate = dueDate,
        _isDone = isDone,
@@ -174,6 +178,7 @@ class ChoreInst {
       isDone: false,
       assignee: assignee,
       swapID: '',
+      doneOnTime: false,
     );
   }
 
@@ -187,6 +192,7 @@ class ChoreInst {
       isDone: json['isDone'],
       assignee: json['assignee'],
       swapID: json['swapID'] ?? '',
+      doneOnTime: json['doneOnTime'],
     );
   }
 
@@ -199,6 +205,7 @@ class ChoreInst {
       'isDone': _isDone,
       'assignee': assignee,
       'swapID': swapID,
+      'doneOnTime': false,
     };
   }
 

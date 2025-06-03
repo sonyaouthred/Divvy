@@ -37,6 +37,8 @@ class Chores extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

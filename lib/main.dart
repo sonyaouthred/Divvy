@@ -33,7 +33,6 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
-
         if (snapshot.hasData) {
           final user = FirebaseAuth.instance.currentUser!;
           return FutureBuilder<DivvyUser?>(
@@ -48,7 +47,9 @@ class AuthWrapper extends StatelessWidget {
                 );
               }
               if (asyncSnapshot.hasError) {
-                return Center(child: Text('Error checking user house.'));
+                // sign user out
+                FirebaseAuth.instance.signOut();
+                return MaterialApp(home: Login());
               }
               final DivvyUser? divvyUser = asyncSnapshot.data;
               if (divvyUser == null) {

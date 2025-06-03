@@ -140,6 +140,8 @@ class _CreateAccountState extends State<CreateAccount> {
                   SizedBox(height: spacing),
                   // Create account button
                   InkWell(
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
                     onTap: () => _registerUser(context),
                     child: Container(
                       alignment: Alignment.center,
@@ -198,6 +200,8 @@ class _CreateAccountState extends State<CreateAccount> {
               Flexible(
                 flex: 1,
                 child: InkWell(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.transparent,
                   onTap: () => setState(() => _hidePassword = !_hidePassword),
                   child: SizedBox(
                     width: 45,
@@ -266,6 +270,7 @@ class _CreateAccountState extends State<CreateAccount> {
       children: [
         Text('Not yet registered?', style: DivvyTheme.bodyBlack),
         InkWell(
+          splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           onTap: () => _openLogin(context),
           child: Container(

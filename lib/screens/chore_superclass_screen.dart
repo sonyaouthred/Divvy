@@ -234,6 +234,8 @@ class ChoreSuperclassScreen extends StatelessWidget {
     BuildContext context,
     double spacing,
   ) => InkWell(
+    highlightColor: Colors.transparent,
+    splashColor: Colors.transparent,
     onTap: () => _openChoreInstance(context, choreInstance),
     child: Column(
       children: [

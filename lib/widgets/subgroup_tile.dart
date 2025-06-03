@@ -24,6 +24,8 @@ class SubgroupTile extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(right: spacing),
       child: InkWell(
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
         onTap: () => _openSubgroupPage(context, subgroup),
         child: Column(
           children: [

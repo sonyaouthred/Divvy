@@ -25,6 +25,8 @@ class _NotificationsState extends State<Notifications> {
         actions: [
           // Clear notifications button
           InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             // TODO: implement
             onTap: () => {},
             child: Container(
