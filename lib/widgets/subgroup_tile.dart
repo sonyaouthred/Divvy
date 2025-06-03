@@ -13,10 +13,14 @@ import 'package:flutter/material.dart';
 class SubgroupTile extends StatelessWidget {
   final Subgroup subgroup;
   final double spacing;
+  final bool showDivider;
+  final bool showChevron;
   const SubgroupTile({
     super.key,
     required this.subgroup,
     required this.spacing,
+    this.showDivider = true,
+    this.showChevron = true,
   });
 
   @override
@@ -47,15 +51,16 @@ class SubgroupTile extends StatelessWidget {
                     Text(subgroup.name, style: DivvyTheme.bodyBlack),
                   ],
                 ),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  color: DivvyTheme.lightGrey,
-                  size: 15,
-                ),
+                if (showChevron)
+                  Icon(
+                    CupertinoIcons.chevron_right,
+                    color: DivvyTheme.lightGrey,
+                    size: 15,
+                  ),
               ],
             ),
             SizedBox(height: spacing / 2),
-            Divider(color: DivvyTheme.altBeige),
+            if (showDivider) Divider(color: DivvyTheme.altBeige),
           ],
         ),
       ),
