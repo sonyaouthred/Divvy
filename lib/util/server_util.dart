@@ -151,6 +151,13 @@ Future<Map<ChoreID, List<ChoreInst>>?> fetchChoreInstances(
   return choreInstMap;
 }
 
+// Fetches notifications data
+Future<Map<ChoreID, List<ChoreInst>>?> fetchNotificationInstances(
+  HouseID houseID, String userID
+) async {
+  // final data = await _getDataFromServer(serverFunc: );
+}
+
 ///////////////////////// Upsert //////////////////////////
 
 /// Creates a user doc. Updates DB. TESTED

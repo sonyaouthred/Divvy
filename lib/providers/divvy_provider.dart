@@ -36,6 +36,7 @@ class DivvyProvider extends ChangeNotifier {
   late final Map<ChoreID, List<ChoreInst>> _choreInstances;
   // list of all swaps for the house, mapped to by ID for quick lookup.
   late final Map<SwapID, Swap> _swaps;
+  late final List<ChoreInst> _notificaions;
 
   /// Instantiate a new provider
   DivvyProvider(DivvyUser currUser) {
@@ -67,6 +68,8 @@ class DivvyProvider extends ChangeNotifier {
     _currentMember = _memberMap[uid]!;
     // data is loaded!
     dataLoaded = true;
+    // notification storeage
+    _notificaions = lastWeekOfChores();
     notifyListeners();
   }
 
@@ -117,6 +120,7 @@ class DivvyProvider extends ChangeNotifier {
   Member get currMember => _currentMember;
   DivvyUser get currUser => _user;
   List<Swap> get swaps => List.from(_swaps.values);
+  List<ChoreInst> get notifications => _notificaions;
 
   /// Get all members assigned to a given chore
   List<Member> getChoreAssignees(ChoreID id) {
@@ -473,6 +477,14 @@ class DivvyProvider extends ChangeNotifier {
     return chores.where((inst) =>  dayIsBefore(inst.dueDate, inAWeek) && dayIsAfter(inst.dueDate, currDay)).toList();
   }
 
+  // Get last week of chore 
+  List<ChoreInst> lastWeekOfChores() {
+    List<ChoreInst> chores = getMemberChoreInstances(_currentMember.id);
+    DateTime currDay = DateTime.now();
+    DateTime pastAWeek = currDay.subtract(const Duration(days: 7)); 
+    return chores.where((inst) =>  dayIsBefore(inst.dueDate, currDay) && dayIsAfter(inst.dueDate, pastAWeek)).toList();
+  }
+
   ////////////////////////////// Setters //////////////////////////////
 
   /// Adds a chore to this house under the correct group.
@@ -784,6 +796,12 @@ class DivvyProvider extends ChangeNotifier {
     }
     // finally delete swap
     await db.deleteSwap(houseID: houseID, swapID: swap.id);
+    notifyListeners();
+  }
+
+  // Clear notifications
+  void clearNotificaitons() {
+    _notificaions.clear();
     notifyListeners();
   }
 }

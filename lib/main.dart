@@ -37,12 +37,13 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
-
+        print(snapshot.connectionState);
         if (snapshot.hasData) {
           final user = FirebaseAuth.instance.currentUser!;
           return FutureBuilder<DivvyUser?>(
             future: fetchUser(user.uid),
             builder: (context, asyncSnapshot) {
+              print(asyncSnapshot.error);
               if (asyncSnapshot.connectionState == ConnectionState.waiting) {
                 return Container(
                   color: DivvyTheme.background,
