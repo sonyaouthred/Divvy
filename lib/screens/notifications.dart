@@ -2,8 +2,8 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Displays the user's current notifications.
-/// Not currently functional as we don't have the notifications
-/// service set up.
+/// Not currently functional as the notifications service
+/// is not complete.
 class Notifications extends StatefulWidget {
   const Notifications({super.key});
 
@@ -24,22 +24,16 @@ class _NotificationsState extends State<Notifications> {
 
         actions: [
           // Clear notifications button
-          InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            // TODO: implement
-            onTap: () => {},
-            child: Container(
-              height: 50,
-              padding: EdgeInsets.only(right: 20),
-              child: Center(
-                child: Text('Clear', style: DivvyTheme.smallBodyRed),
-              ),
-            ),
+          Container(
+            height: 50,
+            padding: EdgeInsets.only(right: 20),
+            child: Center(child: Text('Clear', style: DivvyTheme.smallBodyRed)),
           ),
         ],
       ),
-      body: Placeholder(),
+      body: Center(
+        child: Text('No recent notifications!', style: DivvyTheme.bodyGrey),
+      ),
     );
   }
 }

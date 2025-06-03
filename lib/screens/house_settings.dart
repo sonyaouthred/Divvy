@@ -169,7 +169,6 @@ class _HouseSettingsState extends State<HouseSettings> {
     if (_selectedSubgroup != null) {
       if (!context.mounted) return;
       // Confirm user wants to delete the subgroup
-      // TODO: does deleting subgroup also delete their chores??
       final delete = await confirmDeleteDialog(
         context,
         'Delete subgroup ${_selectedSubgroup!.name}?',

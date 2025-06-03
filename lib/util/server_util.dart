@@ -6,6 +6,7 @@ import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/models/swap.dart';
 import 'package:divvy/models/user.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
 
@@ -16,7 +17,7 @@ Future<bool> _postToServer({
   required Map<String, dynamic> data,
   required String serverFunc,
 }) async {
-  final uri = 'http://127.0.0.1:5000/$serverFunc';
+  final uri = 'http://137.184.230.103:5000/$serverFunc';
   final headers = {'Content-Type': 'application/json'};
   final response = await post(
     Uri.parse(uri),
@@ -24,12 +25,16 @@ Future<bool> _postToServer({
     body: json.encode(data),
   );
 
-  json.decode(response.body);
-  if (response.statusCode == 400) {
-    // error occurred
+  try {
+    json.decode(response.body);
+    if (response.statusCode == 400) {
+      // error occurred
+      return false;
+    }
+    return true;
+  } catch (e) {
     return false;
   }
-  return true;
 }
 
 /// Pulls data from the server's inputted serverFunc
@@ -37,7 +42,7 @@ Future<bool> _postToServer({
 Future<Map<String, dynamic>?> _getDataFromServer({
   required String serverFunc,
 }) async {
-  final uri = 'http://127.0.0.1:5000/$serverFunc';
+  final uri = 'http://137.184.230.103:5000/$serverFunc';
   final headers = {'Content-Type': 'application/json'};
   final response = await get(Uri.parse(uri), headers: headers);
 
@@ -45,7 +50,11 @@ Future<Map<String, dynamic>?> _getDataFromServer({
     // error occurred
     return null;
   }
-  return json.decode(response.body);
+  try {
+    return json.decode(response.body);
+  } catch (e) {
+    return null;
+  }
 }
 
 ///////////////////////// Fetch //////////////////////////
@@ -53,7 +62,16 @@ Future<Map<String, dynamic>?> _getDataFromServer({
 /// Fetches a user doc. Updates DB
 Future<DivvyUser?> fetchUser(String userID) async {
   final receivedData = await _getDataFromServer(serverFunc: 'get-user-$userID');
-  if (receivedData == null) return null;
+  if (receivedData == null && FirebaseAuth.instance.currentUser != null) {
+    // need to create a user!! user must have signed up with no db access.
+    final user = FirebaseAuth.instance.currentUser!;
+    await createUser(userID, user.email!, user.displayName ?? 'name error');
+    final newData = await _getDataFromServer(serverFunc: 'get-user-$userID');
+    if (newData == null) return null;
+    return DivvyUser.fromJson(receivedData!);
+  } else if (receivedData == null) {
+    return null;
+  }
   return DivvyUser.fromJson(receivedData);
 }
 

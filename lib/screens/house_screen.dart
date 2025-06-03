@@ -181,6 +181,8 @@ class House extends StatelessWidget {
             ),
           ],
         ),
+        if (subgroups.isEmpty)
+          Text('No subgroups yet!', style: DivvyTheme.bodyGrey),
         // List of subgroups
         ...subgroups.map(
           (sub) => SubgroupTile(subgroup: sub, spacing: spacing),

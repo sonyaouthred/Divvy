@@ -10,8 +10,6 @@ import 'package:provider/provider.dart';
 
 typedef Week = List<DateTime>;
 
-// TODO: aware of bug when selecting March 10, 2025
-
 /// Displays an interactive calendar that lets the user view their chore
 /// schedule.
 class Calendar extends StatefulWidget {
