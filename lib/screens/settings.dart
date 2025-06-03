@@ -116,6 +116,8 @@ class _SettingsState extends State<Settings> {
   ) {
     final imageSize = width / 3;
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () async {
         await _changeColor(context, provider);
       },
@@ -200,6 +202,8 @@ class _SettingsState extends State<Settings> {
                   vertical: spacing * 0.45,
                 ),
                 child: InkWell(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.transparent,
                   // Trigger the action
                   onTap:
                       () =>

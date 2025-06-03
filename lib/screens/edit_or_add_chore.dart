@@ -174,6 +174,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
   Widget _saveButton(double width, DivvyProvider provider) {
     return Center(
       child: InkWell(
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
         onTap: () {
           // Add the chore and chore instances
           addChoreAndInstances(provider);
@@ -276,7 +278,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
             isSelected
                 ? (chore != null
                     ? DivvyTheme.lightGrey
-                    : const Color.fromARGB(255, 10, 13, 10))
+                    : DivvyTheme.mediumGreen)
                 : DivvyTheme.white,
           ),
           width: width,
@@ -498,6 +500,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     height: 50,
                     padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () {
                         chore != null
                             ? ()
@@ -550,6 +554,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     height: 50,
                     padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () {
                         // disable mods if user is editing a chore instance
                         chore != null

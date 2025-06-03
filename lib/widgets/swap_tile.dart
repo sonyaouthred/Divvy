@@ -24,6 +24,8 @@ class SwapTile extends StatelessWidget {
     final spacing = width * 0.05;
 
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => _openSwapScreen(context),
       child: Consumer<DivvyProvider>(
         builder: (context, provider, child) {

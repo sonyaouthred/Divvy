@@ -526,6 +526,33 @@ class DivvyProvider extends ChangeNotifier {
     required ChoreInst choreInst,
   }) async {
     choreInst.toggleDone();
+    if (choreInst.dueDate.isAfter(DateTime.now()) && choreInst.isDone) {
+      // User completed chore on time!!
+      choreInst.doneOnTime = true;
+    } else if (!choreInst.isDone) {
+      choreInst.doneOnTime = false;
+    }
+
+    // Need to recalculate user's chore completion rate
+    // get all user chores
+    final choreInsts = getMemberChoreInstances(
+      currMember.id,
+    ).where((chore) => chore.isDone);
+    int total = 0;
+    int onTime = 0;
+    for (ChoreInst inst in choreInsts) {
+      total++;
+      if (inst.doneOnTime) {
+        // chore is done & was on time
+        onTime++;
+      }
+    }
+    int onTimePct = 0;
+    if (total != 0) {
+      onTimePct = ((onTime / total) * 100).toInt();
+    }
+    currMember.onTimePct = onTimePct;
+    await db.upsertMember(currMember, houseID);
     await db.upsertChoreInst(choreInst, houseID);
     notifyListeners();
   }

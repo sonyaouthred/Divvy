@@ -80,6 +80,8 @@ class _ChooseSwapState extends State<ChooseSwap> {
         automaticallyImplyLeading: false,
         actions: [
           InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => _popBack(context, false),
             child: SizedBox(width: 45, height: 45, child: Icon(Icons.close)),
           ),
@@ -319,6 +321,8 @@ class _ChooseSwapState extends State<ChooseSwap> {
             .where((chore) => isSameDay(chore.dueDate, date))
             .isNotEmpty;
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => setState(() => _selectedDate = date),
       child: IntrinsicHeight(
         child: Container(

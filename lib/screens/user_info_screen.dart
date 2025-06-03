@@ -47,8 +47,9 @@ class UserInfoScreen extends StatelessWidget {
             actions: [
               // Allow user to take actions for this chore
               InkWell(
-                onTap: () => _showActionMenu(context, member),
+                highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
+                onTap: () => _showActionMenu(context, member),
                 child: Container(
                   height: 45,
                   width: 45,

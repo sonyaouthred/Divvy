@@ -43,6 +43,8 @@ class HouseChores extends StatelessWidget {
                   children: [
                     // Add chore button
                     InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap:
                           () => Navigator.of(context).push(
                             MaterialPageRoute(

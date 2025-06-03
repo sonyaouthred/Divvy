@@ -46,8 +46,9 @@ class SubgroupScreen extends StatelessWidget {
             actions: [
               // Allow user to take actions for this chore
               InkWell(
-                onTap: () => _showActionMenu(context),
+                highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
+                onTap: () => _showActionMenu(context),
                 child: Container(
                   height: 45,
                   width: 45,

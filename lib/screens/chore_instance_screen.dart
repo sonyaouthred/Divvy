@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 ///       displayed.
 ///   - choreID: the ID of the superclass of the chore instance
 ///       being displayed.
-class ChoreInstanceScreen extends StatelessWidget {
+class ChoreInstanceScreen extends StatefulWidget {
   // The current chore instance
   final ChoreInstID choreInstanceId;
   // The ID of the superclass of the chore instance
@@ -29,6 +29,12 @@ class ChoreInstanceScreen extends StatelessWidget {
   });
 
   @override
+  State<ChoreInstanceScreen> createState() => _ChoreInstanceScreenState();
+}
+
+class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
+  bool completing = false;
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
@@ -36,20 +42,22 @@ class ChoreInstanceScreen extends StatelessWidget {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Get the super chore for this instance
-        Chore? parentChore = provider.getSuperChore(choreID);
+        Chore? parentChore = provider.getSuperChore(widget.choreID);
         // If chore no longer exists, show chore not found screen
         if (parentChore == null) return _choreNotFoundScreen(width, spacing);
 
         // Get the updated instance (potentially with new info) from provider
         ChoreInst? choreInstance = provider.getChoreInstanceFromID(
-          choreID,
-          choreInstanceId,
+          widget.choreID,
+          widget.choreInstanceId,
         );
         if (choreInstance == null) return _choreNotFoundScreen(width, spacing);
         // Get the assignee to the chore
         Member? thisAssignee = provider.getMemberById(choreInstance.assignee);
         // Get a list of other people assigned to the chore
-        List<Member> otherAssignees = provider.getMembersDoingChore(choreID);
+        List<Member> otherAssignees = provider.getMembersDoingChore(
+          widget.choreID,
+        );
         // Remove the current assingee from list of other assignees
         otherAssignees.removeWhere((member) => member.id == thisAssignee?.id);
 
@@ -118,6 +126,7 @@ class ChoreInstanceScreen extends StatelessWidget {
                       spacing,
                       choreInstance,
                       provider,
+                      width,
                     ),
                   ),
               ],
@@ -181,6 +190,8 @@ class ChoreInstanceScreen extends StatelessWidget {
         SizedBox(height: spacing / 2),
         // Display current assignee adn their profile picture
         InkWell(
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
           onTap:
               () =>
                   (assignee != null) ? _openMemberPage(context, assignee) : (),
@@ -270,45 +281,62 @@ class ChoreInstanceScreen extends StatelessWidget {
     double spacing,
     ChoreInst choreInst,
     DivvyProvider provider,
+    double width,
   ) => Container(
     height: 60,
     margin: EdgeInsets.all(spacing * 3),
     child: InkWell(
-      onTap: () {
+      onTap: () async {
+        setState(() {
+          completing = true;
+        });
         bool isDone = !choreInst.isDone;
         // Toggle completion
-        provider.toggleChoreInstanceCompletedState(
+        await provider.toggleChoreInstanceCompletedState(
           superChoreID: choreInst.superID,
           choreInst: choreInst,
         );
         // Pop screen if chore is now done
-        if (isDone) Navigator.of(context).pop();
+        if (isDone && context.mounted) Navigator.of(context).pop();
+        setState(() {
+          completing = false;
+        });
       },
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
       child: Container(
         decoration: DivvyTheme.completeBox(choreInst.isDone),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Display check and text representing current state
-            Icon(
-              Icons.check,
-              color:
-                  choreInst.isDone
-                      ? DivvyTheme.background
-                      : DivvyTheme.mediumGreen,
-            ),
-            SizedBox(width: spacing),
-            Text(
-              choreInst.isDone ? 'Complete' : 'Mark Complete',
-              style:
-                  choreInst.isDone
-                      ? DivvyTheme.largeBoldMedWhite
-                      : DivvyTheme.largeBoldMedGreen,
-            ),
-          ],
-        ),
+        width: width * 0.75,
+        child:
+            !completing
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Display check and text representing current state
+                    Icon(
+                      Icons.check,
+                      color:
+                          choreInst.isDone
+                              ? DivvyTheme.background
+                              : DivvyTheme.mediumGreen,
+                    ),
+                    SizedBox(width: spacing),
+                    Text(
+                      choreInst.isDone ? 'Complete' : 'Mark Complete',
+                      style:
+                          choreInst.isDone
+                              ? DivvyTheme.largeBoldMedWhite
+                              : DivvyTheme.largeBoldMedGreen,
+                    ),
+                  ],
+                )
+                // If currently completing, mark as such
+                : CupertinoActivityIndicator(
+                  color:
+                      choreInst.isDone
+                          ? DivvyTheme.background
+                          : DivvyTheme.black,
+                ),
       ),
     ),
   );
@@ -346,7 +374,7 @@ class ChoreInstanceScreen extends StatelessWidget {
         Provider.of<DivvyProvider>(
           context,
           listen: false,
-        ).deleteChoreInst(choreID, choreInstanceId);
+        ).deleteChoreInst(widget.choreID, widget.choreInstanceId);
         Navigator.of(context).pop();
       }
     }
@@ -357,7 +385,7 @@ class ChoreInstanceScreen extends StatelessWidget {
     await Provider.of<DivvyProvider>(
       context,
       listen: false,
-    ).openSwap(choreInst, choreID);
+    ).openSwap(choreInst, widget.choreID);
   }
 
   /// Will open the passed member's page
