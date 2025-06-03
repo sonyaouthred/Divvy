@@ -31,6 +31,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
   // track chore's name
   late TextEditingController _nameController;
   late TextEditingController _emojiController;
+  late TextEditingController _descriptionController;
+
   // track list of members
   late List<Member> members;
   // track list of subgroups
@@ -77,6 +79,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // If user is editing, set the initial chore name to the actual name
     _nameController = TextEditingController(text: chore?.name ?? '');
     _emojiController = TextEditingController(text: chore?.emoji ?? '');
+    _descriptionController = TextEditingController(
+      text: chore?.description ?? '',
+    );
+
     Subgroup? initSubgroup = widget.subgroup;
     if (initSubgroup != null) {
       chosenSubgroup = initSubgroup;
@@ -102,6 +108,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // dispose of text editing controllers
     _nameController.dispose();
     _emojiController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -142,6 +149,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     children: [
                       SizedBox(height: spacing),
                       _choreNameEditor(spacing),
+                      SizedBox(height: spacing),
+                      _choreDescriptionEditor(spacing),
                       SizedBox(height: spacing),
                       _chooseEmojis(context),
                       if (chore != null) SizedBox(height: spacing),
@@ -188,6 +197,29 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           child: Text("Save", style: DivvyTheme.largeBoldMedWhite),
         ),
       ),
+    );
+  }
+
+  //////////////////////// Description editing ////////////////////////
+
+  /// Allow user to view/edit chore description.
+  Widget _choreDescriptionEditor(double spacing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Chore Description:', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        Container(
+          height: 100,
+          decoration: DivvyTheme.standardBox,
+          padding: EdgeInsets.symmetric(horizontal: 15),
+          child: TextFormField(
+            maxLines: null,
+            controller: _descriptionController,
+            decoration: InputDecoration(border: InputBorder.none),
+          ),
+        ),
+      ],
     );
   }
 
@@ -612,6 +644,13 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         'Please enter a name for your chore!',
       );
       return;
+    } else if (_descriptionController.text.isEmpty) {
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please enter a description for your chore!',
+      );
+      return;
     } else if (assigneeSel == AssigneeSelection.member &&
         chosenMembers.isEmpty) {
       // Make sure at least one member has been chosen
@@ -662,7 +701,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         pattern: frequency,
         daysOfWeek: chosenDates,
         emoji: _emojiController.text,
-        description: "",
+        description: _descriptionController.text,
         assignees: chosenMemberIDs,
         // default start at midnight
         startDate: DateTime(
@@ -683,7 +722,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         old: chore!,
         name: _nameController.text,
         emoji: _emojiController.text,
-        description: "",
+        description: _descriptionController.text,
       );
       provider.updateChore(updatedChore);
     }
@@ -697,6 +736,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // Check for edits
     if (chore != null) {
       if (_nameController.text != chore!.name) edited = true;
+      if (_descriptionController.text != chore!.description) edited = true;
       if (_emojiController.text != chore!.emoji) edited = true;
     }
     print(edited);
@@ -710,7 +750,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           old: chore!,
           name: _nameController.text,
           emoji: _emojiController.text,
-          description: "",
+          description: _descriptionController.text,
         );
         if (!context.mounted) return;
         // update chore!
