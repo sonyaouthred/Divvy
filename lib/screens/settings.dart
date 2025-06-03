@@ -83,16 +83,16 @@ class _SettingsState extends State<Settings> {
                     spacing: spacing,
                   ),
                   SizedBox(height: spacing / 2),
-                  // App settings
-                  _infoSections(
-                    icon: Icon(Icons.settings_outlined),
-                    text: 'Settings',
-                    buttons: [
-                      ['Appearance', null],
-                    ],
-                    flex: 1,
-                    spacing: spacing,
-                  ),
+                  // // App settings
+                  // _infoSections(
+                  //   icon: Icon(Icons.settings_outlined),
+                  //   text: 'Settings',
+                  //   buttons: [
+                  //     ['Appearance', null],
+                  //   ],
+                  //   flex: 1,
+                  //   spacing: spacing,
+                  // ),
                   // Logout button
                   _logoutButton(),
                   SizedBox(height: spacing),
