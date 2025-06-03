@@ -17,7 +17,7 @@ Future<bool> _postToServer({
   required Map<String, dynamic> data,
   required String serverFunc,
 }) async {
-  final uri = 'http://127.0.0.1:5000/$serverFunc';
+  final uri = 'http://137.184.230.103:5000/$serverFunc';
   final headers = {'Content-Type': 'application/json'};
   final response = await post(
     Uri.parse(uri),
@@ -42,7 +42,7 @@ Future<bool> _postToServer({
 Future<Map<String, dynamic>?> _getDataFromServer({
   required String serverFunc,
 }) async {
-  final uri = 'http://127.0.0.1:5000/$serverFunc';
+  final uri = 'http://137.184.230.103:5000/$serverFunc';
   final headers = {'Content-Type': 'application/json'};
   final response = await get(Uri.parse(uri), headers: headers);
 
