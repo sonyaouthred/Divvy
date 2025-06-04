@@ -162,6 +162,9 @@ flutter test --name theTestName
 
 4. If you wish to add new tests, simply create a dart file in the test/ folder. Be aware that all tests in that directory will automatically be run by the CI. The name of the file should represent what it is testing, followed by "\_test.dart". Tests should be placed in group()s that are relevant to what is being tested, and each individual test() should be testing a specific use case/desired output. Test()s should have descriptive names that represent the input and desired output.
 
+**Test Formatting**:
+If a test is solely testing frontend it should reside in the test folder if it is testing backend and frontend it should reside in the server_tests folder. Each test should have a helpful test description for future debugging and if creating a new group of test the group itself should similarly have a helpful description. If creating any chores, members, subgroups, house etc. for testing purpose please delete them at the end of the test.
+
 **IMPORTANT NOTE ON TESTS**: If you run the dates tests on your local computer, it is likely that one or more tests will fail. These tests fail on our local machines, but pass the GitHub CI. If we modify them so that they pass on our local machines, they fail on the GitHub CI. We are not sure why, but if you encounter this, don't worry! We know. So annoying.
 
 ## Continuous Integration Testing
@@ -176,6 +179,8 @@ The configuration for our Github Actions is located in **github\workflows\flutte
 
 In order to create a release build, you must attach a tag to your github commit/merge that starts with **v**. In order to ensure correct numbering, make the tag the next version number. As a sanity check, please make sure to build the app one last time before you push! Often we fix minor things just before a release that accidentally breaks something. Building the app & running on a simulator should be the absolute last thing you do before pushing.
 
+Testflight can also have different release builds created however due to premission that is a feature that can only be preform by the team directly.
+
 ## Code Structure
 
 The bulk of the source code resides in lib folder while the rest are the tests which are contained in the test directory.
@@ -184,17 +189,29 @@ Here is a helpful diagram of the various files and how they fit together:
 
 ![repo structure](assets/repo_structure.png?raw=true "Repository Structure")
 
-- **android/ios/mac/web/windows**: These folders contain the requisite assets involved with running the app on either android, ios, mac, or web.
-- **assets**: This stores any images locally used for the app. For now, it just stores a dummy user profile image.
-- **firebase**: Contains code need for firebase authentication
-- **models**: Contains code for creating object sturctures used around app such as chore (which describes a chore), member (which describes a user), and subgroup (which discribes a group of users assigned to certain chores) along with divvy_theme.dart which is the theme file used to style the app.
-- **provider**: Contains the provider used across the app to keep the screens in sync and allows for modification to data and communication with backend
-- **screens**: Contains the code to create each of the screen with each file linked to a specific screen.
-- **util**: Contains addition functionality for app like date_funcs.dart which handled date formating and generating automatic assignment of chores and dialogs.dart which creates create skeletons of dialogs used around the app for user interaction. Also contains the code for accessing the server and posting/fetching requests
-- **widgets**: Contains custom widget pages that are used to create certain aspects of the app that share styling and structure.
-- **divvy_navigation.dart**: Handles bottom navigation bar that connects main pages.
-- **firebase_options.dart**: Contains the necessary information for connecting to firebase.
-- **main.dart**: Creates the main function and runs the app.
-- **test (outside of lib)**: Contains all test files and is run with CI through GitHub actions.
-- **server_test (outside of lib)**: Contains a file with tests for the server connection. This is not part of the CI pipeline because the CI does not run the server locally. Until the server operates as a separate entity, this will not be part of CI.
-- **.github\workflows\flutter-ci.yaml**: Configures GitHub actions to both run tests and build app in both IOS and Android when pulling from main.
+Divvy/ 
+├── .github/workflows/flutter-ci.yaml # Configures GitHub actions to both run tests and build app in both IOS and Android when pulling from main.
+├── android/ # Handles the build requirements, permissions, assets and code need to build app in android
+├── assets/ # Contains any images locally used for the app. 
+├── ios/ # Handles the build requirements, permissions, assets, and code need to build the app in IOS
+├── lib/  
+| ├── firebase/  # Contains for firebase authentication services
+| ├── models/  # Contains code for creating object sturctures used around app such as chore, comment, house, member, subgroup, swap, and user. Along with divvy_theme.dart which is color theme file for the app.
+| ├── providers/ # Contains the provider for entire app which helps manage state, allows for modificaiton to data, and communication with backend.
+| ├── screens/  # Contains all the code for each of the screen with a screen per file.
+| ├── util/  # Contains addition functionality for app like date_funcs.dart which handled date formating and generating automatic assignment of chores and dialogs.dart which creates create skeletons of dialogs used around the app for user interaction. Also contains the code for accessing the server and posting/fetching requests
+| ├── widgets/ # Contains code for custom widgets that provide a template to reuse repeated widgets for styling and structure.
+| ├── divvy_navigation.dart # Code for handling the navigation bar at the bottom of the app
+| ├── firebase_options.dart # Specifications for connecting firebase to flutter app
+| ├── main.dart # Holds codes that starts off the app, user login, and initializes aspects of the app
+├── linux/ # Handles the build requirement, permissions, assets and code to build the app on linux
+├── macos/ # Handles the build requirement, permissions, assets and code need to build the app on mac
+├── server-tests/ # Contains a file with tests for the server connection. This is not part of the CI pipeline because the CI does not run the server locally. Until the server operates as a separate entity, this will not be part of CI.
+├── test/ # Holds all the tests for the frontend that get run with CI through GitHub Actions
+├── web/ # Handles the build requirement, permissions, assets and code to build the app on web, like chrome
+├── windows/ # Handles the build requirement, permissions, assets and code need to build the app on window
+├── .gitignore # Files and directory to be ignored by Git
+├── .README.md # General overview documentation and developer guideline
+├── .USERMANUAL.md # User guideline for running and installing the app
+├── .pubspec.yaml # List of all the dependencies needed for flutter
+
