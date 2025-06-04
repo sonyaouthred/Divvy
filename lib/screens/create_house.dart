@@ -64,6 +64,8 @@ class _CreateHouseState extends State<CreateHouse> {
                   SizedBox(height: spacing),
                   Center(
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () => _joinHouse(context),
                       child: SizedBox(
                         height: 50,
@@ -79,6 +81,8 @@ class _CreateHouseState extends State<CreateHouse> {
                   // or logout
                   Center(
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () => _logout(context),
                       child: SizedBox(
                         height: 50,
@@ -142,6 +146,8 @@ class _CreateHouseState extends State<CreateHouse> {
         SizedBox(height: spacing * 2),
         Center(
           child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => _createHouse(context),
             child: Container(
               alignment: Alignment.center,
@@ -173,7 +179,7 @@ class _CreateHouseState extends State<CreateHouse> {
       uid: FirebaseAuth.instance.currentUser!.uid,
       joinCode: joinCode,
     );
-    await createHouse(_currUser, newHouse, 'name');
+    await createHouse(_currUser, newHouse, _currUser.name);
     // Push user to home page
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(

@@ -100,6 +100,8 @@ class PendingSwapTile extends StatelessWidget {
   Widget _acceptButton(double spacing, DivvyProvider provider) => Flexible(
     flex: 1,
     child: InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => provider.approveSwapInvite(swap),
       child: Container(
         width: double.infinity,
@@ -120,6 +122,8 @@ class PendingSwapTile extends StatelessWidget {
   Widget _rejectButton(double spacing, DivvyProvider provider) => Flexible(
     flex: 1,
     child: InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => provider.rejectSwapInvite(swap),
       child: Container(
         width: double.infinity,

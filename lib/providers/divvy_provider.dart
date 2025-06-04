@@ -1,6 +1,7 @@
 // import 'dart:async';
 
 import 'package:divvy/models/chore.dart';
+import 'package:divvy/models/comment.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
@@ -300,7 +301,8 @@ class DivvyProvider extends ChangeNotifier {
               (inst) =>
                   inst.assignee == member &&
                   // Check if the due date is before now
-                  !inst.dueDate.isBefore(DateTime.now()),
+                  (!inst.dueDate.isBefore(DateTime.now()) ||
+                      isSameDay(inst.dueDate, DateTime.now())),
               // check that due date is not today
             )
             .toList(),
@@ -490,17 +492,17 @@ class DivvyProvider extends ChangeNotifier {
         due: date,
         assignee: assignee,
       );
-      addChoreInstance(choreInst);
+      _addChoreInstance(choreInst);
     });
     notifyListeners();
   }
 
   /// Adds a given chore instance to the database
-  Future<void> addChoreInstance(ChoreInst choreInstance) async {
+  /// Does not notify listeners
+  Future<void> _addChoreInstance(ChoreInst choreInstance) async {
     if (_choreInstances[choreInstance.superID] == null) return;
     _choreInstances[choreInstance.superID]!.add(choreInstance);
     await db.upsertChoreInst(choreInstance, houseID);
-    notifyListeners();
   }
 
   /// Updates a super chore. because frequency/members
@@ -526,6 +528,33 @@ class DivvyProvider extends ChangeNotifier {
     required ChoreInst choreInst,
   }) async {
     choreInst.toggleDone();
+    if (choreInst.dueDate.isAfter(DateTime.now()) && choreInst.isDone) {
+      // User completed chore on time!!
+      choreInst.doneOnTime = true;
+    } else if (!choreInst.isDone) {
+      choreInst.doneOnTime = false;
+    }
+
+    // Need to recalculate user's chore completion rate
+    // get all user chores
+    final choreInsts = getMemberChoreInstances(
+      currMember.id,
+    ).where((chore) => chore.isDone);
+    int total = 0;
+    int onTime = 0;
+    for (ChoreInst inst in choreInsts) {
+      total++;
+      if (inst.doneOnTime) {
+        // chore is done & was on time
+        onTime++;
+      }
+    }
+    int onTimePct = 0;
+    if (total != 0) {
+      onTimePct = ((onTime / total) * 100).toInt();
+    }
+    currMember.onTimePct = onTimePct;
+    await db.upsertMember(currMember, houseID);
     await db.upsertChoreInst(choreInst, houseID);
     notifyListeners();
   }
@@ -558,16 +587,20 @@ class DivvyProvider extends ChangeNotifier {
   Future<void> leaveHouse(MemberID id) async {
     // remove user from all subgroups they may be in
     // delete subgroups that have nobody left
+    List<Future> futures = [];
     for (Subgroup sub in getSubgroupsForMember(id)) {
       sub.removeMember(id);
       if (sub.members.isEmpty) {
         // delete subgroup!
         // this will handle db update
         deleteSubgroup(sub.id);
+      } else {
+        futures.add(db.upsertSubgroup(sub, houseID));
       }
     }
+    await Future.wait(futures);
 
-    List<Future> futures = [];
+    futures.clear();
     for (Swap swap in swaps) {
       if (swap.from == _currentMember.id) {
         // delete swap
@@ -584,6 +617,8 @@ class DivvyProvider extends ChangeNotifier {
     }
     await Future.wait(futures);
 
+    futures.clear();
+
     /// remove user from all chores they may have belonged to
     for (Chore chore in getMemberChores(id)) {
       chore.removeAssignee(id);
@@ -591,8 +626,11 @@ class DivvyProvider extends ChangeNotifier {
         // delete chore bc there are no more users on it
         // this will handle db update
         deleteSuperclassChore(chore.id);
+      } else {
+        futures.add(db.upsertChore(chore, houseID));
       }
     }
+    await Future.wait(futures);
 
     await db.deleteMember(houseID: houseID, memberID: id);
     _user.houseID = '';
@@ -602,16 +640,110 @@ class DivvyProvider extends ChangeNotifier {
 
   /// Deletes a subgroup specified
   Future<void> deleteSubgroup(SubgroupID subgroupID) async {
+    final subgroup = _subgroups[subgroupID];
+    if (subgroup == null) return;
     // Delete any of their chores
     for (Chore c in getSubgroupChores(subgroupID)) {
       // delete super chore!
       // this will handle db update
       deleteSuperclassChore(c.id);
     }
+    // Delete subgroup from member lists
+    final List<Future> futures =
+        subgroup.members
+            .map(
+              (m) => leaveSubgroup(
+                subgroupID: subgroupID,
+                mID: m,
+                notifList: false,
+              ),
+            )
+            .toList();
+    await Future.wait(futures);
     // Finally, remove the subgroup
     _subgroups.remove(subgroupID);
     await db.deleteSubgroup(houseID: houseID, subgroupID: subgroupID);
     notifyListeners();
+  }
+
+  /// deletes current user
+  Future<void> deleteMember() async {
+    // Delete user from any subgroups they may be part of
+    final subgroups = currMember.subgroups;
+    List<Future> futures = [];
+    for (SubgroupID subID in subgroups) {
+      // remove user from subgroup
+      final subgroup = _subgroups[subID];
+      if (subgroup == null) continue;
+      subgroup.removeMember(currMember.id);
+      futures.add(db.upsertSubgroup(subgroup, houseID));
+    }
+    await Future.wait(futures);
+
+    // now handle any chores they may be assigned to this user
+    futures.clear();
+    final chores = getMemberChores(currMember.id);
+    for (Chore chore in chores) {
+      chore.assignees.remove(currMember.id);
+      futures.add(db.upsertChore(chore, houseID));
+
+      // reassign the chore schedule
+      // delete all upcoming instances
+      final upcomingInstances =
+          _choreInstances[chore.id]?.where(
+            (inst) => inst.dueDate.isAfter(DateTime.now()),
+          ) ??
+          [];
+      for (ChoreInst inst in upcomingInstances) {
+        futures.add(db.deleteChoreInst(houseID: houseID, choreInstID: inst.id));
+      }
+
+      // now repopulate!!
+      final dates =
+          getDateList(
+            chore.frequency,
+          ).where((date) => date.isAfter(DateTime.now())).toList();
+      dates.asMap().forEach((index, date) {
+        final assignee = chore.assignees[index % chore.assignees.length];
+        // create chore instance
+        ChoreInst choreInst = ChoreInst.fromNew(
+          superCID: chore.id,
+          due: date,
+          assignee: assignee,
+        );
+        _addChoreInstance(choreInst);
+      });
+    }
+    await Future.wait(futures);
+
+    // Finally, delete user doc
+    await db.deleteMember(houseID: houseID, memberID: currMember.id);
+  }
+
+  /// Leaves the specified subgroup. If no member ID specified,
+  /// assumes current user
+  Future<void> leaveSubgroup({
+    required SubgroupID subgroupID,
+    MemberID? mID,
+    bool notifList = true,
+  }) async {
+    // remove from member's list
+    final memberID = mID ?? currMember.id;
+    final member = getMemberById(memberID);
+    if (member == null) return;
+    member.subgroups.remove(subgroupID);
+    await db.upsertMember(member, houseID);
+
+    // remove member from subgroup's list
+    final subgroup = _subgroups[subgroupID];
+    if (subgroup != null) {
+      subgroup.members.remove(memberID);
+      await db.upsertSubgroup(subgroup, houseID);
+    }
+
+    // if m is not null, we assume this method is being called from another
+    // provider func
+    if (notifList) notifyListeners();
   }
 
   /// Add a subgroup specified
@@ -776,6 +908,43 @@ class DivvyProvider extends ChangeNotifier {
     }
     // finally delete swap
     await db.deleteSwap(houseID: houseID, swapID: swap.id);
+    notifyListeners();
+  }
+
+  // Add a comment by the current user to a chore instance
+  Future<void> addComment(
+    ChoreID superID,
+    ChoreInstID choreInst,
+    String comment,
+  ) async {
+    print('adding comment...');
+    final newComment = Comment.fromNew(
+      comment: comment,
+      commenter: currMember.id,
+    );
+    final inst = _choreInstances[superID]?.firstWhere(
+      (inst) => inst.id == choreInst,
+    );
+    if (inst == null) return;
+    // add comment!
+    inst.comments.add(newComment);
+    await db.upsertChoreInst(inst, houseID);
+    notifyListeners();
+  }
+
+  // Delete a given comment
+  Future<void> deleteComment(
+    ChoreID superID,
+    ChoreInstID choreInst,
+    String commentID,
+  ) async {
+    final inst = _choreInstances[superID]?.firstWhere(
+      (inst) => inst.id == choreInst,
+    );
+    if (inst == null) return;
+    // delete comment!
+    inst.comments.removeWhere((comment) => comment.id == commentID);
+    await db.upsertChoreInst(inst, houseID);
     notifyListeners();
   }
 }

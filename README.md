@@ -12,10 +12,10 @@ The end target for this app is to be deployed to physical devices over the App S
 
 While you can create your own house with roommates right now, we have a few fake accounts you can try out to see a house with some chores populated. All of the below emails work with the password: divvydemo.
 
-natasha@divvy.com
-iamironman@divvy.com
-nickfury@divvy.com
-peter@divvy.com
+- natasha@divvy.com
+- iamironman@divvy.com
+- nickfury@divvy.com
+- peter@divvy.com
 
 Basic path:
 After downloading the app, you have several options. You can either sign in with one of the dummy accounts we have above, or you can press "Create Account" to create a new account. This will then prompt you to create a house. Once you've created a house, you will be redirected to your home screen.
@@ -31,9 +31,9 @@ If you want to swap a chore, you can click the three dots at the top right (when
 
 ## Bug Tracking
 
-All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We just finished some major implementations of features, and while we are not aware of any massive bugs at the moment (other than the listed android bug), it is not unlikely that there will be some minor discrepancies between the database and the app UI. These bugs will be more thoroughly documented and squashed in the coming days.
+All of our current bugs are located on our [issue page](https://github.com/sonyaouthred/Divvy/issues). We are not currently aware of any major bugs.
 
-Please report any bugs found to our issue page here. While we do not have a template set up (we need GitHub pro??), please use the following format:
+Please report any bugs found to our issue page (above). While we do not have a template set up (we need GitHub pro??), please use the following format:
 
 **Clear, succinct title that mentions the data/functions corrupted/ineffective**
 
@@ -133,7 +133,11 @@ We can guarantee the app will run as expected on iPhone simulators, Android emul
 
 **Important**: TL;DR: Run on Chrome at your own risk. We _do not_ recommend this. It will work, but the app is intended for a mobile device.
 
-The app will prompt you to sign in. Please refer to Use Cases below to see further instructions.
+We can guarantee the app will run as expected on iPhone simulators, Android emulators, and MacOS/Windows. Some of our devs have found Chrome to be inconsistent and a bit tempremental with the app, which we do not intend to fix because the app is not meant to be a web app.
+
+**Important**: TL;DR: Run on Chrome at your own risk. We _do not_ recommend this. It will work, but the app is intended for a mobile device.
+
+The app will prompt you to sign in. Please refer to the [How to Use](#how-to-use) section above for sample logins.
 
 ## Setting up the Backend
 

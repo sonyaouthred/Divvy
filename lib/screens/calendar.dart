@@ -10,8 +10,6 @@ import 'package:provider/provider.dart';
 
 typedef Week = List<DateTime>;
 
-// TODO: aware of bug when selecting March 10, 2025
-
 /// Displays an interactive calendar that lets the user view their chore
 /// schedule.
 class Calendar extends StatefulWidget {
@@ -268,6 +266,8 @@ class _CalendarState extends State<Calendar> {
     bool hasChores =
         _chores.where((chore) => isSameDay(chore.dueDate, date)).isNotEmpty;
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => setState(() => _selectedDate = date),
       child: IntrinsicHeight(
         child: Container(
@@ -324,7 +324,10 @@ class _CalendarState extends State<Calendar> {
     // Handle empty chore list
     if (choreList.isEmpty) {
       return Center(
-        child: Text('Nothing to see here!', style: DivvyTheme.bodyGrey),
+        child: Text(
+          'No chores on ${getFormattedDate(_selectedDate)}!',
+          style: DivvyTheme.bodyGrey,
+        ),
       );
     }
     // Nonempty chore list, display results

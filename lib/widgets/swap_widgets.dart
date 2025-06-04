@@ -18,6 +18,8 @@ Widget displayOpenSwaps(DivvyProvider provider, double spacing) {
         children: [
           Text('Available swaps', style: DivvyTheme.bodyBoldBlack),
           InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => print('seeing all'),
             child: Container(
               alignment: Alignment.bottomCenter,
@@ -68,6 +70,8 @@ Widget displayOpenSwapsForCurrMember(DivvyProvider provider, double spacing) {
         children: [
           Text('Your open swaps:', style: DivvyTheme.bodyBoldBlack),
           InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => print('seeing all'),
             child: Container(
               alignment: Alignment.bottomCenter,

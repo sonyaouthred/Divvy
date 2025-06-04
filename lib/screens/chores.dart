@@ -2,11 +2,11 @@
 // Commented out for testing
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
-import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/edit_or_add_chore.dart';
 import 'package:divvy/widgets/chore_tile.dart';
+import 'package:divvy/widgets/subgroup_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +37,8 @@ class Chores extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -129,17 +131,13 @@ class Chores extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 12,
-              backgroundColor: subgroup.profilePicture.color,
-            ),
-            SizedBox(width: 10),
-            Text(subgroup.name, style: DivvyTheme.bodyBlack),
-          ],
+        SubgroupTile(
+          subgroup: subgroup,
+          spacing: spacing,
+          showChevron: false,
+          showDivider: false,
         ),
-        SizedBox(height: spacing),
+        SizedBox(height: spacing / 4),
         if (choresUnderSubgroup.isNotEmpty)
           Column(
             children:
@@ -153,9 +151,16 @@ class Chores extends StatelessWidget {
                     .toList(),
           ),
         if (choresUnderSubgroup.isEmpty)
-          Padding(
-            padding: EdgeInsets.only(left: spacing / 2),
-            child: Text('No chores yet!', style: DivvyTheme.bodyGrey),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: spacing / 2),
+                child: Text('No chores yet!', style: DivvyTheme.bodyGrey),
+              ),
+              SizedBox(height: spacing / 2),
+              Divider(color: DivvyTheme.altBeige),
+            ],
           ),
         SizedBox(height: spacing / 2),
       ],

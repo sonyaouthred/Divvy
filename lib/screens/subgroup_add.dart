@@ -3,7 +3,6 @@ import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/util/dialogs.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -73,7 +72,6 @@ class _SubgroupAddState extends State<SubgroupAdd> {
                       _nameInput(spacing),
                       SizedBox(height: spacing * 2),
                       _displayAssignees(spacing),
-                      _displayChores(spacing),
                       SizedBox(height: spacing * 2),
                       Center(child: _buttons(spacing)),
                       // Buffer for end of scroll view
@@ -137,6 +135,8 @@ class _SubgroupAddState extends State<SubgroupAdd> {
     // Check if tile is currently selected
     bool inList = _subgroupMember.contains(member);
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap:
           () => setState(() {
             // toggle selection
@@ -221,91 +221,11 @@ class _SubgroupAddState extends State<SubgroupAdd> {
     );
   }
 
-  // Chore input
-  Widget _displayChores(double spacing) {
-    // Return view of subgroup chores
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Chores', style: DivvyTheme.bodyBoldBlack),
-            InkWell(
-              onTap: () => _addChore(context),
-              child: SizedBox(
-                height: 45,
-                width: 45,
-                child: Icon(CupertinoIcons.add),
-              ),
-            ),
-          ],
-        ),
-        if (_subgroupChore.isNotEmpty) SizedBox(height: spacing / 4),
-        // Display the chore tiles for all chores due today
-        // List of subgroups
-        if (_subgroupChore.isNotEmpty)
-          ListView.builder(
-            itemCount: _subgroupChore.length,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (BuildContext context, int index) {
-              bool isLast = false;
-              if (index == _subgroupChore.length - 1) isLast = true;
-              // Render the member's profile picture and name
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: spacing / 3),
-                child: _choreTile(
-                  chore: _subgroupChore[index],
-                  spacing: spacing,
-                  isLast: isLast,
-                ),
-              );
-            },
-          ),
-        if (_subgroupChore.isEmpty)
-          Text('Add a chore for this subgroup!', style: DivvyTheme.bodyGrey),
-      ],
-    );
-  }
-
-  // Chores tile
-  Widget _choreTile({
-    required Chore chore,
-    required double spacing,
-    required bool isLast,
-  }) {
-    // Check if chore is currently in list
-    bool inList = _subgroupChore.contains(chore);
-    return InkWell(
-      onTap:
-          () => setState(() {
-            inList ? _subgroupChore.remove(chore) : _subgroupChore.add(chore);
-          }),
-      child: Container(
-        padding: EdgeInsets.all(spacing / 2),
-        decoration: DivvyTheme.box(
-          inList ? DivvyTheme.mediumGreen : DivvyTheme.white,
-        ),
-        child:
-        // User profile image
-        Row(
-          children: [
-            Text(chore.emoji, style: TextStyle(fontSize: 20)),
-            SizedBox(width: spacing / 1.2),
-            Text(
-              chore.name,
-              style: DivvyTheme.bodyBlack,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // Save button
   Widget _buttons(double spacing) {
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => _popBack(context, true),
       child: Container(
         height: 50,
@@ -366,14 +286,5 @@ class _SubgroupAddState extends State<SubgroupAdd> {
     }
     if (!context.mounted) return;
     Navigator.pop(context);
-  }
-
-  void _addChore(BuildContext context) {
-    //TODO: connect to add chore
-    // IMPORTANT: the add chore screen should **not** add this
-    // chore to the database. This screen will add to db if
-    // user decides to save subgroup.
-    print('Add chore');
-    // TODO: after adding chore, add it to _subgroupChores
   }
 }

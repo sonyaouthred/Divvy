@@ -480,121 +480,136 @@ void main() {
       assert(deletedSubs == null || deletedSubs.isEmpty);
     });
 
-    // // TODO: subgroup updates when user is deleted
-    // test('Subgroup docs properly updated when user deleted', () async {
-    //   // Create three users
-    //   final member1ID = '9508239408304';
-    //   final member2ID = '0850948902432';
-    //   final member3ID = 'fji2u59349032jgf';
-    //   List<Future> futures = [
-    //     createUser(member1ID, 'member1@test.com', 'member1'),
-    //     createUser(member2ID, 'member2@test.com', 'member2'),
-    //     createUser(member3ID, 'member3@test.com', 'member3'),
-    //   ];
-    //   await Future.wait(futures);
-    //   final founder = await fetchUser(member1ID);
-    //   final mem2 = await fetchUser(member2ID);
-    //   final mem3 = await fetchUser(member3ID);
-    //   assert(founder != null);
-    //   assert(mem2 != null);
-    //   assert(mem3 != null);
+    test('Subgroup docs properly updated when user deleted', () async {
+      // Create three users
+      final member1ID = '9508239408304';
+      final member2ID = '0850948902432';
+      final member3ID = 'fji2u59349032jgf';
+      List<Future> futures = [
+        createUser(member1ID, 'member1@test.com', 'member1'),
+        createUser(member2ID, 'member2@test.com', 'member2'),
+        createUser(member3ID, 'member3@test.com', 'member3'),
+      ];
+      await Future.wait(futures);
+      final founder = await fetchUser(member1ID);
+      final mem2 = await fetchUser(member2ID);
+      final mem3 = await fetchUser(member3ID);
+      assert(founder != null);
+      assert(mem2 != null);
+      assert(mem3 != null);
 
-    //   // add a house to the db
-    //   final house = House.fromNew(
-    //     houseName: 'Test house!!',
-    //     uid: founder!.id,
-    //     joinCode: '94320483090s',
-    //   );
-    //   await createHouse(founder, house, 'name');
+      // add a house to the db
+      final house = House(
+        name: 'Test house!!',
+        joinCode: '94320483090s',
+        id: '2f2fa52b-a8a6-44fd-9106-ec7af079d8de',
+        dateCreated: DateTime.now(),
+        imageID: 'fjeiwfewo',
+      );
+      await createHouse(founder!, house, 'name');
 
-    //   // add users to house
-    //   futures = [
-    //     addUserToHouse(mem2!, house.joinCode),
-    //     addUserToHouse(mem3!, house.joinCode),
-    //   ];
-    //   await Future.wait(futures);
+      // add users to house
+      futures = [
+        addUserToHouse(mem2!, house.joinCode),
+        addUserToHouse(mem3!, house.joinCode),
+      ];
+      await Future.wait(futures);
 
-    //   // now create a subgroups!!
-    //   final subgroup1 = Subgroup.fromNew(
-    //     members: [member3ID, member2ID],
-    //     name: '2 & 3',
-    //     color: ProfileColor.black,
-    //   );
-    //   final subgroup2 = Subgroup.fromNew(
-    //     members: [member1ID, member2ID],
-    //     name: '1 & 2',
-    //     color: ProfileColor.black,
-    //   );
-    //   futures = [
-    //     upsertSubgroup(subgroup1, house.id),
-    //     upsertSubgroup(subgroup2, house.id),
-    //   ];
-    //   await Future.wait(futures);
-    //   // Now make sure data was properly created
-    //   Map<SubgroupID, Subgroup>? subgroups = await fetchSubgroups(house.id);
-    //   assert(subgroups != null);
-    //   Subgroup? sub1 = subgroups![subgroup1.id];
-    //   assert(sub1 != null);
-    //   Subgroup? sub2 = subgroups[subgroup2.id];
-    //   assert(sub2 != null);
-    //   expect(sub1!.name, '2 & 3');
-    //   expect(sub2!.name, '1 & 2');
-    //   assert(sub1.members.length == 2);
-    //   assert(sub2.members.length == 2);
-    //   assert(setEquals(sub1.members.toSet(), {member2ID, member3ID}));
-    //   assert(setEquals(sub2.members.toSet(), {member2ID, member1ID}));
+      // now create a subgroups!!
+      final subgroup1 = Subgroup.fromNew(
+        members: [member3ID, member2ID],
+        name: '2 & 3',
+        color: ProfileColor.black,
+      );
+      final subgroup2 = Subgroup.fromNew(
+        members: [member1ID, member2ID],
+        name: '1 & 2',
+        color: ProfileColor.black,
+      );
+      final subgroup3 = Subgroup.fromNew(
+        members: [member2ID],
+        name: '2',
+        color: ProfileColor.black,
+      );
+      futures = [
+        upsertSubgroup(subgroup1, house.id),
+        upsertSubgroup(subgroup2, house.id),
+        upsertSubgroup(subgroup3, house.id),
+      ];
+      await Future.wait(futures);
+      // Now make sure data was properly created
+      Map<SubgroupID, Subgroup>? subgroups = await fetchSubgroups(house.id);
+      assert(subgroups != null);
+      Subgroup? sub1 = subgroups![subgroup1.id];
+      assert(sub1 != null);
+      Subgroup? sub2 = subgroups[subgroup2.id];
+      assert(sub2 != null);
+      Subgroup? sub3 = subgroups[subgroup3.id];
+      assert(sub3 != null);
+      expect(sub1!.name, '2 & 3');
+      expect(sub2!.name, '1 & 2');
+      expect(sub3!.name, '2');
+      assert(sub1.members.length == 2);
+      assert(sub2.members.length == 2);
+      assert(sub3.members.length == 1);
+      assert(setEquals(sub1.members.toSet(), {member2ID, member3ID}));
+      assert(setEquals(sub2.members.toSet(), {member2ID, member1ID}));
+      assert(setEquals(sub3.members.toSet(), {member2ID}));
 
-    //   // Then delete  memeber 2
-    //   // Simulating provider leave house function 
-    //   // Imtating provider 
-      
+      // Then delete  memeber 2
+      // Simulating provider leave house function
+      // Imtating provider
+      futures.clear();
+      for (Subgroup sub in [subgroup1, subgroup2, subgroup3]) {
+        sub.removeMember(member2ID);
+        if (sub.members.isEmpty) {
+          // delete subgroup!
+          // this will handle db update
+          deleteSubgroup(houseID: house.id, subgroupID: sub.id);
+        } else {
+          futures.add(upsertSubgroup(sub, house.id));
+        }
+      }
+      await Future.wait(futures);
+      await deleteMember(memberID: member2ID, houseID: house.id);
 
-    // /// remove user from all chores they may have belonged to
-    // for (Chore chore in getMemberChores(id)) {
-    //   chore.removeAssignee(id);
-    //   if (chore.assignees.isEmpty) {
-    //     // delete chore bc there are no more users on it
-    //     // this will handle db update
-    //     deleteSuperclassChore(chore.id);
-    //   }
-    // }
-    //   await deleteMember(memberID: member2ID, houseID: house.id);
+      // Test if subgroups were updated
+      subgroups = await fetchSubgroups(house.id);
+      assert(subgroups != null);
+      sub1 = subgroups![subgroup1.id];
+      assert(sub1 != null);
+      sub2 = subgroups[subgroup2.id];
+      assert(sub2 != null);
+      sub3 = subgroups[subgroup3.id];
+      assert(sub3 == null);
+      expect(sub1!.name, '2 & 3');
+      expect(sub2!.name, '1 & 2');
+      assert(sub1.members.length == 1);
+      assert(sub2.members.length == 1);
+      assert(setEquals(sub1.members.toSet(), {member3ID}));
+      assert(setEquals(sub2.members.toSet(), {member1ID}));
 
-    //   // Test if subgroup was updated
-    //   subgroups = await fetchSubgroups(house.id);
-    //   assert(subgroups != null);
-    //   sub1 = subgroups![subgroup1.id];
-    //   assert(sub1 != null);
-    //   sub2 = subgroups[subgroup2.id];
-    //   assert(sub2 != null);
-    //   expect(sub1!.name, '2 & 3');
-    //   expect(sub2!.name, '1 & 2');
-    //   assert(sub1.members.length == 1);
-    //   assert(sub2.members.length == 1);
-    //   assert(setEquals(sub1.members.toSet(), {member3ID}));
-    //   assert(setEquals(sub2.members.toSet(), {member1ID}));
+      // make sure subgroup are properly deleted
+      // subgroup 1
+      await deleteSubgroup(subgroupID: subgroup1.id, houseID: house.id);
+      Subgroup? deletedSub = await fetchSubgroup(subgroup1.id, house.id);
+      assert(deletedSub == null);
+      // subgroup 2
+      await deleteSubgroup(subgroupID: subgroup2.id, houseID: house.id);
+      deletedSub = await fetchSubgroup(subgroup2.id, house.id);
+      assert(deletedSub == null);
 
-    //   // make sure subgroup are properly deleted
-    //   // subgroup 1
-    //   await deleteSubgroup(subgroupID: subgroup1.id, houseID: house.id);
-    //   Subgroup? deletedSub = await fetchSubgroup(subgroup1.id, house.id);
-    //   assert(deletedSub == null);
-    //   // subgroup 2
-    //   await deleteSubgroup(subgroupID: subgroup2.id, houseID: house.id);
-    //   deletedSub = await fetchSubgroup(subgroup2.id, house.id);
-    //   assert(deletedSub == null);
-
-    //   // Clean up - delete data
-    //   futures = [
-    //     deleteUser(member1ID),
-    //     deleteUser(member3ID),
-    //     deleteHouse(house.id),
-    //   ];
-    //   await Future.wait(futures);
-    //   // Make sure all subgroups were deleted
-    //   final deletedSubs = await fetchSubgroups(house.id);
-    //   assert(deletedSubs == null || deletedSubs.isEmpty);
-    // });
+      // Clean up - delete data
+      futures = [
+        deleteUser(member1ID),
+        deleteUser(member3ID),
+        deleteHouse(house.id),
+      ];
+      await Future.wait(futures);
+      // Make sure all subgroups were deleted
+      final deletedSubs = await fetchSubgroups(house.id);
+      assert(deletedSubs == null || deletedSubs.isEmpty);
+    });
   });
 
   group('Chore (super) tests', () {
@@ -1251,6 +1266,242 @@ void main() {
         deleteHouse(house.id),
       ];
       await Future.wait(futures);
+    });
+  });
+
+  group('Leaderboard tests', () {
+    test('User on time percentages update as expected', () async {
+      // Create user
+      final member1ID = '9508239408304';
+      List<Future> futures = [
+        createUser(member1ID, 'member1@test.com', 'member1'),
+      ];
+      await Future.wait(futures);
+      final founder = await fetchUser(member1ID);
+      assert(founder != null);
+
+      // add a house to the db
+      final house = House(
+        name: 'Test house!!',
+        joinCode: '94320483090s',
+        id: '2f2fa52b-a8a6-44fd-9106-ec7af079d8de',
+        dateCreated: DateTime.now(),
+        imageID: 'fjeiwfewo',
+      );
+      await createHouse(founder!, house, 'name');
+      // get members
+      Map<MemberID, Member>? members = await fetchMembers(house.id);
+      assert(members != null);
+      final mem1 = members![founder.id];
+      assert(mem1 != null);
+
+      // Now create some chores
+      final chore1 = '4328905832043';
+      // overdue chore inst
+      final chore1Inst1 = ChoreInst(
+        choreID: chore1,
+        id: '9540-1413',
+        dueDate: DateTime(2025, 6, 1),
+        isDone: false,
+        assignee: mem1!.id,
+        swapID: '',
+        doneOnTime: false,
+        comments: [],
+      );
+      // today chore inst
+      final chore1Inst2 = ChoreInst(
+        choreID: chore1,
+        id: '46943095432',
+        dueDate: DateTime(2025, 6, 3, 23, 59, 59),
+        isDone: false,
+        assignee: mem1.id,
+        swapID: '',
+        doneOnTime: false,
+        comments: [],
+      );
+      // future chore inst
+      final chore1Inst3 = ChoreInst(
+        choreID: chore1,
+        id: '40693-054',
+        dueDate: DateTime(2025, 6, 4),
+        isDone: false,
+        assignee: mem1.id,
+        swapID: '',
+        doneOnTime: false,
+        comments: [],
+      );
+      final choreInsts = [chore1Inst1, chore1Inst2, chore1Inst3];
+      futures =
+          choreInsts.map((chore) => upsertChoreInst(chore, house.id)).toList();
+      await Future.wait(futures);
+
+      // toggle a couple done!!
+
+      // complete overdue chore + verify it doesn't change the on time pct
+      chore1Inst1.toggleDone();
+      if (chore1Inst1.dueDate.isAfter(DateTime.now()) && chore1Inst1.isDone) {
+        // User completed chore on time!!
+        chore1Inst1.doneOnTime = true;
+      } else if (!chore1Inst1.isDone) {
+        chore1Inst1.doneOnTime = false;
+      }
+      expect(chore1Inst1.doneOnTime, false);
+      // Need to recalculate user's chore completion rate
+      // get all user chores for founder
+      List<ChoreInst> memberChores =
+          choreInsts.where((chore) => chore.assignee == founder.id).toList();
+      int total = 0;
+      int onTime = 0;
+      for (ChoreInst inst in memberChores) {
+        total++;
+        if (inst.doneOnTime) {
+          // chore is done & was on time
+          onTime++;
+        }
+      }
+      int onTimePct = 0;
+      if (total != 0) {
+        onTimePct = ((onTime / total) * 100).toInt();
+      }
+      mem1.onTimePct = onTimePct;
+      await upsertMember(mem1, house.id);
+      await upsertChoreInst(chore1Inst1, house.id);
+
+      members = await fetchMembers(house.id);
+      assert(members != null);
+      assert(members![mem1.id] != null);
+      expect(members![mem1.id]!.onTimePct, 0);
+
+      // now do it again for the chore due today
+
+      // complete overdue chore + verify it doesn't change the on time pct
+      chore1Inst2.toggleDone();
+      if (chore1Inst2.dueDate.isAfter(DateTime.now()) && chore1Inst2.isDone) {
+        // User completed chore on time!!
+        chore1Inst2.doneOnTime = true;
+      } else if (!chore1Inst2.isDone) {
+        chore1Inst2.doneOnTime = false;
+      }
+      expect(chore1Inst2.doneOnTime, true);
+      // Need to recalculate user's chore completion rate
+      // get all user chores for founder
+      memberChores =
+          choreInsts
+              .where((chore) => chore.assignee == founder.id && chore.isDone)
+              .toList();
+      total = 0;
+      onTime = 0;
+      for (ChoreInst inst in memberChores) {
+        total++;
+        if (inst.doneOnTime) {
+          // chore is done & was on time
+          onTime++;
+        }
+      }
+      onTimePct = 0;
+      if (total != 0) {
+        onTimePct = ((onTime / total) * 100).toInt();
+      }
+      mem1.onTimePct = onTimePct;
+      await upsertMember(mem1, house.id);
+      await upsertChoreInst(chore1Inst2, house.id);
+
+      members = await fetchMembers(house.id);
+      assert(members != null);
+      assert(members![mem1.id] != null);
+      expect(members![mem1.id]!.onTimePct, 50);
+
+      // Now mark the third as done!!!
+
+      // complete overdue chore + verify it doesn't change the on time pct
+      chore1Inst3.toggleDone();
+      if (chore1Inst3.dueDate.isAfter(DateTime.now()) && chore1Inst3.isDone) {
+        // User completed chore on time!!
+        chore1Inst3.doneOnTime = true;
+      } else if (!chore1Inst3.isDone) {
+        chore1Inst3.doneOnTime = false;
+      }
+      expect(chore1Inst3.doneOnTime, true);
+      // Need to recalculate user's chore completion rate
+      // get all user chores for founder
+      memberChores =
+          choreInsts
+              .where((chore) => chore.assignee == founder.id && chore.isDone)
+              .toList();
+      total = 0;
+      onTime = 0;
+      for (ChoreInst inst in memberChores) {
+        total++;
+        if (inst.doneOnTime) {
+          // chore is done & was on time
+          onTime++;
+        }
+      }
+      onTimePct = 0;
+      if (total != 0) {
+        onTimePct = ((onTime / total) * 100).toInt();
+      }
+      mem1.onTimePct = onTimePct;
+      await upsertMember(mem1, house.id);
+      await upsertChoreInst(chore1Inst3, house.id);
+
+      members = await fetchMembers(house.id);
+      assert(members != null);
+      assert(members![mem1.id] != null);
+      expect(members![mem1.id]!.onTimePct, 66);
+
+      // now mark today's chore as not done
+
+      // complete overdue chore + verify it doesn't change the on time pct
+      chore1Inst2.toggleDone();
+      if (chore1Inst2.dueDate.isAfter(DateTime.now()) && chore1Inst2.isDone) {
+        // User completed chore on time!!
+        chore1Inst2.doneOnTime = true;
+      } else if (!chore1Inst2.isDone) {
+        chore1Inst2.doneOnTime = false;
+      }
+      expect(chore1Inst2.doneOnTime, false);
+      // Need to recalculate user's chore completion rate
+      // get all user chores for founder
+      memberChores =
+          choreInsts
+              .where((chore) => chore.assignee == founder.id && chore.isDone)
+              .toList();
+      total = 0;
+      onTime = 0;
+      for (ChoreInst inst in memberChores) {
+        total++;
+        if (inst.doneOnTime) {
+          // chore is done & was on time
+          onTime++;
+        }
+      }
+      onTimePct = 0;
+      if (total != 0) {
+        onTimePct = ((onTime / total) * 100).toInt();
+      }
+      mem1.onTimePct = onTimePct;
+      await upsertMember(mem1, house.id);
+      await upsertChoreInst(chore1Inst2, house.id);
+
+      members = await fetchMembers(house.id);
+      assert(members != null);
+      assert(members![mem1.id] != null);
+      expect(members![mem1.id]!.onTimePct, 50);
+
+      // Clean up - delete data
+      futures = [
+        deleteUser(member1ID),
+        deleteMember(memberID: member1ID, houseID: house.id),
+        deleteChoreInst(houseID: house.id, choreInstID: chore1Inst1.id),
+        deleteChoreInst(houseID: house.id, choreInstID: chore1Inst2.id),
+        deleteChoreInst(houseID: house.id, choreInstID: chore1Inst3.id),
+      ];
+      await Future.wait(futures);
+      await deleteHouse(house.id);
+      // Make sure all chores were deleted
+      final choreinsts = await fetchChoreInstances(house.id);
+      assert(choreinsts == null || choreinsts.isEmpty);
     });
   });
 }

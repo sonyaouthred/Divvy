@@ -84,12 +84,14 @@ typedef Email = String;
 // of a user, as we don't have a way for users to upload
 // images yet.
 enum ProfileColor {
-  darkGreen,
-  mediumGreen,
-  lightGreen,
-  brightRed,
-  darkGrey,
-  lightGrey,
+  red,
+  orange,
+  yellow,
+  green,
+  teal,
+  blue,
+  purple,
+  pink,
   black,
 }
 
@@ -97,36 +99,42 @@ enum ProfileColor {
 extension ProfileColorInfo on ProfileColor {
   /// Returns a string for a given color
   String get name => switch (this) {
-    ProfileColor.darkGreen => 'darkGreen',
-    ProfileColor.mediumGreen => 'mediumGreen',
-    ProfileColor.lightGreen => 'lightGreen',
-    ProfileColor.brightRed => 'red',
-    ProfileColor.darkGrey => 'darkGrey',
-    ProfileColor.lightGrey => 'lightGrey',
-    ProfileColor.black => 'black',
+    ProfileColor.red => 'Red',
+    ProfileColor.black => 'Black',
+    ProfileColor.orange => 'Orange',
+    ProfileColor.yellow => 'Yellow',
+    ProfileColor.green => 'Green',
+    ProfileColor.teal => 'Teal',
+    ProfileColor.blue => 'Blue',
+    ProfileColor.purple => 'Purple',
+    ProfileColor.pink => 'Pink',
   };
 
   /// Returns a color for a given string
   Color get color => switch (this) {
-    ProfileColor.darkGreen => DivvyTheme.darkGreen,
-    ProfileColor.mediumGreen => DivvyTheme.mediumGreen,
-    ProfileColor.lightGreen => DivvyTheme.lightGreen,
-    ProfileColor.brightRed => DivvyTheme.brightRed,
-    ProfileColor.darkGrey => DivvyTheme.darkGrey,
-    ProfileColor.lightGrey => DivvyTheme.lightGrey,
+    ProfileColor.red => DivvyTheme.brightRed,
     ProfileColor.black => DivvyTheme.black,
+    ProfileColor.orange => DivvyTheme.orange,
+    ProfileColor.yellow => DivvyTheme.yellow,
+    ProfileColor.green => DivvyTheme.green,
+    ProfileColor.teal => DivvyTheme.teal,
+    ProfileColor.blue => DivvyTheme.blue,
+    ProfileColor.purple => DivvyTheme.purple,
+    ProfileColor.pink => DivvyTheme.pink,
   };
 }
 
 /// Returns a ProfileColor for a given string (intended to be
 /// used when de-jsonifying a ProfileColor entry).
 ProfileColor getColorFromName(String name) => switch (name) {
-  'darkGreen' => ProfileColor.darkGreen,
-  'mediumGreen' => ProfileColor.mediumGreen,
-  'lightGreen' => ProfileColor.lightGreen,
-  'red' => ProfileColor.brightRed,
-  'darkGrey' => ProfileColor.darkGrey,
-  'lightGrey' => ProfileColor.lightGrey,
-  'black' => ProfileColor.black,
+  'Red' => ProfileColor.red,
+  'Black' => ProfileColor.black,
+  'Orange' => ProfileColor.orange,
+  'Yellow' => ProfileColor.yellow,
+  'Green' => ProfileColor.green,
+  'Teal' => ProfileColor.teal,
+  'Blue' => ProfileColor.blue,
+  'Purple' => ProfileColor.purple,
+  'Pink' => ProfileColor.pink,
   String() => ProfileColor.black,
 };

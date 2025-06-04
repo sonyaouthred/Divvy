@@ -96,6 +96,8 @@ class _LeaderboardState extends State<Leaderboard> {
   /// Displays an individual entry on the leaderboard
   Widget _leaderboardEntry(int position, Member member, double spacing) {
     return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
       onTap: () => _openMemberPage(context, member),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,

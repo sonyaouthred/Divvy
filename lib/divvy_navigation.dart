@@ -1,4 +1,5 @@
 import 'package:divvy/models/divvy_theme.dart';
+import 'package:divvy/providers/divvy_provider.dart';
 
 import 'package:divvy/screens/login.dart';
 import 'package:divvy/screens/notifications.dart';
@@ -10,6 +11,7 @@ import 'package:divvy/screens/chores.dart';
 import 'package:divvy/screens/dashboard.dart';
 import 'package:divvy/screens/house_screen.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 /// Handles bottom navigation flow for the app
 class DivvyNavigation extends StatefulWidget {
@@ -29,6 +31,7 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
     Settings(),
   ];
   late final List<Widget> _titles;
+  bool dataLoaded = false;
 
   @override
   void initState() {
@@ -40,6 +43,7 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
       Text('House', style: DivvyTheme.screenTitle),
       Text('Settings', style: DivvyTheme.screenTitle),
     ];
+    dataLoaded = Provider.of<DivvyProvider>(context, listen: false).dataLoaded;
   }
 
   // sets the item tapped as the screen to be displayed
@@ -51,6 +55,7 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    dataLoaded = Provider.of<DivvyProvider>(context, listen: true).dataLoaded;
     if (FirebaseAuth.instance.currentUser == null) {
       Navigator.of(context).pushReplacement(
         PageTransition(
@@ -68,6 +73,8 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
         backgroundColor: DivvyTheme.background,
         actions: [
           InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => _openNotificationsPage(context),
             child: Container(
               height: 50,
@@ -113,7 +120,7 @@ class _DivvyNavigationState extends State<DivvyNavigation> {
           currentIndex: _selectedIndex,
           selectedItemColor: DivvyTheme.mediumGreen,
           unselectedItemColor: DivvyTheme.lightGrey,
-          onTap: _onItemTapped,
+          onTap: dataLoaded ? _onItemTapped : null,
         ),
       ),
     );

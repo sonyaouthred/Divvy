@@ -1,4 +1,5 @@
 import 'package:divvy/models/chore.dart';
+import 'package:divvy/models/comment.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/providers/divvy_provider.dart';
@@ -16,7 +17,7 @@ import 'package:provider/provider.dart';
 ///       displayed.
 ///   - choreID: the ID of the superclass of the chore instance
 ///       being displayed.
-class ChoreInstanceScreen extends StatelessWidget {
+class ChoreInstanceScreen extends StatefulWidget {
   // The current chore instance
   final ChoreInstID choreInstanceId;
   // The ID of the superclass of the chore instance
@@ -29,6 +30,12 @@ class ChoreInstanceScreen extends StatelessWidget {
   });
 
   @override
+  State<ChoreInstanceScreen> createState() => _ChoreInstanceScreenState();
+}
+
+class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
+  bool completing = false;
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width * 0.05;
@@ -36,22 +43,28 @@ class ChoreInstanceScreen extends StatelessWidget {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Get the super chore for this instance
-        Chore? parentChore = provider.getSuperChore(choreID);
+        Chore? parentChore = provider.getSuperChore(widget.choreID);
         // If chore no longer exists, show chore not found screen
         if (parentChore == null) return _choreNotFoundScreen(width, spacing);
 
         // Get the updated instance (potentially with new info) from provider
         ChoreInst? choreInstance = provider.getChoreInstanceFromID(
-          choreID,
-          choreInstanceId,
+          widget.choreID,
+          widget.choreInstanceId,
         );
         if (choreInstance == null) return _choreNotFoundScreen(width, spacing);
         // Get the assignee to the chore
         Member? thisAssignee = provider.getMemberById(choreInstance.assignee);
+        if (thisAssignee == null) return _choreNotFoundScreen(width, spacing);
         // Get a list of other people assigned to the chore
-        List<Member> otherAssignees = provider.getMembersDoingChore(choreID);
+        List<Member> otherAssignees = provider.getMembersDoingChore(
+          widget.choreID,
+        );
         // Remove the current assingee from list of other assignees
-        otherAssignees.removeWhere((member) => member.id == thisAssignee?.id);
+        otherAssignees.removeWhere((member) => member.id == thisAssignee.id);
+
+        // fetch comments!
+        List<Comment> comments = choreInstance.comments;
 
         return Scaffold(
           backgroundColor: DivvyTheme.background,
@@ -103,8 +116,19 @@ class ChoreInstanceScreen extends StatelessWidget {
                           spacing,
                         ),
                         SizedBox(height: spacing),
+                        // Display this chore's description
+                        _displayDescription(spacing, parentChore),
+                        SizedBox(height: spacing),
                         // Display the frequency this chore repeats
                         _displayFrequency(spacing, parentChore),
+                        SizedBox(height: spacing),
+                        _showComments(spacing, comments, [
+                          ...otherAssignees,
+                          thisAssignee,
+                        ]),
+                        // give extra room so that content isn't hidden behind
+                        // complete button
+                        SizedBox(height: spacing * 10),
                       ],
                     ),
                   ),
@@ -118,6 +142,7 @@ class ChoreInstanceScreen extends StatelessWidget {
                       spacing,
                       choreInstance,
                       provider,
+                      width,
                     ),
                   ),
               ],
@@ -181,6 +206,8 @@ class ChoreInstanceScreen extends StatelessWidget {
         SizedBox(height: spacing / 2),
         // Display current assignee adn their profile picture
         InkWell(
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
           onTap:
               () =>
                   (assignee != null) ? _openMemberPage(context, assignee) : (),
@@ -231,7 +258,7 @@ class ChoreInstanceScreen extends StatelessWidget {
     ),
   );
 
-  /// Displays the other people this chore is assigned to
+  // Displays the other people this chore is assigned to
   Widget _displayOtherAssignees(
     List<Member> otherAssignees,
     Chore superChore,
@@ -253,16 +280,158 @@ class ChoreInstanceScreen extends StatelessWidget {
     ],
   );
 
+  // Displays this chore's description
+  Widget _displayDescription(double spacing, Chore superChore) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text("Description:", style: DivvyTheme.bodyBoldBlack),
+      SizedBox(height: spacing / 4),
+      // Text("${superChore.frequency.daysOfWeek[0].toString()}")
+      Text(superChore.description.isEmpty ? "No description specified for this chore." : superChore.description, style: DivvyTheme.bodyBlack),
+    ],
+  );
+
   /// The frequency this chore is repeated
   Widget _displayFrequency(double spacing, Chore superChore) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text("Frequency:", style: DivvyTheme.bodyBoldBlack),
       SizedBox(height: spacing / 4),
-      // Text("${superChore.frequency.daysOfWeek[0].toString()}")
       Text(getFrequencySentence(superChore), style: DivvyTheme.bodyBlack),
     ],
   );
+
+  // Display all comments on this chore
+  Widget _showComments(
+    double spacing,
+    List<Comment> comments,
+    List<Member> assignees,
+  ) {
+    final currMember =
+        Provider.of<DivvyProvider>(context, listen: false).currMember.id;
+    final isUsersChore =
+        assignees.where((mem) => mem.id == currMember).isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Comments", style: DivvyTheme.bodyBoldBlack),
+            // can only comment on chore if you are assigned to it
+            if (isUsersChore)
+              InkWell(
+                onTap: () async {
+                  final newComment = await openInputDialog(
+                    context,
+                    title: 'Add a comment',
+                  );
+                  if (newComment != null && mounted) {
+                    await Provider.of<DivvyProvider>(
+                      context,
+                      listen: false,
+                    ).addComment(
+                      widget.choreID,
+                      widget.choreInstanceId,
+                      newComment,
+                    );
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.only(bottom: 10),
+                  height: 45,
+                  width: 45,
+                  child: Icon(Icons.add),
+                ),
+              ),
+          ],
+        ),
+        SizedBox(height: spacing / 2),
+        comments.isEmpty
+            ? Text('No comments yet!')
+            : Container(
+              decoration: DivvyTheme.standardBox,
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: spacing,
+                vertical: spacing * 0.75,
+              ),
+              child: Column(
+                children:
+                    comments
+                        .map(
+                          (comment) => _commentTile(
+                            comment,
+                            assignees.firstWhere(
+                              (mem) => comment.commenter == mem.id,
+                            ),
+                            spacing,
+                          ),
+                        )
+                        .toList(),
+              ),
+            ),
+      ],
+    );
+  }
+
+  // Renders a tile showing an individual comment + the person who commented
+  Widget _commentTile(Comment comment, Member member, double spacing) {
+    final isUsersComment =
+        Provider.of<DivvyProvider>(context, listen: false).currMember.id ==
+        comment.commenter;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            MemberTile(
+              member: member,
+              spacing: spacing,
+              suffix: '${isUsersComment ? '(you)' : ''} commented: ',
+              button: false,
+            ),
+            if (isUsersComment)
+              InkWell(
+                // delete comment button
+                onTap: () async {
+                  final delete = await confirmDeleteDialog(
+                    context,
+                    'Delete comment',
+                  );
+                  if (delete != null && delete && mounted) {
+                    Provider.of<DivvyProvider>(
+                      context,
+                      listen: false,
+                    ).deleteComment(
+                      widget.choreID,
+                      widget.choreInstanceId,
+                      comment.id,
+                    );
+                  }
+                },
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Icon(Icons.delete_outline, color: DivvyTheme.darkRed),
+                ),
+              ),
+          ],
+        ),
+        Text(
+          '${getFormattedDate(comment.date)} at ${getFormattedTime(comment.date)}',
+          style: DivvyTheme.detailGrey,
+        ),
+        SizedBox(height: spacing / 2),
+        Text(comment.comment, style: DivvyTheme.largeBodyBlack),
+        SizedBox(height: spacing / 2),
+      ],
+    );
+  }
 
   /// Displays if chore is complete or not. Tapping toggles completion
   Widget _markCompleteButton(
@@ -270,45 +439,62 @@ class ChoreInstanceScreen extends StatelessWidget {
     double spacing,
     ChoreInst choreInst,
     DivvyProvider provider,
+    double width,
   ) => Container(
     height: 60,
     margin: EdgeInsets.all(spacing * 3),
     child: InkWell(
-      onTap: () {
+      onTap: () async {
+        setState(() {
+          completing = true;
+        });
         bool isDone = !choreInst.isDone;
         // Toggle completion
-        provider.toggleChoreInstanceCompletedState(
+        await provider.toggleChoreInstanceCompletedState(
           superChoreID: choreInst.superID,
           choreInst: choreInst,
         );
         // Pop screen if chore is now done
-        if (isDone) Navigator.of(context).pop();
+        if (isDone && context.mounted) Navigator.of(context).pop();
+        setState(() {
+          completing = false;
+        });
       },
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
       child: Container(
         decoration: DivvyTheme.completeBox(choreInst.isDone),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Display check and text representing current state
-            Icon(
-              Icons.check,
-              color:
-                  choreInst.isDone
-                      ? DivvyTheme.background
-                      : DivvyTheme.mediumGreen,
-            ),
-            SizedBox(width: spacing),
-            Text(
-              choreInst.isDone ? 'Complete' : 'Mark Complete',
-              style:
-                  choreInst.isDone
-                      ? DivvyTheme.largeBoldMedWhite
-                      : DivvyTheme.largeBoldMedGreen,
-            ),
-          ],
-        ),
+        width: width * 0.75,
+        child:
+            !completing
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Display check and text representing current state
+                    Icon(
+                      Icons.check,
+                      color:
+                          choreInst.isDone
+                              ? DivvyTheme.background
+                              : DivvyTheme.mediumGreen,
+                    ),
+                    SizedBox(width: spacing),
+                    Text(
+                      choreInst.isDone ? 'Complete' : 'Mark Complete',
+                      style:
+                          choreInst.isDone
+                              ? DivvyTheme.largeBoldMedWhite
+                              : DivvyTheme.largeBoldMedGreen,
+                    ),
+                  ],
+                )
+                // If currently completing, mark as such
+                : CupertinoActivityIndicator(
+                  color:
+                      choreInst.isDone
+                          ? DivvyTheme.background
+                          : DivvyTheme.black,
+                ),
       ),
     ),
   );
@@ -346,7 +532,7 @@ class ChoreInstanceScreen extends StatelessWidget {
         Provider.of<DivvyProvider>(
           context,
           listen: false,
-        ).deleteChoreInst(choreID, choreInstanceId);
+        ).deleteChoreInst(widget.choreID, widget.choreInstanceId);
         Navigator.of(context).pop();
       }
     }
@@ -357,7 +543,7 @@ class ChoreInstanceScreen extends StatelessWidget {
     await Provider.of<DivvyProvider>(
       context,
       listen: false,
-    ).openSwap(choreInst, choreID);
+    ).openSwap(choreInst, widget.choreID);
   }
 
   /// Will open the passed member's page

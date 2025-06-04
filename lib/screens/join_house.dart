@@ -66,6 +66,8 @@ class _JoinHouseState extends State<JoinHouse> {
                   SizedBox(height: spacing),
                   Center(
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () => _createHouse(context),
                       child: SizedBox(
                         height: 50,
@@ -81,6 +83,8 @@ class _JoinHouseState extends State<JoinHouse> {
                   // or logout
                   Center(
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () => _logout(context),
                       child: SizedBox(
                         height: 50,
@@ -147,6 +151,8 @@ class _JoinHouseState extends State<JoinHouse> {
         SizedBox(height: spacing),
         Center(
           child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => _joinHouse(context),
             child: Container(
               alignment: Alignment.center,

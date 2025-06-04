@@ -112,6 +112,35 @@ Future<bool?> confirmDeleteDialog(
   return res;
 }
 
+/// Confirm user wants to save edits made
+Future<bool?> confirmSaveDialog(BuildContext context) async {
+  final res = await showCupertinoDialog<bool>(
+    context: context,
+    builder:
+        (BuildContext context) => CupertinoAlertDialog(
+          title: Text('Save?'),
+          content: Text('If you do not save, your changes will be lost.'),
+          actions: <CupertinoDialogAction>[
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Don\'t Save'),
+            ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text('Save'),
+            ),
+          ],
+        ),
+  );
+  return res;
+}
+
 /// Display a box the user uses to select a color for their profile.
 Future<ProfileColor> openColorDialog(
   BuildContext context,

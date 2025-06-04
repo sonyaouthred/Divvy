@@ -23,6 +23,16 @@ class DivvyTheme {
   static const Color shadow = Color(0xFFCFCFCF);
   static const Color altBeige = Color.fromARGB(255, 225, 223, 216);
 
+  // Profile picture colors
+  static const Color red = Color(0xFFF94144);
+  static const Color orange = Color(0xFFF8961E);
+  static const Color yellow = Color(0xFFF9C74F);
+  static const Color green = Color(0xFF90BE6D);
+  static const Color teal = Color(0xFF43AA8B);
+  static const Color blue = Color(0xFF277DA1);
+  static const Color purple = Color(0xFFB117D3);
+  static const Color pink = Color(0xFFD82E7D);
+
   // Text Themes
 
   static TextStyle homeScreenTitle = GoogleFonts.baloo2(
@@ -154,6 +164,13 @@ class DivvyTheme {
       color: mediumGreen,
     ),
   );
+  static TextStyle largeBoldMedGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 20,
+      color: lightGrey,
+    ),
+  );
   static TextStyle largeBoldMedWhite = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w700,
@@ -169,6 +186,13 @@ class DivvyTheme {
     ),
   );
 
+  static TextStyle smallBoldMedGrey = GoogleFonts.inter(
+    textStyle: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 15,
+      color: lightGrey,
+    ),
+  );
   static TextStyle smallBoldMedWhite = GoogleFonts.inter(
     textStyle: const TextStyle(
       fontWeight: FontWeight.w700,

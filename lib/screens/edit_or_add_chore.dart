@@ -31,6 +31,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
   // track chore's name
   late TextEditingController _nameController;
   late TextEditingController _emojiController;
+  late TextEditingController _descriptionController;
+
   // track list of members
   late List<Member> members;
   // track list of subgroups
@@ -60,6 +62,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
   List<int> chosenDates = [];
   // Start dates
   DateTime startDate = DateTime.now();
+  // track if user made changes
+  bool edited = false;
 
   @override
   void initState() {
@@ -75,6 +79,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // If user is editing, set the initial chore name to the actual name
     _nameController = TextEditingController(text: chore?.name ?? '');
     _emojiController = TextEditingController(text: chore?.emoji ?? '');
+    _descriptionController = TextEditingController(
+      text: chore?.description ?? '',
+    );
+
     Subgroup? initSubgroup = widget.subgroup;
     if (initSubgroup != null) {
       chosenSubgroup = initSubgroup;
@@ -100,6 +108,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     // dispose of text editing controllers
     _nameController.dispose();
     _emojiController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -126,32 +135,41 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           ),
           body: SizedBox.expand(
             child: SingleChildScrollView(
-              child: Container(
-                width: width,
-                padding: EdgeInsets.symmetric(horizontal: spacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: spacing),
-                    _choreNameEditor(spacing),
-                    SizedBox(height: spacing),
-                    _chooseEmojis(context),
-                    if (chore != null) SizedBox(height: spacing),
-                    if (chore != null)
-                      Center(
-                        child: Text(
-                          'Assignees and frequency cannot be changed after creation.',
-                          style: DivvyTheme.bodyGrey,
+              child: PopScope(
+                canPop: false,
+                onPopInvokedWithResult:
+                    (didPop, result) => {
+                      if (!didPop) {_popBack(context)},
+                    },
+                child: Container(
+                  width: width,
+                  padding: EdgeInsets.symmetric(horizontal: spacing),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: spacing),
+                      _choreNameEditor(spacing),
+                      SizedBox(height: spacing),
+                      _choreDescriptionEditor(spacing),
+                      SizedBox(height: spacing),
+                      _chooseEmojis(context),
+                      if (chore != null) SizedBox(height: spacing),
+                      if (chore != null)
+                        Center(
+                          child: Text(
+                            'Assignees and frequency cannot be changed after creation.',
+                            style: DivvyTheme.bodyGrey,
+                          ),
                         ),
-                      ),
-                    SizedBox(height: spacing),
-                    _showAssigneeSelection(spacing),
-                    SizedBox(height: spacing),
-                    _showFrequencySelection(spacing, width, height),
-                    SizedBox(height: spacing * 2),
-                    _saveButton(width, provider),
-                    SizedBox(height: spacing * 2),
-                  ],
+                      SizedBox(height: spacing),
+                      _showAssigneeSelection(spacing),
+                      SizedBox(height: spacing),
+                      _showFrequencySelection(spacing, width, height),
+                      SizedBox(height: spacing * 2),
+                      _saveButton(width, provider),
+                      SizedBox(height: spacing * 2),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -165,6 +183,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
   Widget _saveButton(double width, DivvyProvider provider) {
     return Center(
       child: InkWell(
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
         onTap: () {
           // Add the chore and chore instances
           addChoreAndInstances(provider);
@@ -177,6 +197,29 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           child: Text("Save", style: DivvyTheme.largeBoldMedWhite),
         ),
       ),
+    );
+  }
+
+  //////////////////////// Description editing ////////////////////////
+
+  /// Allow user to view/edit chore description.
+  Widget _choreDescriptionEditor(double spacing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Chore Description:', style: DivvyTheme.bodyBoldBlack),
+        SizedBox(height: spacing / 2),
+        Container(
+          height: 100,
+          decoration: DivvyTheme.standardBox,
+          padding: EdgeInsets.symmetric(horizontal: 15),
+          child: TextFormField(
+            maxLines: null,
+            controller: _descriptionController,
+            decoration: InputDecoration(border: InputBorder.none),
+          ),
+        ),
+      ],
     );
   }
 
@@ -264,7 +307,11 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
       child: IntrinsicHeight(
         child: Container(
           decoration: DivvyTheme.oval(
-            isSelected ? DivvyTheme.mediumGreen : DivvyTheme.white,
+            isSelected
+                ? (chore != null
+                    ? DivvyTheme.lightGrey
+                    : DivvyTheme.mediumGreen)
+                : DivvyTheme.white,
           ),
           width: width,
           padding: EdgeInsets.symmetric(vertical: spacing / 2),
@@ -277,6 +324,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                 style:
                     isSelected
                         ? DivvyTheme.largeBoldMedWhite
+                        : chore != null
+                        ? DivvyTheme.largeBoldMedGrey
                         : DivvyTheme.largeBoldMedGreen,
               ),
               SizedBox(height: spacing * 0.3),
@@ -295,7 +344,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
       trailing: CupertinoButton(
         child: Text(
           DateFormat('MM/dd/yyyy').format(startDate),
-          style: DivvyTheme.smallBoldMedGreen,
+          style:
+              chore != null
+                  ? DivvyTheme.smallBoldMedGrey
+                  : DivvyTheme.smallBoldMedGreen,
         ),
         onPressed: () {
           chore != null ? () : _showDatePickerDays(context);
@@ -363,6 +415,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
           decoration: const InputDecoration(border: InputBorder.none),
           dropdownColor: DivvyTheme.background,
           iconEnabledColor: DivvyTheme.mediumGreen,
+          iconDisabledColor: DivvyTheme.lightGrey,
           items:
               Frequency.values
                   .map<DropdownMenuItem<Frequency>>(
@@ -370,7 +423,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                       value: sel,
                       child: Text(
                         sel.name,
-                        style: DivvyTheme.smallBoldMedGreen,
+                        style:
+                            chore != null
+                                ? DivvyTheme.smallBoldMedGrey
+                                : DivvyTheme.smallBoldMedGreen,
                       ),
                     ),
                   )
@@ -440,7 +496,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                           value: sel,
                           child: Text(
                             sel.name,
-                            style: DivvyTheme.smallBoldMedGreen,
+                            style:
+                                chore != null
+                                    ? DivvyTheme.smallBoldMedGrey
+                                    : DivvyTheme.smallBoldMedGreen,
                           ),
                         ),
                   )
@@ -473,6 +532,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     height: 50,
                     padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () {
                         chore != null
                             ? ()
@@ -497,7 +558,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                             chosenSubgroup != null && chosenSubgroup == s
                                 ? CupertinoIcons.check_mark_circled_solid
                                 : CupertinoIcons.circle,
-                            color: DivvyTheme.lightGreen,
+                            color:
+                                chore != null
+                                    ? DivvyTheme.lightGrey
+                                    : DivvyTheme.lightGreen,
                           ),
                         ],
                       ),
@@ -522,6 +586,8 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                     height: 50,
                     padding: EdgeInsets.symmetric(horizontal: spacing * 0.75),
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () {
                         // disable mods if user is editing a chore instance
                         chore != null
@@ -551,7 +617,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
                             chosenMembers.contains(m)
                                 ? CupertinoIcons.check_mark_circled_solid
                                 : CupertinoIcons.circle,
-                            color: DivvyTheme.lightGreen,
+                            color:
+                                chore != null
+                                    ? DivvyTheme.lightGrey
+                                    : DivvyTheme.lightGreen,
                           ),
                         ],
                       ),
@@ -573,6 +642,13 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         context,
         'Invalid Input',
         'Please enter a name for your chore!',
+      );
+      return;
+    } else if (_descriptionController.text.isEmpty) {
+      showErrorMessage(
+        context,
+        'Invalid Input',
+        'Please enter a description for your chore!',
       );
       return;
     } else if (assigneeSel == AssigneeSelection.member &&
@@ -625,7 +701,7 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         pattern: frequency,
         daysOfWeek: chosenDates,
         emoji: _emojiController.text,
-        description: "",
+        description: _descriptionController.text,
         assignees: chosenMemberIDs,
         // default start at midnight
         startDate: DateTime(
@@ -646,12 +722,50 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
         old: chore!,
         name: _nameController.text,
         emoji: _emojiController.text,
-        description: "",
+        description: _descriptionController.text,
       );
       provider.updateChore(updatedChore);
     }
 
     Navigator.of(context).pop();
+  }
+
+  // Make sure user does not want to save changes.
+  void _popBack(BuildContext context) async {
+    print('here');
+    // Check for edits
+    if (chore != null) {
+      if (_nameController.text != chore!.name) edited = true;
+      if (_descriptionController.text != chore!.description) edited = true;
+      if (_emojiController.text != chore!.emoji) edited = true;
+    }
+    print(edited);
+    if (edited) {
+      final save = await confirmSaveDialog(context);
+      if (save != null && save) {
+        print('saving');
+        // User wants to save!
+        // update existing chore
+        Chore updatedChore = Chore.update(
+          old: chore!,
+          name: _nameController.text,
+          emoji: _emojiController.text,
+          description: _descriptionController.text,
+        );
+        if (!context.mounted) return;
+        // update chore!
+        Provider.of<DivvyProvider>(
+          context,
+          listen: false,
+        ).updateChore(updatedChore);
+        Navigator.of(context).pop();
+      } else {
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+      }
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 }
 

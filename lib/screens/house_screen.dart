@@ -100,6 +100,8 @@ class House extends StatelessWidget {
                   return Padding(
                     padding: EdgeInsets.only(right: spacing),
                     child: InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
                       onTap: () => _openMemberPage(context, member),
                       child: Column(
                         children: [
@@ -134,6 +136,8 @@ class House extends StatelessWidget {
     return Flexible(
       flex: 1,
       child: InkWell(
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
         onTap: () => callback(context),
         child: Container(
           width: double.infinity,
@@ -166,6 +170,8 @@ class House extends StatelessWidget {
           children: [
             Text('Subgroups', style: DivvyTheme.bodyBoldBlack),
             InkWell(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
               onTap: () => _addSubgroup(context),
               child: SizedBox(
                 height: 45,
@@ -175,6 +181,8 @@ class House extends StatelessWidget {
             ),
           ],
         ),
+        if (subgroups.isEmpty)
+          Text('No subgroups yet!', style: DivvyTheme.bodyGrey),
         // List of subgroups
         ...subgroups.map(
           (sub) => SubgroupTile(subgroup: sub, spacing: spacing),
