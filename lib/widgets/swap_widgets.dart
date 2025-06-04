@@ -10,27 +10,15 @@ Widget displayOpenSwaps(DivvyProvider provider, double spacing) {
   final openSwaps = provider.getOpenSwaps();
   if (openSwaps.isEmpty) return Container();
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text('Available swaps', style: DivvyTheme.bodyBoldBlack),
-          InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            onTap: () => print('seeing all'),
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              height: 45,
-              child: Text('View all', style: DivvyTheme.smallBodyGrey),
-            ),
-          ),
-        ],
-      ),
+      if (openSwaps.isNotEmpty) SizedBox(height: spacing),
+      if (openSwaps.isNotEmpty)
+        Text('Available swaps', style: DivvyTheme.bodyBoldBlack),
       SizedBox(height: spacing),
       ...openSwaps.map((swap) => SwapTile(swap: swap)),
+      if (openSwaps.isNotEmpty) SizedBox(height: spacing / 2),
     ],
   );
 }
@@ -53,6 +41,7 @@ Widget displayPendingSwaps(DivvyProvider provider, double spacing) {
           return PendingSwapTile(swap: swaps[idx]);
         },
       ),
+      if (swaps.isNotEmpty) SizedBox(height: spacing / 2),
     ],
   );
 }
@@ -62,27 +51,14 @@ Widget displayOpenSwapsForCurrMember(DivvyProvider provider, double spacing) {
   final openSwaps = provider.getOpenSwapsForCurrMember();
   if (openSwaps.isEmpty) return Container();
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text('Your open swaps:', style: DivvyTheme.bodyBoldBlack),
-          InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            onTap: () => print('seeing all'),
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              height: 45,
-              child: Text('View all', style: DivvyTheme.smallBodyGrey),
-            ),
-          ),
-        ],
-      ),
-      SizedBox(height: spacing),
+      if (openSwaps.isNotEmpty) SizedBox(height: spacing),
+      Text('Your open swaps:', style: DivvyTheme.bodyBoldBlack),
+      if (openSwaps.isNotEmpty) SizedBox(height: spacing),
       ...openSwaps.map((swap) => SwapTile(swap: swap, showMemberTile: false)),
+      if (openSwaps.isNotEmpty) SizedBox(height: spacing / 2),
     ],
   );
 }

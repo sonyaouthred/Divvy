@@ -1,6 +1,7 @@
 import 'package:divvy/models/chore.dart';
 import 'package:divvy/models/divvy_theme.dart';
 import 'package:divvy/models/member.dart';
+import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/screens/user_info_screen.dart';
 import 'package:divvy/util/date_funcs.dart';
@@ -61,6 +62,15 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
         // Remove the current assingee from list of other assignees
         otherAssignees.removeWhere((member) => member.id == thisAssignee?.id);
 
+        // get swap, if applicable
+        Swap? swap;
+        if (choreInstance.swapID != '') {
+          swap =
+              provider.swaps
+                  .where((swap) => swap.id == choreInstance.swapID)
+                  .firstOrNull;
+        }
+
         return Scaffold(
           backgroundColor: DivvyTheme.background,
           appBar: AppBar(
@@ -101,6 +111,7 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
                           parentChore,
                           choreInstance,
                           thisAssignee,
+                          swap,
                           spacing,
                         ),
                         SizedBox(height: spacing),
@@ -172,6 +183,7 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
     Chore chore,
     ChoreInst inst,
     Member? assignee,
+    Swap? swap,
     double spacing,
   ) => Container(
     decoration: DivvyTheme.standardBox,
@@ -241,6 +253,23 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
             ),
           ],
         ),
+        SizedBox(height: spacing),
+        // show swap status
+        if (swap != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Swap Status: ', style: DivvyTheme.bodyBoldBlack),
+              Row(
+                children: [
+                  Text(swap.status.displayName),
+                  SizedBox(width: spacing / 2),
+                  Icon(swap.status.icon),
+                  SizedBox(width: spacing),
+                ],
+              ),
+            ],
+          ),
       ],
     ),
   );
@@ -274,7 +303,12 @@ class _ChoreInstanceScreenState extends State<ChoreInstanceScreen> {
       Text("Description:", style: DivvyTheme.bodyBoldBlack),
       SizedBox(height: spacing / 4),
       // Text("${superChore.frequency.daysOfWeek[0].toString()}")
-      Text(superChore.description.isEmpty ? "No description specified for this chore." : superChore.description, style: DivvyTheme.bodyBlack),
+      Text(
+        superChore.description.isEmpty
+            ? "No description specified for this chore."
+            : superChore.description,
+        style: DivvyTheme.bodyBlack,
+      ),
     ],
   );
 

@@ -5,6 +5,7 @@ import 'package:divvy/models/swap.dart';
 import 'package:divvy/providers/divvy_provider.dart';
 import 'package:divvy/util/date_funcs.dart';
 import 'package:divvy/screens/choose_swap.dart';
+import 'package:divvy/util/dialogs.dart';
 import 'package:divvy/widgets/chore_tile.dart';
 import 'package:divvy/widgets/member_tile.dart';
 import 'package:flutter/cupertino.dart';
@@ -89,16 +90,16 @@ class _SwapInstanceState extends State<SwapInstance> {
                         if (_swap!.status == Status.open)
                           _openSwapTile(isUsersSwap, member, spacing),
                         SizedBox(height: spacing),
-
                         _dayChores(spacing, provider),
                       ],
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _actionButton(spacing, provider),
-                ),
+                if (!isUsersSwap)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _actionButton(spacing, provider),
+                  ),
               ],
             ),
           ),
@@ -113,9 +114,16 @@ class _SwapInstanceState extends State<SwapInstance> {
       padding: EdgeInsets.symmetric(horizontal: spacing, vertical: spacing / 2),
       decoration: DivvyTheme.standardBox,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           isUsersSwap
-              ? Text('Your open swap: ', style: DivvyTheme.bodyBlack)
+              ? Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  'Your open swap: ',
+                  style: DivvyTheme.bodyBoldBlack,
+                ),
+              )
               : MemberTile(
                 member: owner,
                 spacing: spacing,
@@ -168,15 +176,24 @@ class _SwapInstanceState extends State<SwapInstance> {
     margin: EdgeInsets.all(spacing * 3),
     child: InkWell(
       onTap: () async {
-        if (_swap!.status == Status.open) {
-          // pop up a calendar view where the user can select another chore instance
-          // they'd like to swap (of the same chore super class).
-          final chosenChoreInst = await _openChooseChoreScreen(context);
-          if (chosenChoreInst == null || chosenChoreInst is! ChoreID) return;
-          provider.sendSwapInvite(_swap!, chosenChoreInst);
-          if (!mounted) return;
-          // pop back to a previous screen
-          Navigator.pop(context);
+        // don't allow user to swap for chore if they aren't also assigned to it
+        if (_superChore!.assignees.contains(provider.currMember.id)) {
+          if (_swap!.status == Status.open) {
+            // pop up a calendar view where the user can select another chore instance
+            // they'd like to swap (of the same chore super class).
+            final chosenChoreInst = await _openChooseChoreScreen(context);
+            if (chosenChoreInst == null || chosenChoreInst is! ChoreID) return;
+            provider.sendSwapInvite(_swap!, chosenChoreInst);
+            if (!mounted) return;
+            // pop back to a previous screen
+            Navigator.pop(context);
+          }
+        } else {
+          showErrorMessage(
+            context,
+            'Unable to swap',
+            'Oops! You have to be assigned to this chore to swap for it.',
+          );
         }
       },
       highlightColor: Colors.transparent,
