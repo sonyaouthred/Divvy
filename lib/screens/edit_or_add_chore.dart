@@ -86,9 +86,10 @@ class _EditOrAddChoreState extends State<EditOrAddChore> {
     Subgroup? initSubgroup = widget.subgroup;
     if (initSubgroup != null) {
       chosenSubgroup = initSubgroup;
-    } else {
-      chosenSubgroup = subgroups.first;
     }
+
+    if (subgroups.isEmpty) assigneeSel = AssigneeSelection.house;
+
     if (chore != null) {
       // update relevant initial values, if necessary
       final sub = providerRef.isSubgroup(chore!.assignees);
