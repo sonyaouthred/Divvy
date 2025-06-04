@@ -133,10 +133,6 @@ We can guarantee the app will run as expected on iPhone simulators, Android emul
 
 **Important**: TL;DR: Run on Chrome at your own risk. We _do not_ recommend this. It will work, but the app is intended for a mobile device.
 
-We can guarantee the app will run as expected on iPhone simulators, Android emulators, and MacOS/Windows. Some of our devs have found Chrome to be inconsistent and a bit tempremental with the app, which we do not intend to fix because the app is not meant to be a web app.
-
-**Important**: TL;DR: Run on Chrome at your own risk. We _do not_ recommend this. It will work, but the app is intended for a mobile device.
-
 The app will prompt you to sign in. Please refer to the [How to Use](#how-to-use) section above for sample logins.
 
 ## Setting up the Backend
