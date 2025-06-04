@@ -318,10 +318,10 @@ class _SettingsState extends State<Settings> {
           await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
             credential,
           );
+          // Non-email/pwd clients are already reauthenticated
+          if (!context.mounted) return;
+          Provider.of<DivvyProvider>(context, listen: false).deleteUser();
         }
-        // Non-email/pwd clients are already reauthenticated
-        if (!context.mounted) return;
-        Provider.of<DivvyProvider>(context, listen: false).deleteMember();
       }
     } catch (e) {
       if (!context.mounted) return;

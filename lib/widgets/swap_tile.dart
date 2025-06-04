@@ -79,6 +79,7 @@ class SwapTile extends StatelessWidget {
                   ],
                 ),
               ),
+              SizedBox(height: spacing),
             ],
           );
         },

@@ -65,6 +65,12 @@ class DivvyProvider extends ChangeNotifier {
 
     // Initialize current user
     final uid = FirebaseAuth.instance.currentUser!.uid;
+    final currentMember = _memberMap[uid];
+    if (currentMember == null) {
+      // sign user out, something went wrong
+      FirebaseAuth.instance.signOut();
+      return;
+    }
     _currentMember = _memberMap[uid]!;
     // data is loaded!
     dataLoaded = true;
@@ -180,9 +186,9 @@ class DivvyProvider extends ChangeNotifier {
     ChoreInstID choreInstanceID,
   ) {
     if (_choreInstances[choreID] == null) return null;
-    return _choreInstances[choreID]!.firstWhere(
-      (ChoreInst instance) => instance.id == choreInstanceID,
-    );
+    return _choreInstances[choreID]!
+        .where((ChoreInst instance) => instance.id == choreInstanceID)
+        .firstOrNull;
   }
 
   /// Returns a super chore with the passed id
@@ -720,6 +726,16 @@ class DivvyProvider extends ChangeNotifier {
     await db.deleteMember(houseID: houseID, memberID: currMember.id);
   }
 
+  /// deletes a user. if they're the only member of the house, deletes the house.
+  Future<void> deleteUser() async {
+    // now delete user
+    await db.deleteUser(currUser.id);
+    // sign out of firebase auth & delete account
+    await FirebaseAuth.instance.currentUser!.delete();
+    // delete house info
+    await deleteMember();
+  }
+
   /// Leaves the specified subgroup. If no member ID specified,
   /// assumes current user
   Future<void> leaveSubgroup({
@@ -806,20 +822,18 @@ class DivvyProvider extends ChangeNotifier {
   /// Delete chore (superclass)
   Future<void> deleteSuperclassChore(String choreID) async {
     final choreInsts = _choreInstances[choreID];
+    List<Future> futures = [];
     if (choreInsts != null) {
       // Delete all chore instances
-      final List<Future> futures = [];
       for (ChoreInst inst in choreInsts) {
         futures.add(db.deleteChoreInst(houseID: houseID, choreInstID: inst.id));
       }
       // batch delete docs
-      await Future.wait(futures);
       _choreInstances.remove(choreID);
     }
 
     // now delete all swaps with this chore ID
     final swaps = _swaps.values;
-    final List<Future> futures = [];
     for (Swap swap in swaps) {
       if (swap.choreID == choreID) {
         // delete this swap!!
@@ -827,10 +841,10 @@ class DivvyProvider extends ChangeNotifier {
         _swaps.remove(swap.id);
       }
     }
-    await Future.wait(futures);
 
     _chores.remove(choreID);
-    await db.deleteChore(houseID: houseID, choreID: choreID);
+    futures.add(db.deleteChore(houseID: houseID, choreID: choreID));
+    await Future.wait(futures);
     notifyListeners();
   }
 
@@ -841,10 +855,13 @@ class DivvyProvider extends ChangeNotifier {
       choreInstID: choreInst.id,
       from: _currentMember.id,
     );
-    await db.upsertSwap(newSwap, houseID);
     // Update the chore instance with the swap id
     choreInst.swapID = newSwap.id;
-    await db.upsertChoreInst(choreInst, houseID);
+    final futures = [
+      db.upsertSwap(newSwap, houseID),
+      db.upsertChoreInst(choreInst, houseID),
+    ];
+    await Future.wait(futures);
     notifyListeners();
   }
 

@@ -13,11 +13,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Displays basic information about a chore superclass
-class ChoreSuperclassScreen extends StatelessWidget {
+class ChoreSuperclassScreen extends StatefulWidget {
   // The current chore superclass being displayed
   final ChoreID choreID;
 
   const ChoreSuperclassScreen({super.key, required this.choreID});
+
+  @override
+  State<ChoreSuperclassScreen> createState() => _ChoreSuperclassScreenState();
+}
+
+class _ChoreSuperclassScreenState extends State<ChoreSuperclassScreen> {
+  bool deleting = false;
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -26,10 +33,12 @@ class ChoreSuperclassScreen extends StatelessWidget {
     return Consumer<DivvyProvider>(
       builder: (context, provider, child) {
         // Update data from provider
-        Chore? chore = provider.getSuperChore(choreID);
+        Chore? chore = provider.getSuperChore(widget.choreID);
         // If chore no longer exists, show chore not found screen
         if (chore == null) return _choreNotFoundScreen(width, spacing);
-        List<Member> choreAssignees = provider.getChoreAssignees(choreID);
+        List<Member> choreAssignees = provider.getChoreAssignees(
+          widget.choreID,
+        );
 
         // Get the list of upcoming chores for this super class
         List<ChoreInst> upcomingChores = [];
@@ -37,7 +46,7 @@ class ChoreSuperclassScreen extends StatelessWidget {
           upcomingChores.addAll(
             provider
                 .getUpcomingChoresLessStrict(member.id)
-                .where((chore) => chore.superID == choreID),
+                .where((chore) => chore.superID == widget.choreID),
           );
         }
 
@@ -49,65 +58,79 @@ class ChoreSuperclassScreen extends StatelessWidget {
         // Sort the upcoming chores by due date
         upcomingChores.sort((a, b) => a.dueDate.isBefore(b.dueDate) ? -1 : 1);
 
-        return Scaffold(
-          backgroundColor: DivvyTheme.background,
-          appBar: AppBar(
-            title: Text("Chore Information", style: DivvyTheme.screenTitle),
-            centerTitle: true,
-            scrolledUnderElevation: 0,
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult:
+              (didPop, result) => {
+                if (!didPop && !deleting) Navigator.of(context).pop(),
+              },
+          child: Scaffold(
             backgroundColor: DivvyTheme.background,
-            actions: [
-              // Allow user to take actions for this chore
-              InkWell(
-                onTap: () => _showActionMenu(context),
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                child: Container(
-                  height: 45,
-                  width: 45,
-                  alignment: Alignment.centerLeft,
-                  child: Icon(CupertinoIcons.ellipsis),
+            appBar: AppBar(
+              title: Text("Chore Information", style: DivvyTheme.screenTitle),
+              centerTitle: true,
+              scrolledUnderElevation: 0,
+              backgroundColor: DivvyTheme.background,
+              actions: [
+                // Allow user to take actions for this chore
+                InkWell(
+                  onTap: () => (!deleting) ? _showActionMenu(context) : (),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  child: Container(
+                    height: 45,
+                    width: 45,
+                    alignment: Alignment.centerLeft,
+                    child: Icon(CupertinoIcons.ellipsis),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          body: SizedBox.expand(
-            child: SingleChildScrollView(
-              child: Container(
-                width: width,
-                padding: EdgeInsets.symmetric(horizontal: spacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: spacing),
-                    _choreNameTile(chore, context, spacing),
-                    SizedBox(height: spacing / 2),
-                    _customDivider(spacing),
-                    _descriptionWidget(chore, spacing),
-                    _customDivider(spacing),
-                    _frequencyWidget(chore, spacing),
-                    _customDivider(spacing),
-                    _getAssigneesWidget(context, choreAssignees, spacing),
-                    SizedBox(height: spacing / 2),
-                    // Display overdue chores (if any)
-                    _displayOverdueChores(
-                      context,
-                      overdueChores,
-                      choreAssignees,
-                      spacing,
-                    ),
-                    // Display upcoming chores (if any)
-                    _displayUpcomingChores(
-                      context,
-                      upcomingChores,
-                      choreAssignees,
-                      spacing,
-                    ),
-                    SizedBox(height: spacing * 3),
-                  ],
-                ),
-              ),
+              ],
             ),
+            body:
+                deleting
+                    ? Center(child: CupertinoActivityIndicator())
+                    : SizedBox.expand(
+                      child: SingleChildScrollView(
+                        child: Container(
+                          width: width,
+                          padding: EdgeInsets.symmetric(horizontal: spacing),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: spacing),
+                              _choreNameTile(chore, context, spacing),
+                              SizedBox(height: spacing / 2),
+                              _customDivider(spacing),
+                              _descriptionWidget(chore, spacing),
+                              _customDivider(spacing),
+                              _frequencyWidget(chore, spacing),
+                              _customDivider(spacing),
+                              _getAssigneesWidget(
+                                context,
+                                choreAssignees,
+                                spacing,
+                              ),
+                              SizedBox(height: spacing / 2),
+                              // Display overdue chores (if any)
+                              _displayOverdueChores(
+                                context,
+                                overdueChores,
+                                choreAssignees,
+                                spacing,
+                              ),
+                              // Display upcoming chores (if any)
+                              _displayUpcomingChores(
+                                context,
+                                upcomingChores,
+                                choreAssignees,
+                                spacing,
+                              ),
+                              SizedBox(height: spacing * 3),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
           ),
         );
       },
@@ -141,18 +164,24 @@ class ChoreSuperclassScreen extends StatelessWidget {
     if (delete != null && delete && context.mounted) {
       final confirm = await confirmDeleteDialog(context, 'Delete Chore');
       if (confirm != null && confirm) {
+        setState(() {
+          deleting = true;
+        });
         if (!context.mounted) return;
-        Provider.of<DivvyProvider>(
+        await Provider.of<DivvyProvider>(
           context,
           listen: false,
-        ).deleteSuperclassChore(choreID);
+        ).deleteSuperclassChore(widget.choreID);
         // leave screen
+        if (!context.mounted) return;
         Navigator.of(context).pop();
       }
     } else if (delete != null && !delete && context.mounted) {
       // user wants to edit chore
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (ctx) => EditOrAddChore(choreID: choreID)),
+        MaterialPageRoute(
+          builder: (ctx) => EditOrAddChore(choreID: widget.choreID),
+        ),
       );
     }
   }
@@ -257,7 +286,12 @@ class ChoreSuperclassScreen extends StatelessWidget {
         Text("Description:", style: DivvyTheme.bodyBoldBlack),
         SizedBox(height: spacing / 2),
         // The frequency of the chore
-        Text(chore.description.isEmpty ? "No desription provided for this chore." : chore.description, style: DivvyTheme.bodyBlack),
+        Text(
+          chore.description.isEmpty
+              ? "No desription provided for this chore."
+              : chore.description,
+          style: DivvyTheme.bodyBlack,
+        ),
       ],
     );
   }
@@ -290,7 +324,6 @@ class ChoreSuperclassScreen extends StatelessWidget {
   );
 
   // Displays a tile for a given member, including profile photo
-  // and name
   Widget _memberTile(Member member, double spacing) => Row(
     children: [
       Container(
