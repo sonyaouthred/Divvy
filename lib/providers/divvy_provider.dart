@@ -1,6 +1,7 @@
 // import 'dart:async';
 
 import 'package:divvy/models/chore.dart';
+import 'package:divvy/models/comment.dart';
 import 'package:divvy/models/house.dart';
 import 'package:divvy/models/member.dart';
 import 'package:divvy/models/subgroup.dart';
@@ -300,7 +301,8 @@ class DivvyProvider extends ChangeNotifier {
               (inst) =>
                   inst.assignee == member &&
                   // Check if the due date is before now
-                  !inst.dueDate.isBefore(DateTime.now()),
+                  (!inst.dueDate.isBefore(DateTime.now()) ||
+                      isSameDay(inst.dueDate, DateTime.now())),
               // check that due date is not today
             )
             .toList(),
@@ -907,6 +909,43 @@ class DivvyProvider extends ChangeNotifier {
     }
     // finally delete swap
     await db.deleteSwap(houseID: houseID, swapID: swap.id);
+    notifyListeners();
+  }
+
+  // Add a comment by the current user to a chore instance
+  Future<void> addComment(
+    ChoreID superID,
+    ChoreInstID choreInst,
+    String comment,
+  ) async {
+    print('adding comment...');
+    final newComment = Comment.fromNew(
+      comment: comment,
+      commenter: currMember.id,
+    );
+    final inst = _choreInstances[superID]?.firstWhere(
+      (inst) => inst.id == choreInst,
+    );
+    if (inst == null) return;
+    // add comment!
+    inst.comments.add(newComment);
+    await db.upsertChoreInst(inst, houseID);
+    notifyListeners();
+  }
+
+  // Delete a given comment
+  Future<void> deleteComment(
+    ChoreID superID,
+    ChoreInstID choreInst,
+    String commentID,
+  ) async {
+    final inst = _choreInstances[superID]?.firstWhere(
+      (inst) => inst.id == choreInst,
+    );
+    if (inst == null) return;
+    // delete comment!
+    inst.comments.removeWhere((comment) => comment.id == commentID);
+    await db.upsertChoreInst(inst, houseID);
     notifyListeners();
   }
 }
