@@ -65,6 +65,12 @@ class DivvyProvider extends ChangeNotifier {
 
     // Initialize current user
     final uid = FirebaseAuth.instance.currentUser!.uid;
+    final currentMember = _memberMap[uid];
+    if (currentMember == null) {
+      // sign user out, something went wrong
+      FirebaseAuth.instance.signOut();
+      return;
+    }
     _currentMember = _memberMap[uid]!;
     // data is loaded!
     dataLoaded = true;
@@ -718,6 +724,16 @@ class DivvyProvider extends ChangeNotifier {
 
     // Finally, delete user doc
     await db.deleteMember(houseID: houseID, memberID: currMember.id);
+  }
+
+  /// deletes a user. if they're the only member of the house, deletes the house.
+  Future<void> deleteUser() async {
+    // now delete user
+    await db.deleteUser(currUser.id);
+    // sign out of firebase auth & delete account
+    await FirebaseAuth.instance.currentUser!.delete();
+    // delete house info
+    await deleteMember();
   }
 
   /// Leaves the specified subgroup. If no member ID specified,
