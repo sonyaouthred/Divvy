@@ -18,7 +18,7 @@ While you can create your own house with roommates right now, we have a few fake
 - peter@divvy.com
 
 Basic path:
-After downloading the app, you have several options. You can either sign in with one of the dummy accounts we have above, or you can press "Create Account" to create a new account. This will then prompt you to create a house. Once you've created a house, you will be redirected to your home screen.
+After downloading the app from Apple's TestFlight app (the only place it is available for a mobile phone right now), you have several options. You can either sign in with one of the dummy accounts we have above, or you can press "Create Account" to create a new account. This will then prompt you to create a house. Once you've created a house, you will be redirected to your home screen.
 
 Once your house has been created, you can invite people by having them download the app and then sharing your house's join code with them (found in House screen -> House Settings -> Join Code). Once you have a house (with or without roommates), you can create chores, subgroups, and more. Creating a chore can be done on the Chore screen. Subgroups can be created on the House screen. Once a chore is created, you can edit it or delete it. You can't change the frequency of a chore that has already been created, though.
 
