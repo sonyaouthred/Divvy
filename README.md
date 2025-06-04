@@ -189,6 +189,7 @@ Here is a helpful diagram of the various files and how they fit together:
 
 ![repo structure](assets/repo_structure.png?raw=true "Repository Structure")
 
+```
 Divvy/ 
 ├── .github/workflows/flutter-ci.yaml # Configures GitHub actions to both run tests and build app in both IOS and Android when pulling from main.
 ├── android/ # Handles the build requirements, permissions, assets and code need to build app in android
@@ -214,4 +215,4 @@ Divvy/
 ├── .README.md # General overview documentation and developer guideline
 ├── .USERMANUAL.md # User guideline for running and installing the app
 ├── .pubspec.yaml # List of all the dependencies needed for flutter
-
+```
